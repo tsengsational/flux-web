@@ -1,0 +1,62 @@
+<script setup lang="ts">
+import type { Production } from '@flux-theatre/shared';
+
+interface Props {
+  production: Pick<Production, 'title' | 'slug' | 'tagline' | 'poster_image' | 'season' | 'playwright' | 'opening_date' | 'closing_date'>;
+}
+
+const props = defineProps<Props>();
+
+const dateRange = computed(() => {
+  if (!props.production.opening_date) return null;
+  const fmt = (d: string) => new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  const open = fmt(props.production.opening_date);
+  const close = props.production.closing_date ? fmt(props.production.closing_date) : 'TBD';
+  return `${open} – ${close}`;
+});
+</script>
+
+<template>
+  <NuxtLink
+    :to="`/productions/${production.slug}`"
+    class="card-glass group block"
+    :id="`production-card-${production.slug}`"
+  >
+    <!-- Poster Image -->
+    <div class="relative aspect-[3/4] overflow-hidden bg-stage-800">
+      <img
+        v-if="production.poster_image"
+        :src="production.poster_image"
+        :alt="`${production.title} poster`"
+        class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+        loading="lazy"
+      />
+      <div v-else class="w-full h-full flex items-center justify-center">
+        <span class="text-stage-600 font-serif text-6xl">F</span>
+      </div>
+      <!-- Overlay gradient -->
+      <div class="absolute inset-0 bg-gradient-to-t from-stage-950/90 via-stage-950/20 to-transparent" />
+
+      <!-- Season badge -->
+      <div class="absolute top-3 right-3">
+        <span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-brand-500/90 text-stage-950 backdrop-blur-sm">
+          {{ production.season }}
+        </span>
+      </div>
+    </div>
+
+    <!-- Info -->
+    <div class="p-5">
+      <h3 class="text-lg font-serif font-bold text-stage-50 group-hover:text-brand-400 transition-colors line-clamp-2">
+        {{ production.title }}
+      </h3>
+      <p class="text-sm text-stage-400 mt-1">by {{ production.playwright }}</p>
+      <p v-if="production.tagline" class="text-sm text-stage-300 mt-2 line-clamp-2">
+        {{ production.tagline }}
+      </p>
+      <p v-if="dateRange" class="text-xs text-brand-400/80 mt-3 font-medium">
+        {{ dateRange }}
+      </p>
+    </div>
+  </NuxtLink>
+</template>

@@ -1,0 +1,9 @@
+{
+    "name": "@flux-theatre/cms",
+    "version": "0.1.0",
+    "private": true,
+    "description": "Directus CMS config for Flux Theatre Ensemble — runs via Docker, deployed to Railway",
+    "scripts": {
+        "clean": "echo No local dependencies to clean"
+    }
+}

@@ -1,0 +1,13 @@
+[build]
+  command = "pnpm --filter @flux-theatre/web build"
+  publish = "apps/web/.output/public"
+  base = "/"
+
+[build.environment]
+  NODE_VERSION = "20"
+  PNPM_VERSION = "9"
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
