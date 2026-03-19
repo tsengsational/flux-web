@@ -1,5 +1,5 @@
 ---
-description: 
+description: scaffold monorepo
 ---
 
 # Project Context: Theater Company Headless Migration
