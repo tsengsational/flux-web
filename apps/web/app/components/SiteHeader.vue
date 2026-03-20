@@ -95,7 +95,7 @@ if (import.meta.client) {
             <span class="site-header__logo-text text-stage-950 font-serif font-bold text-lg leading-none">F</span>
           </div>
           <span class="site-header__site-name text-stage-50 font-serif text-xl font-semibold tracking-tight hidden sm:block">
-            Flux Theatre
+            Flux Theatre Ensemble
           </span>
         </NuxtLink>
 
@@ -158,7 +158,7 @@ if (import.meta.client) {
 
         <!-- CTA + Mobile Toggle -->
         <div class="site-header__actions flex items-center gap-3">
-          <NuxtLink to="/productions" class="site-header__cta btn-primary hidden sm:inline-flex" id="header-cta">
+          <NuxtLink to="/productions" class="site-header__cta btn-primary text-brand-400 hover:text-brand-200 transition-colors hidden sm:inline-flex" id="header-cta">
             Get Tickets
           </NuxtLink>
           <button
