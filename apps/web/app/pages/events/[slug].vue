@@ -192,42 +192,42 @@ const categoryLabel = computed(() => {
 </script>
 
 <template>
-  <article class="pb-24">
+  <article class="event-detail pb-24">
     <!-- Hero / Header -->
-    <section class="relative pt-8 pb-16 bg-stage-900/40" id="event-detail-hero">
-      <div class="relative max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="flex flex-wrap items-center gap-3 mb-6">
-          <NuxtLink to="/events" class="text-xs text-stage-400 hover:text-brand-400 transition-colors">
+    <section class="event-detail__hero relative pt-8 pb-16 bg-stage-900/40" id="event-detail-hero">
+      <div class="event-detail__hero-container relative max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="event-detail__meta flex flex-wrap items-center gap-3 mb-6">
+          <NuxtLink to="/events" class="event-detail__back-link text-xs text-stage-400 hover:text-brand-400 transition-colors">
             &larr; All Events
           </NuxtLink>
-          <span class="w-px h-3 bg-stage-700" />
-          <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-brand-500/90 text-stage-950">
+          <span class="event-detail__divider w-px h-3 bg-stage-700" />
+          <span class="event-detail__category px-2.5 py-0.5 rounded-full text-xs font-semibold bg-brand-500/90 text-stage-950">
             {{ categoryLabel }}
           </span>
         </div>
 
-        <h1 class="text-3xl sm:text-5xl lg:text-6xl font-serif font-bold text-stage-50 tracking-tight leading-tight">
+        <h1 class="event-detail__title text-3xl sm:text-5xl lg:text-6xl font-serif font-bold text-stage-50 tracking-tight leading-tight">
           {{ event.title }}
         </h1>
 
-        <div class="mt-8 flex flex-col sm:flex-row sm:items-center gap-6 text-stage-300">
+        <div class="event-detail__info-bar mt-8 flex flex-col sm:flex-row sm:items-center gap-6 text-stage-300">
           <!-- Date -->
-          <div class="flex items-center gap-3">
-            <div class="w-10 h-10 rounded-lg bg-stage-800 flex items-center justify-center text-brand-400">
+          <div class="event-detail__info-item flex items-center gap-3">
+            <div class="event-detail__info-icon w-10 h-10 rounded-lg bg-stage-800 flex items-center justify-center text-brand-400">
               <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
               </svg>
             </div>
-            <div>
-              <p class="text-xs text-stage-500 uppercase font-bold tracking-wider">Date & Time</p>
-              <p class="text-sm font-medium">{{ formattedDate }}</p>
-              <p class="text-xs text-stage-400">{{ formattedTime }}</p>
+            <div class="event-detail__info-text">
+              <p class="event-detail__info-label text-xs text-stage-500 uppercase font-bold tracking-wider">Date & Time</p>
+              <p class="event-detail__info-value text-sm font-medium">{{ formattedDate }}</p>
+              <p class="event-detail__info-subtext text-xs text-stage-400">{{ formattedTime }}</p>
             </div>
           </div>
 
           <!-- Location -->
-          <div class="flex items-center gap-3">
-            <div class="w-10 h-10 rounded-lg bg-stage-800 flex items-center justify-center text-brand-400">
+          <div class="event-detail__info-item flex items-center gap-3">
+            <div class="event-detail__info-icon w-10 h-10 rounded-lg bg-stage-800 flex items-center justify-center text-brand-400">
               <svg v-if="event.format === 'digital'" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M9 17.25v1.007a3 3 0 01-.879 2.122L7.5 21h9l-.621-.621A3 3 0 0115 18.257V17.25m6-12V15a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 15V5.25A2.25 2.25 0 015.25 3h13.5A2.25 2.25 0 0121 5.25z" />
               </svg>
@@ -236,23 +236,23 @@ const categoryLabel = computed(() => {
                 <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" />
               </svg>
             </div>
-            <div>
-              <p class="text-xs text-stage-500 uppercase font-bold tracking-wider">Location</p>
-              <p class="text-sm font-medium">{{ event.venue?.name || 'Online' }}</p>
-              <p v-if="event.format === 'hybrid'" class="text-xs text-stage-400">In person & digital</p>
+            <div class="event-detail__info-text">
+              <p class="event-detail__info-label text-xs text-stage-500 uppercase font-bold tracking-wider">Location</p>
+              <p class="event-detail__info-value text-sm font-medium">{{ event.venue?.name || 'Online' }}</p>
+              <p v-if="event.format === 'hybrid'" class="event-detail__info-subtext text-xs text-stage-400">In person & digital</p>
             </div>
           </div>
 
           <!-- Admission -->
-          <div class="flex items-center gap-3">
-            <div class="w-10 h-10 rounded-lg bg-stage-800 flex items-center justify-center text-brand-400">
+          <div class="event-detail__info-item flex items-center gap-3">
+            <div class="event-detail__info-icon w-10 h-10 rounded-lg bg-stage-800 flex items-center justify-center text-brand-400">
               <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 6v.75m0 3v.75m0 3v.75m0 3V18m-9-5.25h5.25M7.5 15h3M3.375 5.25c-.621 0-1.125.504-1.125 1.125v3.026a2.999 2.999 0 010 5.198v3.026c0 .621.504 1.125 1.125 1.125h17.25c.621 0 1.125-.504 1.125-1.125v-3.026a2.999 2.999 0 010-5.198V6.375c0-.621-.504-1.125-1.125-1.125H3.375z" />
               </svg>
             </div>
-            <div>
-              <p class="text-xs text-stage-500 uppercase font-bold tracking-wider">Admission</p>
-              <p class="text-sm font-medium">{{ event.is_free ? 'Free' : (event.price || 'Ticketed') }}</p>
+            <div class="event-detail__info-text">
+              <p class="event-detail__info-label text-xs text-stage-500 uppercase font-bold tracking-wider">Admission</p>
+              <p class="event-detail__info-value text-sm font-medium">{{ event.is_free ? 'Free' : (event.price || 'Ticketed') }}</p>
             </div>
           </div>
         </div>
@@ -260,54 +260,54 @@ const categoryLabel = computed(() => {
     </section>
 
     <!-- Main Content -->
-    <section class="py-16 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="flex flex-col lg:flex-row gap-12">
+    <section class="event-detail__main py-16 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="event-detail__layout flex flex-col lg:flex-row gap-12">
         <!-- Body Text -->
-        <div class="flex-1">
+        <div class="event-detail__content flex-1">
           <div
             v-if="event.body"
-            class="prose prose-invert prose-lg max-w-none
+            class="event-detail__body prose prose-invert prose-lg max-w-none
                    prose-p:text-stage-300 prose-p:leading-relaxed
                    prose-strong:text-stage-100"
             v-html="event.body"
           />
           
-          <div class="mt-12 flex flex-wrap gap-4">
-            <a :href="event.rsvp_url || '#'" class="btn-primary">
+          <div class="event-detail__actions mt-12 flex flex-wrap gap-4">
+            <a :href="event.rsvp_url || '#'" class="event-detail__rsvp-btn btn-primary">
               RSVP / Get Tickets
             </a>
-            <NuxtLink v-if="event.format === 'digital' || event.format === 'hybrid'" to="#" class="btn-secondary">
+            <NuxtLink v-if="event.format === 'digital' || event.format === 'hybrid'" to="#" class="event-detail__digital-btn btn-secondary">
               Digital Access Info
             </NuxtLink>
           </div>
         </div>
 
         <!-- Sidebar / Info Card -->
-        <aside class="lg:w-80">
-          <div class="card-glass p-6 sticky top-24">
-            <h3 class="font-serif font-bold text-lg text-stage-100 mb-4">Venue Info</h3>
+        <aside class="event-detail__sidebar lg:w-80">
+          <div class="event-detail__venue-card card-glass p-6 sticky top-24">
+            <h3 class="event-detail__venue-title font-serif font-bold text-lg text-stage-100 mb-4">Venue Info</h3>
             
-            <div v-if="event.venue" class="space-y-4">
-              <div>
+            <div v-if="event.venue" class="event-detail__venue-info space-y-4">
+              <div class="event-detail__venue-address">
                 <p class="text-sm font-bold text-stage-300">{{ event.venue.name }}</p>
                 <p v-if="'address' in event.venue" class="text-sm text-stage-400">
                   {{ event.venue.address }}<br />
                   {{ event.venue.city }}, {{ event.venue.state }}
                 </p>
               </div>
-              <a v-if="'address' in event.venue" href="#" class="inline-block text-xs text-brand-400 hover:underline">
+              <a v-if="'address' in event.venue" href="#" class="event-detail__map-link inline-block text-xs text-brand-400 hover:underline">
                 View on Google Maps &rarr;
               </a>
             </div>
-            <div v-else class="text-sm text-stage-400 italic">
+            <div v-else class="event-detail__venue-text text-sm text-stage-400 italic">
               This is a digital-only event.
             </div>
 
-            <div class="mt-8 pt-6 border-t border-stage-800/60">
-              <h3 class="font-serif font-bold text-sm text-stage-100 mb-2">Need Help?</h3>
-              <p class="text-xs text-stage-500 leading-relaxed">
+            <div class="event-detail__support mt-8 pt-6 border-t border-stage-800/60">
+              <h3 class="event-detail__support-title font-serif font-bold text-sm text-stage-100 mb-2">Need Help?</h3>
+              <p class="event-detail__support-text text-xs text-stage-500 leading-relaxed">
                 If you have questions about accessibility or ticketing for this event, please email us at
-                <a href="mailto:info@fluxtheatre.org" class="text-brand-400">info@fluxtheatre.org</a>.
+                <a href="mailto:info@fluxtheatre.org" class="event-detail__support-link text-brand-400">info@fluxtheatre.org</a>.
               </p>
             </div>
           </div>

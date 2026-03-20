@@ -184,6 +184,7 @@ export interface BlogPost extends DirectusBaseFields {
     excerpt: string | null;
     body: string;                 // Rich-text / HTML
     cover_image: string | null;
+    gallery: string[] | null;     // Array of file UUIDs
     author: string | Person;
     tags: string[];
     publish_date: string;
@@ -221,6 +222,17 @@ export interface HomePage {
     hero_cta_secondary_text: string | null;
     hero_cta_secondary_link: string | null;
     mission_statement: string | null;
+    mission_background_image: string | null;
+}
+
+// ─── Pages ───
+
+export interface Page extends DirectusBaseFields {
+    title: string;
+    slug: string;
+    body: string;                 // Rich-text / HTML
+    meta_title: string | null;
+    meta_description: string | null;
 }
 
 // ─── Navigation ───
@@ -228,8 +240,10 @@ export interface HomePage {
 export interface NavigationItem {
     id: string;
     label: string;
-    url: string;
+    url: string | null;           // Manual URL (e.g., external or static)
+    page: string | Page | null;   // Link to an internal Page
     sort: number;
+    parent: string | NavigationItem | null;
     children: NavigationItem[];
     is_external: boolean;
 }

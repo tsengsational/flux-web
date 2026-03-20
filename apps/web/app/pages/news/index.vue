@@ -46,24 +46,24 @@ const remainingPosts = computed(() => filteredPosts.value.slice(1));
 </script>
 
 <template>
-  <div>
+  <div class="news-page">
     <!-- Page Header -->
-    <section class="pt-12 pb-6" id="news-header">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <p class="text-brand-400 font-medium text-sm uppercase tracking-[0.15em] mb-2">From the Company</p>
-        <h1 class="section-heading">News & Updates</h1>
-        <p class="mt-4 text-stage-400 text-lg max-w-2xl">
+    <section class="news-page__header pt-12 pb-6" id="news-header">
+      <div class="news-page__header-container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <p class="news-page__subtitle text-brand-400 font-medium text-sm uppercase tracking-[0.15em] mb-2">From the Company</p>
+        <h1 class="news-page__title section-heading">News & Updates</h1>
+        <p class="news-page__description mt-4 text-stage-400 text-lg max-w-2xl">
           Announcements, behind-the-scenes stories, interviews, and dispatches from the Flux ensemble.
         </p>
       </div>
     </section>
 
     <!-- Tag Filter -->
-    <section class="pb-8" id="news-tags">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="flex flex-wrap gap-2">
+    <section class="news-page__tags-section pb-8" id="news-tags">
+      <div class="news-page__tags-container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="news-page__tags flex flex-wrap gap-2">
           <button
-            class="px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-200"
+            class="news-page__tag-btn px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-200"
             :class="!activeTag
               ? 'bg-brand-500 text-stage-950'
               : 'bg-stage-800/60 text-stage-400 hover:text-stage-200 border border-stage-700/40'"
@@ -74,7 +74,7 @@ const remainingPosts = computed(() => filteredPosts.value.slice(1));
           <button
             v-for="tag in allTags"
             :key="tag"
-            class="px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-200"
+            class="news-page__tag-btn px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-200"
             :class="activeTag === tag
               ? 'bg-brand-500 text-stage-950'
               : 'bg-stage-800/60 text-stage-400 hover:text-stage-200 border border-stage-700/40'"
@@ -87,33 +87,34 @@ const remainingPosts = computed(() => filteredPosts.value.slice(1));
     </section>
 
     <!-- Content -->
-    <section class="pb-24" id="news-content">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <section class="news-page__content-section pb-24" id="news-content">
+      <div class="news-page__content-container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <!-- Featured Post -->
         <BlogPostCard
           v-if="featuredPost"
           :post="featuredPost"
           featured
-          class="mb-8"
+          class="news-page__featured-post mb-8"
         />
 
         <!-- Posts Grid -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div class="news-page__grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           <BlogPostCard
             v-for="post in remainingPosts"
             :key="post.slug"
             :post="post"
+            class="news-page__card"
           />
         </div>
 
         <!-- Load More -->
-        <div v-if="filteredPosts.length > 4" class="mt-12 text-center">
-          <button class="btn-secondary" id="load-more-posts">
+        <div v-if="filteredPosts.length > 4" class="news-page__footer mt-12 text-center">
+          <button class="news-page__load-more btn-secondary" id="load-more-posts">
             Load More Posts
           </button>
         </div>
 
-        <p v-if="filteredPosts.length === 0" class="text-center text-stage-500 py-16 text-lg">
+        <p v-if="filteredPosts.length === 0" class="news-page__empty-text text-center text-stage-500 py-16 text-lg">
           No posts match the selected tag.
         </p>
       </div>

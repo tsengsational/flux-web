@@ -3,35 +3,35 @@ const currentYear = new Date().getFullYear();
 </script>
 
 <template>
-  <footer class="border-t border-stage-800/60 bg-stage-950" id="site-footer">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-      <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-10">
+  <footer class="site-footer border-t border-stage-800/60 bg-stage-950" id="site-footer">
+    <div class="site-footer__container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+      <div class="site-footer__grid grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-10">
         <!-- Brand Column -->
-        <div class="lg:col-span-1">
-          <NuxtLink to="/" class="flex items-center gap-3 group mb-4">
-            <div class="w-9 h-9 rounded-full bg-gradient-to-br from-brand-400 to-brand-600 flex items-center justify-center">
-              <span class="text-stage-950 font-serif font-bold text-lg leading-none">F</span>
+        <div class="site-footer__brand lg:col-span-1">
+          <NuxtLink to="/" class="site-footer__logo flex items-center gap-3 group mb-4">
+            <div class="site-footer__logo-icon w-9 h-9 rounded-full bg-gradient-to-br from-brand-400 to-brand-600 flex items-center justify-center">
+              <span class="site-footer__logo-text text-stage-950 font-serif font-bold text-lg leading-none">F</span>
             </div>
-            <span class="text-stage-50 font-serif text-xl font-semibold tracking-tight">
+            <span class="site-footer__site-name text-stage-50 font-serif text-xl font-semibold tracking-tight">
               Flux Theatre
             </span>
           </NuxtLink>
-          <p class="text-stage-400 text-sm leading-relaxed">
+          <p class="site-footer__tagline text-stage-400 text-sm leading-relaxed">
             Adventurous theatre in the heart of New York City. Building new works and reimagining classics since 2006.
           </p>
         </div>
 
         <!-- Quick Links -->
-        <div>
-          <h4 class="text-stage-200 font-sans font-semibold text-sm uppercase tracking-wider mb-4">Explore</h4>
-          <ul class="space-y-2">
+        <div class="site-footer__links">
+          <h4 class="site-footer__title text-stage-200 font-sans font-semibold text-sm uppercase tracking-wider mb-4">Explore</h4>
+          <ul class="site-footer__list space-y-2">
             <li v-for="link in [
               { label: 'Current Season', to: '/productions' },
               { label: 'Past Productions', to: '/productions?filter=past' },
               { label: 'News & Blog', to: '/news' },
               { label: 'About Us', to: '/about' },
-            ]" :key="link.to">
-              <NuxtLink :to="link.to" class="text-stage-400 text-sm hover:text-brand-400 transition-colors">
+            ]" :key="link.to" class="site-footer__item">
+              <NuxtLink :to="link.to" class="site-footer__link text-stage-400 text-sm hover:text-brand-400 transition-colors">
                 {{ link.label }}
               </NuxtLink>
             </li>
@@ -39,16 +39,16 @@ const currentYear = new Date().getFullYear();
         </div>
 
         <!-- Support -->
-        <div>
-          <h4 class="text-stage-200 font-sans font-semibold text-sm uppercase tracking-wider mb-4">Support</h4>
-          <ul class="space-y-2">
+        <div class="site-footer__links">
+          <h4 class="site-footer__title text-stage-200 font-sans font-semibold text-sm uppercase tracking-wider mb-4">Support</h4>
+          <ul class="site-footer__list space-y-2">
             <li v-for="link in [
               { label: 'Donate', to: '/donate' },
               { label: 'Volunteer', to: '/volunteer' },
               { label: 'Sponsor', to: '/sponsor' },
               { label: 'Contact', to: '/contact' },
-            ]" :key="link.to">
-              <NuxtLink :to="link.to" class="text-stage-400 text-sm hover:text-brand-400 transition-colors">
+            ]" :key="link.to" class="site-footer__item">
+              <NuxtLink :to="link.to" class="site-footer__link text-stage-400 text-sm hover:text-brand-400 transition-colors">
                 {{ link.label }}
               </NuxtLink>
             </li>
@@ -56,9 +56,9 @@ const currentYear = new Date().getFullYear();
         </div>
 
         <!-- Connect -->
-        <div>
-          <h4 class="text-stage-200 font-sans font-semibold text-sm uppercase tracking-wider mb-4">Connect</h4>
-          <div class="flex gap-3">
+        <div class="site-footer__connect">
+          <h4 class="site-footer__title text-stage-200 font-sans font-semibold text-sm uppercase tracking-wider mb-4">Connect</h4>
+          <div class="site-footer__social-links flex gap-3">
             <a
               v-for="social in [
                 { label: 'Instagram', icon: 'M7.5 2h9A5.5 5.5 0 0122 7.5v9a5.5 5.5 0 01-5.5 5.5h-9A5.5 5.5 0 012 16.5v-9A5.5 5.5 0 017.5 2zm4.5 5a5 5 0 100 10 5 5 0 000-10zm0 2a3 3 0 110 6 3 3 0 010-6zm5.25-2.5a1.25 1.25 0 110 2.5 1.25 1.25 0 010-2.5z' },
@@ -68,27 +68,27 @@ const currentYear = new Date().getFullYear();
               :key="social.label"
               href="#"
               :aria-label="social.label"
-              class="w-10 h-10 rounded-lg bg-stage-800/60 flex items-center justify-center text-stage-400 hover:text-brand-400 hover:bg-stage-800 transition-all"
+              class="site-footer__social-link w-10 h-10 rounded-lg bg-stage-800/60 flex items-center justify-center text-stage-400 hover:text-brand-400 hover:bg-stage-800 transition-all"
             >
-              <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+              <svg class="site-footer__social-icon w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
                 <path :d="social.icon" />
               </svg>
             </a>
           </div>
-          <p class="text-stage-500 text-xs mt-6">
-            Mailing list, auditions, and more &mdash; <a href="#" class="underline hover:text-brand-400 transition-colors">subscribe here</a>.
+          <p class="site-footer__subscribe text-stage-500 text-xs mt-6">
+            Mailing list, auditions, and more &mdash; <a href="#" class="site-footer__link--inline underline hover:text-brand-400 transition-colors">subscribe here</a>.
           </p>
         </div>
       </div>
 
       <!-- Bottom Bar -->
-      <div class="mt-12 pt-8 border-t border-stage-800/60 flex flex-col sm:flex-row items-center justify-between gap-4">
-        <p class="text-stage-500 text-xs">
+      <div class="site-footer__bottom mt-12 pt-8 border-t border-stage-800/60 flex flex-col sm:flex-row items-center justify-between gap-4">
+        <p class="site-footer__copyright text-stage-500 text-xs">
           &copy; {{ currentYear }} Flux Theatre Ensemble. All rights reserved.
         </p>
-        <div class="flex gap-4 text-xs text-stage-500">
-          <NuxtLink to="/privacy" class="hover:text-stage-300 transition-colors">Privacy Policy</NuxtLink>
-          <NuxtLink to="/accessibility" class="hover:text-stage-300 transition-colors">Accessibility</NuxtLink>
+        <div class="site-footer__legal flex gap-4 text-xs text-stage-500">
+          <NuxtLink to="/privacy" class="site-footer__legal-link hover:text-stage-300 transition-colors">Privacy Policy</NuxtLink>
+          <NuxtLink to="/accessibility" class="site-footer__legal-link hover:text-stage-300 transition-colors">Accessibility</NuxtLink>
         </div>
       </div>
     </div>

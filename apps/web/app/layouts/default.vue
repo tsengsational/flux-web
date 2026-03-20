@@ -1,7 +1,7 @@
 <template>
-  <div class="min-h-screen flex flex-col">
+  <div class="default-layout min-h-screen flex flex-col">
     <SiteHeader />
-    <main class="flex-1">
+    <main class="default-layout__main flex-1">
       <slot />
     </main>
     <SiteFooter />

@@ -133,27 +133,27 @@ const categoryFilters: { label: string; value: CategoryFilter }[] = [
 </script>
 
 <template>
-  <div>
+  <div class="events-page">
     <!-- Page Header -->
-    <section class="pt-12 pb-6" id="events-header">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <p class="text-brand-400 font-medium text-sm uppercase tracking-[0.15em] mb-2">Get Involved</p>
-        <h1 class="section-heading">Events</h1>
-        <p class="mt-4 text-stage-400 text-lg max-w-2xl">
+    <section class="events-page__header pt-12 pb-6" id="events-header">
+      <div class="events-page__header-container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <p class="events-page__subtitle text-brand-400 font-medium text-sm uppercase tracking-[0.15em] mb-2">Get Involved</p>
+        <h1 class="events-page__title section-heading">Events</h1>
+        <p class="events-page__description mt-4 text-stage-400 text-lg max-w-2xl">
           Workshops, readings, talkbacks, fundraisers, and more — in person and online.
         </p>
       </div>
     </section>
 
     <!-- Filters -->
-    <section class="pb-8" id="event-filters">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-4">
+    <section class="events-page__filters-section pb-8" id="event-filters">
+      <div class="events-page__filters-container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-4">
         <!-- Format filter -->
-        <div class="flex flex-wrap gap-2">
+        <div class="events-page__filter-group events-page__filter-group--format flex flex-wrap gap-2">
           <button
             v-for="f in formatFilters"
             :key="f.value"
-            class="px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-200"
+            class="events-page__filter-btn px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-200"
             :class="activeFormat === f.value
               ? 'bg-brand-500 text-stage-950'
               : 'bg-stage-800/60 text-stage-400 hover:text-stage-200 border border-stage-700/40'"
@@ -163,11 +163,11 @@ const categoryFilters: { label: string; value: CategoryFilter }[] = [
           </button>
         </div>
         <!-- Category filter -->
-        <div class="flex flex-wrap gap-2">
+        <div class="events-page__filter-group events-page__filter-group--category flex flex-wrap gap-2">
           <button
             v-for="c in categoryFilters"
             :key="c.value"
-            class="px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-200"
+            class="events-page__filter-btn px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-200"
             :class="activeCategory === c.value
               ? 'bg-brand-500 text-stage-950'
               : 'bg-stage-800/60 text-stage-400 hover:text-stage-200 border border-stage-700/40'"
@@ -180,11 +180,11 @@ const categoryFilters: { label: string; value: CategoryFilter }[] = [
     </section>
 
     <!-- Events Grid -->
-    <section class="pb-24" id="events-grid">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <section class="events-page__grid-section pb-24" id="events-grid">
+      <div class="events-page__grid-container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <TransitionGroup
           tag="div"
-          class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
+          class="events-page__grid grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
           enter-active-class="transition-all duration-300 ease-out"
           enter-from-class="opacity-0 scale-95"
           enter-to-class="opacity-100 scale-100"
@@ -196,16 +196,17 @@ const categoryFilters: { label: string; value: CategoryFilter }[] = [
             v-for="ev in filteredEvents"
             :key="ev.slug"
             :event="ev"
+            class="events-page__card"
           />
         </TransitionGroup>
 
-        <p v-if="filteredEvents.length === 0" class="text-center text-stage-500 py-16 text-lg">
+        <p v-if="filteredEvents.length === 0" class="events-page__empty-text text-center text-stage-500 py-16 text-lg">
           No events match the current filters.
         </p>
 
         <!-- Calendar link -->
-        <div class="mt-12 text-center">
-          <NuxtLink to="/calendar" class="btn-secondary" id="go-to-calendar">
+        <div class="events-page__footer mt-12 text-center">
+          <NuxtLink to="/calendar" class="events-page__calendar-btn btn-secondary" id="go-to-calendar">
             View Full Calendar
           </NuxtLink>
         </div>

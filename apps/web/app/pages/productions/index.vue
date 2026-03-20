@@ -39,29 +39,29 @@ const filters: { label: string; value: FilterOption }[] = [
 </script>
 
 <template>
-  <div>
+  <div class="productions-page">
     <!-- Page Header -->
-    <section class="pt-12 pb-8" id="productions-header">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <p class="text-brand-400 font-medium text-sm uppercase tracking-[0.15em] mb-2">Our Work</p>
-        <h1 class="section-heading">Productions</h1>
-        <p class="mt-4 text-stage-400 text-lg max-w-2xl">
+    <section class="productions-page__header pt-12 pb-8" id="productions-header">
+      <div class="productions-page__header-container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <p class="productions-page__subtitle text-brand-400 font-medium text-sm uppercase tracking-[0.15em] mb-2">Our Work</p>
+        <h1 class="productions-page__title section-heading">Productions</h1>
+        <p class="productions-page__description mt-4 text-stage-400 text-lg max-w-2xl">
           From world premieres to reimagined classics — explore the bold, adventurous work of Flux Theatre Ensemble.
         </p>
       </div>
     </section>
 
     <!-- Filter Tabs -->
-    <section class="pb-8" id="production-filters">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="flex gap-2 border-b border-stage-800/60 pb-px">
+    <section class="productions-page__filters-section pb-8" id="production-filters">
+      <div class="productions-page__filters-container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="productions-page__filters flex gap-2 border-b border-stage-800/60 pb-px">
           <button
             v-for="f in filters"
             :key="f.value"
-            class="px-4 py-2.5 text-sm font-medium rounded-t-lg transition-all duration-200"
+            class="productions-page__filter-btn px-4 py-2.5 text-sm font-medium rounded-t-lg transition-all duration-200"
             :class="activeFilter === f.value
-              ? 'text-brand-400 bg-stage-800/50 border-b-2 border-brand-400 -mb-px'
-              : 'text-stage-400 hover:text-stage-200 hover:bg-stage-800/30'"
+              ? 'productions-page__filter-btn--active text-brand-400 bg-stage-800/50 border-b-2 border-brand-400 -mb-px'
+              : 'productions-page__filter-btn--inactive text-stage-400 hover:text-stage-200 hover:bg-stage-800/30'"
             @click="activeFilter = f.value"
           >
             {{ f.label }}
@@ -71,11 +71,11 @@ const filters: { label: string; value: FilterOption }[] = [
     </section>
 
     <!-- Productions Grid -->
-    <section class="pb-24" id="productions-grid">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <section class="productions-page__grid-section pb-24" id="productions-grid">
+      <div class="productions-page__grid-container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <TransitionGroup
           tag="div"
-          class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
+          class="productions-page__grid grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
           enter-active-class="transition-all duration-300 ease-out"
           enter-from-class="opacity-0 scale-95"
           enter-to-class="opacity-100 scale-100"
@@ -87,10 +87,11 @@ const filters: { label: string; value: FilterOption }[] = [
             v-for="prod in filteredProductions"
             :key="prod.slug"
             :production="prod"
+            class="productions-page__card"
           />
         </TransitionGroup>
 
-        <p v-if="filteredProductions.length === 0" class="text-center text-stage-500 py-16 text-lg">
+        <p v-if="filteredProductions.length === 0" class="productions-page__empty-text text-center text-stage-500 py-16 text-lg">
           No productions match the current filter.
         </p>
       </div>
