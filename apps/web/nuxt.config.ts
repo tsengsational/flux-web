@@ -12,6 +12,9 @@ export default defineNuxtConfig({
   ssr: true,
   nitro: {
     preset: 'static',
+    prerender: {
+      failOnError: false,
+    },
   },
 
   // ── Tailwind CSS ──

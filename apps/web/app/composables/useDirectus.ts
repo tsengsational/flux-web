@@ -16,7 +16,8 @@ export interface Schema {
 
 export const useDirectus = () => {
   const config = useRuntimeConfig();
-  const directusUrl = config.public.directusUrl;
+  const rawUrl = config.public.directusUrl;
+  const directusUrl = rawUrl.startsWith('http') ? rawUrl : `https://${rawUrl}`;
 
   // Initialize the Directus client with the REST support
   const client = createDirectus<Schema>(directusUrl).with(rest());
