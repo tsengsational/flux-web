@@ -1,168 +1,39 @@
 <script setup lang="ts">
-import type { EventFormat, EventCategory } from '@flux-theatre/shared';
+import type { Event, EventFormat, EventCategory } from '@flux-theatre/shared';
 
 const route = useRoute();
 const slug = route.params.slug as string;
+const { client, readItems } = useDirectus();
 
-// In production: const { data } = await useFetch(`/api/events/${slug}`)
-// Placeholder data for scaffolding:
-const events = [
-  {
-    title: 'Flux Sundays: New Play Readings',
-    slug: 'flux-sundays-march-2026',
-    excerpt: 'Join us for our monthly reading series featuring two new short plays by emerging playwrights, followed by a community talkback.',
-    body: `
-      <p>Flux Sundays is our longest-running program — a monthly reading series dedicated to the 
-      development of new work. Each month, we feature two new short plays or excerpts from full-length 
-      works by emerging playwrights, followed by a moderated talkback with the community.</p>
-      <p>This is a space for playwrights to hear their words out loud, and for audiences to witness 
-      the spark of a new story. We invite you to stay after the readings for refreshments and 
-      conversation with the artists.</p>
-    `,
-    cover_image: null,
-    start_datetime: '2026-03-16T14:00:00',
-    end_datetime: '2026-03-16T17:00:00',
-    format: 'in_person' as EventFormat,
-    category: 'reading' as EventCategory,
-    venue: { 
-      name: 'The 4th Street Theatre',
-      address: '83 East 4th Street',
-      city: 'New York',
-      state: 'NY',
-    },
-    virtual_url: null,
-    is_free: true,
-    price: null,
-    rsvp_url: '#',
-  },
-  {
-    title: 'Playwriting Masterclass with Aria Chen',
-    slug: 'masterclass-aria-chen',
-    excerpt: 'A two-hour intensive on structure, voice, and the politics of place in contemporary playwriting.',
-    body: `
-      <p>Award-winning playwright Aria Chen (<em>Neon Wilderness</em>) leads this intensive masterclass 
-      focused on the specific relationship between narrative structure and geography. How do the 
-      spaces we inhabit shape the stories we tell? And how can we subvert traditional structures 
-      to better reflect contemporary life?</p>
-      <p>This session is open to playwrights of all experience levels. Participants should come 
-      prepared with a short scene (2-3 pages) they are currently working on.</p>
-    `,
-    cover_image: null,
-    start_datetime: '2026-03-22T10:00:00',
-    end_datetime: '2026-03-22T12:00:00',
-    format: 'hybrid' as EventFormat,
-    category: 'masterclass' as EventCategory,
-    venue: { 
-      name: 'Flux Studio',
-      address: 'Flux Theatre Ensemble Studio',
-      city: 'New York',
-      state: 'NY',
-    },
-    virtual_url: '#',
-    is_free: false,
-    price: '$35 / Pay-What-You-Can',
-    rsvp_url: '#',
-  },
-  {
-    title: 'Virtual Talkback: Directing The Tempest Today',
-    slug: 'talkback-directing-tempest',
-    excerpt: 'Director Elena Vasquez discusses her approach to reimagining Shakespeare for a contemporary audience.',
-    body: `
-      <p>Join Artistic Director Elena Vasquez for a deep dive into the creative process behind our 
-      upcoming production of <em>The Tempest Reimagined</em>. This virtual talkback will explore 
-      the challenges and opportunities of staging Shakespeare in 2026, focusing on themes of 
-      environmental justice, power dynamics, and digital isolation.</p>
-      <p>The session will include a 45-minute presentation followed by an open Q&A with the audience.</p>
-    `,
-    start_datetime: '2026-04-02T19:00:00',
-    end_datetime: '2026-04-02T20:30:00',
-    format: 'digital' as EventFormat,
-    category: 'talkback' as EventCategory,
-    venue: null,
-    virtual_url: '#',
-    is_free: true,
-    price: null,
-    rsvp_url: '#',
-  },
-  {
-    title: 'Annual Spring Fundraiser Gala',
-    slug: 'spring-gala-2026',
-    excerpt: 'An evening of performances, cocktails, and celebration supporting Flux\'s mission of adventurous theatre.',
-    body: `
-      <p>Celebrate two decades of adventurous theatre at Flux Theatre Ensemble's Annual Spring 
-      Fundraiser Gala. This year's event features pop-up performances from past Flux favorites, 
-      a signature cocktail hour, and a silent auction featuring unique theatre experiences.</p>
-      <p>All proceeds support our 2026-2027 season and our Open Account ticketing model, ensuring 
-      accessible theatre for all.</p>
-    `,
-    start_datetime: '2026-04-25T18:30:00',
-    end_datetime: '2026-04-25T22:00:00',
-    format: 'in_person' as EventFormat,
-    category: 'fundraiser' as EventCategory,
-    venue: { name: 'The Green Room NYC' },
-    virtual_url: null,
-    is_free: false,
-    price: '$75',
-    rsvp_url: '#',
-  },
-  {
-    title: 'Open Auditions: Neon Wilderness',
-    slug: 'auditions-neon-wilderness',
-    excerpt: 'Seeking actors for Aria Chen\'s bold new work. All ethnicities and gender expressions welcome.',
-    body: `
-      <p>Flux Theatre Ensemble is holding open auditions for our summer production of 
-      <em>Neon Wilderness</em>. We are looking for a diverse ensemble of performers comfortable 
-      with movement and text-heavy work.</p>
-      <p>Please prepare one contemporary monologue (no more than 2 minutes). Bring a headshot 
-      and resume if you have them; if not, we will have forms available on-site.</p>
-    `,
-    start_datetime: '2026-05-10T10:00:00',
-    end_datetime: '2026-05-10T17:00:00',
-    format: 'in_person' as EventFormat,
-    category: 'audition' as EventCategory,
-    venue: { name: 'Flux Studio' },
-    virtual_url: null,
-    is_free: true,
-    price: null,
-    rsvp_url: '#',
-  },
-  {
-    title: 'Community Workshop: Devising from Dream',
-    slug: 'workshop-devising-dream',
-    excerpt: 'A free workshop exploring dream-based devising techniques. No experience necessary.',
-    body: `
-      <p>How do we translate the subconscious logic of dreams into theatrical form? This free 
-      community workshop introduces participants to Flux's unique approach to devising from dream 
-      and memory. Through guided exercises in movement, automatic writing, and collective 
-      storytelling, we will build original performance fragments in real-time.</p>
-    `,
-    start_datetime: '2026-05-17T13:00:00',
-    end_datetime: '2026-05-17T16:00:00',
-    format: 'in_person' as EventFormat,
-    category: 'workshop' as EventCategory,
-    venue: { name: 'The 4th Street Theatre' },
-    virtual_url: null,
-    is_free: true,
-    price: null,
-    rsvp_url: '#',
-  },
-];
+// Fetch the event from Directus based on slug
+const { data: events, error } = await useAsyncData<Event[]>(`event-${slug}`, () => 
+  client.request(readItems('events' as any, {
+    filter: { slug: { _eq: slug }, status: { _eq: 'published' } },
+    fields: ['*', { venue: ['*'] }] as any,
+    limit: 1
+  } as any)) as any
+);
 
-const event = computed(() => {
-  return events.find(e => e.slug === slug) || events[0];
-});
+const event = computed(() => events.value?.[0] || null);
+
+// Handle 404 if event not found
+if (!event.value && !error.value) {
+  throw createError({ statusCode: 404, statusMessage: 'Event not found' });
+}
 
 useSeoMeta({
-  title: `${event.value.title} — Flux Theatre Ensemble`,
-  description: event.value.excerpt || '',
+  title: () => `${event.value?.title || 'Event'} — Flux Theatre Ensemble`,
+  description: () => event.value?.excerpt || '',
 });
 
 const formattedDate = computed(() => {
+  if (!event.value) return '';
   const d = new Date(event.value.start_datetime);
   return d.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
 });
 
 const formattedTime = computed(() => {
+  if (!event.value) return '';
   const start = new Date(event.value.start_datetime);
   const startStr = start.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
   
@@ -176,6 +47,7 @@ const formattedTime = computed(() => {
 });
 
 const categoryLabel = computed(() => {
+  if (!event.value) return 'Event';
   const labels: Record<EventCategory, string> = {
     workshop: 'Workshop',
     reading: 'Reading',
@@ -192,7 +64,7 @@ const categoryLabel = computed(() => {
 </script>
 
 <template>
-  <article class="event-detail pb-24">
+  <article v-if="event" class="event-detail pb-24">
     <!-- Hero / Header -->
     <section class="event-detail__hero relative pt-8 pb-16 bg-stage-900/40" id="event-detail-hero">
       <div class="event-detail__hero-container relative max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -238,7 +110,9 @@ const categoryLabel = computed(() => {
             </div>
             <div class="event-detail__info-text">
               <p class="event-detail__info-label text-xs text-stage-500 uppercase font-bold tracking-wider">Location</p>
-              <p class="event-detail__info-value text-sm font-medium">{{ event.venue?.name || 'Online' }}</p>
+              <p class="event-detail__info-value text-sm font-medium">
+                {{ (event.venue && typeof event.venue !== 'string') ? event.venue.name : (event.venue || 'Online') }}
+              </p>
               <p v-if="event.format === 'hybrid'" class="event-detail__info-subtext text-xs text-stage-400">In person & digital</p>
             </div>
           </div>
@@ -265,16 +139,15 @@ const categoryLabel = computed(() => {
         <!-- Body Text -->
         <div class="event-detail__content flex-1">
           <div
-            v-if="event.body"
-            class="event-detail__body prose prose-invert prose-lg max-w-none
-                   prose-p:text-stage-300 prose-p:leading-relaxed
-                   prose-strong:text-stage-100"
-            v-html="event.body"
-          />
+            v-if="event.content || event.description"
+            class="event-detail__body max-w-none prose prose-invert prose-lg"
+          >
+            <BlockRenderer :content="event.content || event.description" />
+          </div>
           
           <div class="event-detail__actions mt-12 flex flex-wrap gap-4">
-            <a :href="event.rsvp_url || '#'" class="event-detail__rsvp-btn btn-primary">
-              RSVP / Get Tickets
+            <a :href="event.rsvp_url || event.ticket_url || '#'" class="event-detail__rsvp-btn btn-primary">
+              {{ event.ticket_url ? 'Get Tickets' : 'RSVP' }}
             </a>
             <NuxtLink v-if="event.format === 'digital' || event.format === 'hybrid'" to="#" class="event-detail__digital-btn btn-secondary">
               Digital Access Info
@@ -289,13 +162,15 @@ const categoryLabel = computed(() => {
             
             <div v-if="event.venue" class="event-detail__venue-info space-y-4">
               <div class="event-detail__venue-address">
-                <p class="text-sm font-bold text-stage-300">{{ event.venue.name }}</p>
-                <p v-if="'address' in event.venue" class="text-sm text-stage-400">
+                <p class="text-sm font-bold text-stage-300">
+                  {{ typeof event.venue === 'string' ? event.venue : event.venue.name }}
+                </p>
+                <p v-if="typeof event.venue !== 'string' && event.venue.address" class="text-sm text-stage-400">
                   {{ event.venue.address }}<br />
                   {{ event.venue.city }}, {{ event.venue.state }}
                 </p>
               </div>
-              <a v-if="'address' in event.venue" href="#" class="event-detail__map-link inline-block text-xs text-brand-400 hover:underline">
+              <a v-if="typeof event.venue !== 'string' && event.venue.maps_url" :href="event.venue.maps_url" target="_blank" class="event-detail__map-link inline-block text-xs text-brand-400 hover:underline">
                 View on Google Maps &rarr;
               </a>
             </div>

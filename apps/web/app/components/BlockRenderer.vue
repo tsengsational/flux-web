@@ -25,15 +25,20 @@ const props = defineProps<{
  */
 const isEditorJS = computed(() => {
   if (!props.content) return false;
+  
+  // If it's already an object (from the SDK)
   if (typeof props.content === 'object' && props.content.blocks) return true;
   
-  // If it's a string, try to parse it as JSON to see if it's stored JSON
+  // If it's a string, it might be stringified JSON or raw HTML
   if (typeof props.content === 'string') {
-    try {
-      const parsed = JSON.parse(props.content);
-      return parsed && Array.isArray(parsed.blocks);
-    } catch (e) {
-      return false;
+    const trimmed = props.content.trim();
+    if (trimmed.startsWith('{') && trimmed.endsWith('}')) {
+      try {
+        const parsed = JSON.parse(props.content);
+        return parsed && Array.isArray(parsed.blocks);
+      } catch (e) {
+        return false;
+      }
     }
   }
   return false;

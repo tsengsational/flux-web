@@ -9,7 +9,7 @@ const { client, readItems, getAssetUrl } = useDirectus();
 const { data: posts, error } = await useAsyncData<BlogPost[]>(`post-${slug}`, () => 
   client.request(readItems('posts', {
     filter: { slug: { _eq: slug }, status: { _eq: 'published' } },
-    fields: ['*', { author: ['first_name', 'last_name', 'bio'], tags: [{ tags_id: ['name'] }] }, 'gallery'] as any,
+    fields: ['*', { author: ['first_name', 'last_name', 'bio'], tags: [{ tags_id: ['name'] }] }, 'gallery', 'content'] as any,
     limit: 1
   })) as any
 );
@@ -62,14 +62,14 @@ const postTags = computed(() => {
         v-if="post.cover_image"
         :src="getAssetUrl(post.cover_image)!"
         :alt="post.title"
-        class="news-post__hero-image w-full h-full object-cover"
+        class="news-post__hero-image w-full h-full object-cover object-center"
       />
       <div v-else class="news-post__hero-placeholder w-full h-full bg-gradient-to-br from-curtain-700/20 via-stage-900 to-brand-900/10" />
       <div class="news-post__hero-gradient absolute inset-0 bg-gradient-to-t from-stage-950 via-stage-950/50 to-transparent" />
     </div>
 
     <!-- Content -->
-    <div v-if="post" class="news-post__container max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 -mt-24 relative z-10">
+    <div v-if="post" class="news-post__container max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 -mt-36 relative z-10">
       <!-- Meta -->
       <div class="news-post__meta flex flex-wrap items-center gap-3 mb-4">
         <NuxtLink to="/news" class="news-post__back-link text-xs text-stage-400 hover:text-brand-400 transition-colors">
@@ -112,7 +112,7 @@ const postTags = computed(() => {
 
       <!-- Body -->
       <div class="news-post__body mt-8" id="post-body">
-        <BlockRenderer :content="post.body" />
+        <BlockRenderer :content="post.content || post.body" />
       </div>
       
       <!-- Gallery -->

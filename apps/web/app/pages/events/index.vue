@@ -1,103 +1,22 @@
 <script setup lang="ts">
-import type { EventFormat, EventCategory } from '@flux-theatre/shared';
+import type { Event, EventFormat, EventCategory } from '@flux-theatre/shared';
 
 useSeoMeta({
   title: 'Events — Flux Theatre Ensemble',
   description: 'Workshops, readings, talkbacks, fundraisers, and community events from Flux Theatre Ensemble — in person and online.',
 });
 
-const events = [
-  {
-    title: 'Flux Sundays: New Play Readings',
-    slug: 'flux-sundays-march-2026',
-    excerpt: 'Join us for our monthly reading series featuring two new short plays by emerging playwrights, followed by a community talkback.',
-    cover_image: null,
-    start_datetime: '2026-03-16T14:00:00',
-    end_datetime: '2026-03-16T17:00:00',
-    format: 'in_person' as EventFormat,
-    category: 'reading' as EventCategory,
-    venue: { name: 'The 4th Street Theatre' },
-    virtual_url: null,
-    is_free: true,
-    price: null,
-    rsvp_url: '#',
-  },
-  {
-    title: 'Playwriting Masterclass with Aria Chen',
-    slug: 'masterclass-aria-chen',
-    excerpt: 'A two-hour intensive on structure, voice, and the politics of place in contemporary playwriting. Limited to 20 participants.',
-    cover_image: null,
-    start_datetime: '2026-03-22T10:00:00',
-    end_datetime: '2026-03-22T12:00:00',
-    format: 'hybrid' as EventFormat,
-    category: 'masterclass' as EventCategory,
-    venue: { name: 'Flux Studio' },
-    virtual_url: '#',
-    is_free: false,
-    price: '$35 / Pay-What-You-Can',
-    rsvp_url: '#',
-  },
-  {
-    title: 'Virtual Talkback: Directing The Tempest Today',
-    slug: 'talkback-directing-tempest',
-    excerpt: 'Director Elena Vasquez discusses her approach to reimagining Shakespeare for a contemporary audience. Q&A included.',
-    cover_image: null,
-    start_datetime: '2026-04-02T19:00:00',
-    end_datetime: '2026-04-02T20:30:00',
-    format: 'digital' as EventFormat,
-    category: 'talkback' as EventCategory,
-    venue: null,
-    virtual_url: '#',
-    is_free: true,
-    price: null,
-    rsvp_url: '#',
-  },
-  {
-    title: 'Annual Spring Fundraiser Gala',
-    slug: 'spring-gala-2026',
-    excerpt: 'An evening of performances, cocktails, and celebration supporting Flux\'s mission of adventurous theatre. Includes a silent auction.',
-    cover_image: null,
-    start_datetime: '2026-04-25T18:30:00',
-    end_datetime: '2026-04-25T22:00:00',
-    format: 'in_person' as EventFormat,
-    category: 'fundraiser' as EventCategory,
-    venue: { name: 'The Green Room NYC' },
-    virtual_url: null,
-    is_free: false,
-    price: '$75',
-    rsvp_url: '#',
-  },
-  {
-    title: 'Open Auditions: Neon Wilderness',
-    slug: 'auditions-neon-wilderness',
-    excerpt: 'Seeking actors for Aria Chen\'s bold new work. All ethnicities and gender expressions welcome. Please prepare a contemporary monologue.',
-    cover_image: null,
-    start_datetime: '2026-05-10T10:00:00',
-    end_datetime: '2026-05-10T17:00:00',
-    format: 'in_person' as EventFormat,
-    category: 'audition' as EventCategory,
-    venue: { name: 'Flux Studio' },
-    virtual_url: null,
-    is_free: true,
-    price: null,
-    rsvp_url: '#',
-  },
-  {
-    title: 'Community Workshop: Devising from Dream',
-    slug: 'workshop-devising-dream',
-    excerpt: 'A free workshop exploring dream-based devising techniques. No experience necessary — bring a journal and an open mind.',
-    cover_image: null,
-    start_datetime: '2026-05-17T13:00:00',
-    end_datetime: '2026-05-17T16:00:00',
-    format: 'in_person' as EventFormat,
-    category: 'workshop' as EventCategory,
-    venue: { name: 'The 4th Street Theatre' },
-    virtual_url: null,
-    is_free: true,
-    price: null,
-    rsvp_url: '#',
-  },
-];
+const { client, readItems } = useDirectus();
+
+const { data: cmsEvents } = await useAsyncData<Event[]>('events-all', () => 
+  client.request(readItems('events' as any, {
+    filter: { status: { _eq: 'published' } },
+    fields: ['*', { venue: ['name'] }] as any,
+    sort: ['start_datetime']
+  } as any)) as any
+);
+
+const events = computed(() => cmsEvents.value || []);
 
 type FormatFilter = 'all' | EventFormat;
 type CategoryFilter = 'all' | EventCategory;
@@ -106,10 +25,10 @@ const activeFormat = ref<FormatFilter>('all');
 const activeCategory = ref<CategoryFilter>('all');
 
 const filteredEvents = computed(() => {
-  return events.filter(e => {
-    if (activeFormat.value !== 'all' && e.format !== activeFormat.value) return false;
-    if (activeCategory.value !== 'all' && e.category !== activeCategory.value) return false;
-    return true;
+  return events.value.filter((e: Event) => {
+    const matchesFormat = activeFormat.value === 'all' || e.format === activeFormat.value;
+    const matchesCategory = activeCategory.value === 'all' || e.category === activeCategory.value;
+    return matchesFormat && matchesCategory;
   });
 });
 

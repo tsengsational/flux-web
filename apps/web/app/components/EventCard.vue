@@ -10,7 +10,7 @@ interface EventSummary {
   end_datetime: string | null;
   format: EventFormat;
   category: EventCategory;
-  venue: { name: string } | null;
+  venue: string | { name: string } | null;
   virtual_url: string | null;
   is_free: boolean;
   price: string | null;
@@ -134,7 +134,7 @@ const categoryLabel = computed(() => {
             <path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" />
             <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" />
           </svg>
-          {{ event.venue.name }}
+          {{ typeof event.venue === 'string' ? event.venue : event.venue.name }}
         </span>
         <span v-else-if="event.format === 'digital'" class="event-card__online flex items-center gap-1 text-blue-400">
           <svg class="event-card__online-icon w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">

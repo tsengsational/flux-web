@@ -114,7 +114,9 @@ const crew = computed(() => {
             </div>
 
             <!-- Description -->
-            <div class="production-detail__description mt-8 text-stage-300 leading-relaxed prose prose-invert prose-lg max-w-none" v-html="production.description" />
+            <div class="production-detail__description mt-8 text-stage-300 leading-relaxed max-w-none">
+              <BlockRenderer :content="production.content || production.description" />
+            </div>
           </div>
         </div>
       </div>

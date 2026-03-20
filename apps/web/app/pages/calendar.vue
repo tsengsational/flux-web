@@ -6,26 +6,62 @@ useSeoMeta({
   description: 'See all upcoming performances, events, workshops, and readings from Flux Theatre Ensemble in one place.',
 });
 
-// In production these would be fetched and merged from /items/showtimes + /items/events
-const calendarEntries: CalendarEntry[] = [
-  // Production showtimes
-  { id: 'st-1', title: 'The Tempest Reimagined', datetime: '2026-04-10T20:00:00', end_datetime: null, type: 'showtime', slug: 'the-tempest-reimagined', venue_name: 'The 4th Street Theatre', is_sold_out: false, notes: 'Opening Night' },
-  { id: 'st-2', title: 'The Tempest Reimagined', datetime: '2026-04-11T20:00:00', end_datetime: null, type: 'showtime', slug: 'the-tempest-reimagined', venue_name: 'The 4th Street Theatre', is_sold_out: false, notes: null },
-  { id: 'st-3', title: 'The Tempest Reimagined', datetime: '2026-04-12T14:00:00', end_datetime: null, type: 'showtime', slug: 'the-tempest-reimagined', venue_name: 'The 4th Street Theatre', is_sold_out: false, notes: 'Matinee' },
-  { id: 'st-4', title: 'The Tempest Reimagined', datetime: '2026-04-12T20:00:00', end_datetime: null, type: 'showtime', slug: 'the-tempest-reimagined', venue_name: 'The 4th Street Theatre', is_sold_out: true, notes: null },
-  { id: 'st-5', title: 'The Tempest Reimagined', datetime: '2026-04-17T20:00:00', end_datetime: null, type: 'showtime', slug: 'the-tempest-reimagined', venue_name: 'The 4th Street Theatre', is_sold_out: false, notes: 'Pay-What-You-Can' },
-  { id: 'st-6', title: 'The Tempest Reimagined', datetime: '2026-04-18T20:00:00', end_datetime: null, type: 'showtime', slug: 'the-tempest-reimagined', venue_name: 'The 4th Street Theatre', is_sold_out: false, notes: null },
-  { id: 'st-7', title: 'The Tempest Reimagined', datetime: '2026-04-24T20:00:00', end_datetime: null, type: 'showtime', slug: 'the-tempest-reimagined', venue_name: 'The 4th Street Theatre', is_sold_out: false, notes: null },
-  { id: 'st-8', title: 'The Tempest Reimagined', datetime: '2026-05-02T20:00:00', end_datetime: null, type: 'showtime', slug: 'the-tempest-reimagined', venue_name: 'The 4th Street Theatre', is_sold_out: false, notes: 'Closing Night' },
+const { client, readItems } = useDirectus();
+
+const { data: cmsData } = await useAsyncData('calendar-data', async () => {
+  const [events, productions] = await Promise.all([
+    client.request(readItems('events' as any, {
+      filter: { status: { _eq: 'published' } },
+      fields: ['id', 'title', 'slug', 'start_datetime', 'end_datetime', 'category', 'format', { venue: ['name'] }] as any
+    } as any)),
+    client.request(readItems('productions' as any, {
+      filter: { status: { _eq: 'published' } },
+      fields: ['id', 'title', 'slug', { showtimes: ['*'], venue: ['name'] }] as any
+    } as any))
+  ]);
+  return { events: events as any[], productions: productions as any[] };
+});
+
+const calendarEntries = computed<CalendarEntry[]>(() => {
+  if (!cmsData.value) return [];
+  
+  const entries: CalendarEntry[] = [];
+  
   // Standalone events
-  { id: 'ev-1', title: 'Flux Sundays: New Play Readings', datetime: '2026-03-16T14:00:00', end_datetime: '2026-03-16T17:00:00', type: 'event', slug: 'flux-sundays-march-2026', category: 'reading', format: 'in_person', venue_name: 'The 4th Street Theatre' },
-  { id: 'ev-2', title: 'Playwriting Masterclass with Aria Chen', datetime: '2026-03-22T10:00:00', end_datetime: '2026-03-22T12:00:00', type: 'event', slug: 'masterclass-aria-chen', category: 'masterclass', format: 'hybrid', venue_name: 'Flux Studio' },
-  { id: 'ev-3', title: 'Virtual Talkback: Directing The Tempest Today', datetime: '2026-04-02T19:00:00', end_datetime: '2026-04-02T20:30:00', type: 'event', slug: 'talkback-directing-tempest', category: 'talkback', format: 'digital' },
-  { id: 'ev-4', title: 'Annual Spring Fundraiser Gala', datetime: '2026-04-25T18:30:00', end_datetime: '2026-04-25T22:00:00', type: 'event', slug: 'spring-gala-2026', category: 'fundraiser', format: 'in_person', venue_name: 'The Green Room NYC' },
-  { id: 'ev-5', title: 'Open Auditions: Neon Wilderness', datetime: '2026-05-10T10:00:00', end_datetime: '2026-05-10T17:00:00', type: 'event', slug: 'auditions-neon-wilderness', category: 'audition', format: 'in_person', venue_name: 'Flux Studio' },
-  { id: 'ev-6', title: 'Community Workshop: Devising from Dream', datetime: '2026-05-17T13:00:00', end_datetime: '2026-05-17T16:00:00', type: 'event', slug: 'workshop-devising-dream', category: 'workshop', format: 'in_person', venue_name: 'The 4th Street Theatre' },
-  { id: 'ev-7', title: 'Neon Wilderness', datetime: '2026-06-05T20:00:00', end_datetime: null, type: 'showtime', slug: 'neon-wilderness', venue_name: 'TBD', is_sold_out: false, notes: 'Opening Night' },
-];
+  cmsData.value.events.forEach((ev) => {
+    entries.push({
+      id: `ev-${ev.id}`,
+      title: ev.title,
+      datetime: ev.start_datetime,
+      end_datetime: ev.end_datetime,
+      type: 'event',
+      slug: ev.slug,
+      category: ev.category,
+      format: ev.format,
+      venue_name: typeof ev.venue === 'string' ? ev.venue : ev.venue?.name
+    });
+  });
+  
+  // Production showtimes
+  cmsData.value.productions.forEach((prod) => {
+    if (!prod.showtimes) return;
+    prod.showtimes.forEach((st: any) => {
+      entries.push({
+        id: `st-${st.id}`,
+        title: prod.title,
+        datetime: st.datetime,
+        end_datetime: null,
+        type: 'showtime',
+        slug: prod.slug,
+        venue_name: typeof prod.venue === 'string' ? prod.venue : prod.venue?.name,
+        is_sold_out: st.is_sold_out,
+        notes: st.notes
+      });
+    });
+  });
+  
+  return entries.sort((a, b) => new Date(a.datetime).getTime() - new Date(b.datetime).getTime());
+});
 
 // ── Calendar Logic ──
 
@@ -113,7 +149,7 @@ const calendarDays = computed(() => {
 
 // Get entries for a specific date
 function getEntriesForDate(fullDate: string): CalendarEntry[] {
-  return calendarEntries
+  return calendarEntries.value
     .filter(e => {
       if (activeType.value !== 'all' && e.type !== activeType.value) return false;
       return e.datetime.startsWith(fullDate);
@@ -125,7 +161,7 @@ function getEntriesForDate(fullDate: string): CalendarEntry[] {
 const upcomingEntries = computed(() => {
   const now = new Date();
   const thirtyDays = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
-  return calendarEntries
+  return calendarEntries.value
     .filter(e => {
       const d = new Date(e.datetime);
       if (d < now || d > thirtyDays) return false;

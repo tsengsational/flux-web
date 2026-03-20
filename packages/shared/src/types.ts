@@ -19,7 +19,8 @@ export interface Production extends DirectusBaseFields {
     title: string;
     slug: string;
     tagline: string | null;
-    description: string;          // Rich-text / HTML
+    description: string;          // Rich-text / HTML fallback
+    content: any | null;          // Structured JSON for Block Editor
     playwright: string;
     director: string | null;
 
@@ -129,7 +130,8 @@ export type EventCategory =
 export interface Event extends DirectusBaseFields {
     title: string;
     slug: string;
-    description: string;          // Rich-text / HTML
+    description: string;          // Rich-text / HTML fallback
+    content: any | null;          // Structured JSON for Block Editor
     excerpt: string | null;
 
     // Scheduling
@@ -192,7 +194,8 @@ export interface BlogPost extends DirectusBaseFields {
     title: string;
     slug: string;
     excerpt: string | null;
-    body: string;                 // Rich-text / HTML or EditorJS JSON
+    body: string;                 // Rich-text / HTML fallback
+    content: any | null;          // Structured JSON for Block Editor
     cover_image: string | null;
     gallery: string[] | null;     // Array of file UUIDs
     author: string | Person;
@@ -240,7 +243,8 @@ export interface HomePage {
 export interface Page extends DirectusBaseFields {
     title: string;
     slug: string;
-    body: string;                 // Rich-text / HTML
+    body: string;                 // Rich-text / HTML fallback
+    content: any | null;          // Structured JSON for Block Editor
     meta_title: string | null;
     meta_description: string | null;
 }
