@@ -6,6 +6,7 @@ interface Props {
 }
 
 const props = defineProps<Props>();
+const { getAssetUrl } = useDirectus();
 
 const dateRange = computed(() => {
   if (!props.production.opening_date) return null;
@@ -26,7 +27,7 @@ const dateRange = computed(() => {
     <div class="relative aspect-[3/4] overflow-hidden bg-stage-800">
       <img
         v-if="production.poster_image"
-        :src="production.poster_image"
+        :src="getAssetUrl(production.poster_image)!"
         :alt="`${production.title} poster`"
         class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
         loading="lazy"

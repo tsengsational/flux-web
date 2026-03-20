@@ -1,87 +1,44 @@
 <script setup lang="ts">
+import type { BlogPost } from '@flux-theatre/shared';
+
 useSeoMeta({
   title: 'News & Updates — Flux Theatre Ensemble',
   description: 'The latest announcements, behind-the-scenes stories, and updates from Flux Theatre Ensemble.',
 });
 
-// In production: const { data } = await useFetch('/items/blog_posts?sort=-publish_date')
-const blogPosts = [
-  {
-    title: 'Flux Announces 2025–2026 Season',
-    slug: 'season-announcement-2025-2026',
-    excerpt: 'Three bold new productions exploring technology, identity, and the myths we tell ourselves. Artistic Director Elena Vasquez shares the vision behind each selection.',
-    cover_image: null,
-    publish_date: '2026-03-01',
-    tags: ['Announcements', 'Season'],
-    author: { first_name: 'Elena', last_name: 'Vasquez' },
-  },
-  {
-    title: 'Open Auditions: The Tempest Reimagined',
-    slug: 'auditions-tempest',
-    excerpt: 'We\'re seeking adventurous actors for our spring production. All backgrounds and experience levels welcome. Equity and non-Equity.',
-    cover_image: null,
-    publish_date: '2026-02-15',
-    tags: ['Auditions', 'The Tempest Reimagined'],
-    author: { first_name: 'Jordan', last_name: 'Blake' },
-  },
-  {
-    title: 'Behind the Scenes: Designing Neon Wilderness',
-    slug: 'behind-scenes-neon-wilderness',
-    excerpt: 'Scenic designer Nora Brennan walks us through the immersive set design blending urban decay with bioluminescent wonder.',
-    cover_image: null,
-    publish_date: '2026-02-01',
-    tags: ['Behind the Scenes', 'Neon Wilderness'],
-    author: { first_name: 'Nora', last_name: 'Brennan' },
-  },
-  {
-    title: 'Five Years of Flux Sundays: A Retrospective',
-    slug: 'flux-sundays-retrospective',
-    excerpt: 'Looking back at five years of our monthly play-reading series — the surprises, the community, and the scripts that changed us.',
-    cover_image: null,
-    publish_date: '2026-01-15',
-    tags: ['Community', 'Flux Sundays'],
-    author: { first_name: 'Sasha', last_name: 'Williams' },
-  },
-  {
-    title: 'Playwright Interview: Aria Chen on Neon Wilderness',
-    slug: 'interview-aria-chen',
-    excerpt: 'Aria Chen discusses her creative process, the politics of urban space, and why she writes for the stage in the age of streaming.',
-    cover_image: null,
-    publish_date: '2026-01-02',
-    tags: ['Interviews', 'Neon Wilderness'],
-    author: { first_name: 'Elena', last_name: 'Vasquez' },
-  },
-  {
-    title: 'Flux Receives NEA Grant for New Work Development',
-    slug: 'nea-grant-announcement',
-    excerpt: 'We\'re thrilled to announce a National Endowment for the Arts grant supporting the development of three new plays over the next two years.',
-    cover_image: null,
-    publish_date: '2025-12-10',
-    tags: ['Announcements', 'Grants'],
-    author: null,
-  },
-  {
-    title: 'Year in Review: 2025',
-    slug: 'year-in-review-2025',
-    excerpt: 'A look back at a transformative year — three productions, two world premieres, record community engagement, and exciting plans for the future.',
-    cover_image: null,
-    publish_date: '2025-12-01',
-    tags: ['Year in Review'],
-    author: null,
-  },
-];
+const { client, readItems } = useDirectus();
+
+// Fetch all published blog posts with tag details
+const { data: blogPosts, error } = await useAsyncData<BlogPost[]>('all-news', () => 
+  client.request(readItems('posts' as any, {
+    filter: { status: { _eq: 'published' } },
+    sort: ['-publish_date'],
+    fields: ['*', { tags: [{ tags_id: ['name'] }] }] as any,
+  } as any) as any)
+);
 
 const allTags = computed(() => {
+  const posts = blogPosts.value;
+  if (!posts) return [];
   const tags = new Set<string>();
-  blogPosts.forEach(p => p.tags.forEach(t => tags.add(t)));
+  posts.forEach((p: BlogPost) => {
+    // Handle Directus M2M structure: p.tags is [{ tags_id: { name: '...' } }, ...]
+    (p.tags as any)?.forEach((t: any) => {
+      if (t.tags_id?.name) tags.add(t.tags_id.name);
+    });
+  });
   return Array.from(tags).sort();
 });
 
 const activeTag = ref<string | null>(null);
 
 const filteredPosts = computed(() => {
-  if (!activeTag.value) return blogPosts;
-  return blogPosts.filter(p => p.tags.includes(activeTag.value!));
+  const posts = blogPosts.value;
+  if (!posts) return [];
+  if (!activeTag.value) return posts;
+  return posts.filter((p: BlogPost) => 
+    (p.tags as any)?.some((t: any) => t.tags_id?.name === activeTag.value)
+  );
 });
 
 const featuredPost = computed(() => filteredPosts.value[0] || null);

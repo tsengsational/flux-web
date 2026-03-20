@@ -8,6 +8,7 @@ interface Props {
 }
 
 const props = withDefaults(defineProps<Props>(), { compact: false });
+const { getAssetUrl } = useDirectus();
 
 const fullName = computed(() => `${props.person.first_name} ${props.person.last_name}`);
 
@@ -26,7 +27,7 @@ const isModalOpen = ref(false);
       <div class="relative aspect-[3/4] overflow-hidden bg-stage-800" :class="{ 'aspect-square': compact }">
         <img
           v-if="person.headshot"
-          :src="person.headshot"
+          :src="getAssetUrl(person.headshot)!"
           :alt="`${fullName} headshot`"
           class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
           loading="lazy"
@@ -81,7 +82,7 @@ const isModalOpen = ref(false);
               <div class="sm:w-48 aspect-[3/4] sm:aspect-auto bg-stage-800 flex-shrink-0">
                 <img
                   v-if="person.headshot"
-                  :src="person.headshot"
+                  :src="getAssetUrl(person.headshot)!"
                   :alt="fullName"
                   class="w-full h-full object-cover"
                 />

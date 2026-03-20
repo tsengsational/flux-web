@@ -208,6 +208,21 @@ export interface SiteSettings {
     mailing_list_url: string | null;
 }
 
+// ─── Homepage (Singleton) ───
+
+export interface HomePage {
+    id: string;
+    hero_tagline: string | null;
+    hero_title: string;
+    hero_description: string | null;
+    hero_image: string | null;
+    hero_cta_primary_text: string | null;
+    hero_cta_primary_link: string | null;
+    hero_cta_secondary_text: string | null;
+    hero_cta_secondary_link: string | null;
+    mission_statement: string | null;
+}
+
 // ─── Navigation ───
 
 export interface NavigationItem {

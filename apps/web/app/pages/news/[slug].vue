@@ -1,68 +1,34 @@
 <script setup lang="ts">
+import type { BlogPost } from '@flux-theatre/shared';
+
 const route = useRoute();
 const slug = route.params.slug as string;
+const { client, readItems, getAssetUrl } = useDirectus();
 
-// In production: const { data } = await useFetch(`/items/blog_posts?filter[slug]=${slug}`)
-const post = {
-  title: 'Flux Announces 2025–2026 Season',
-  slug: 'season-announcement-2025-2026',
-  excerpt: 'Three bold new productions exploring technology, identity, and the myths we tell ourselves.',
-  body: `
-    <p>We are thrilled to announce the three productions that will make up Flux Theatre Ensemble's 
-    <strong>2025–2026 season</strong> — our 20th year of adventurous theatre in New York City.</p>
+// Fetch the post from Directus based on slug
+const { data: posts, error } = await useAsyncData<BlogPost[]>(`post-${slug}`, () => 
+  client.request(readItems('posts' as any, {
+    filter: { slug: { _eq: slug }, status: { _eq: 'published' } },
+    fields: ['*', { author: ['first_name', 'last_name', 'bio'], tags: [{ tags_id: ['name'] }] }] as any,
+    limit: 1
+  } as any) as any)
+);
 
-    <h2>The Tempest Reimagined</h2>
-    <p>Our spring production takes Shakespeare's final masterpiece and rebuilds it as a meditation 
-    on power, forgiveness, and the stories we tell to survive. Directed by Elena Vasquez, this 
-    production will use live music, movement, and immersive staging to place the audience inside 
-    Prospero's storm.</p>
-    <p><em>April 10 – May 2, 2026 at The 4th Street Theatre</em></p>
+const post = computed(() => posts.value?.[0] || null);
 
-    <h2>Neon Wilderness</h2>
-    <p>Playwright Aria Chen's electrifying new work asks: where does the city end and the self 
-    begin? Set in a near-future New York where every surface is a screen, five strangers discover 
-    that the last unmonitored space in the city is a condemned community garden in the Bronx.</p>
-    <p><em>June 5 – June 28, 2026</em></p>
-
-    <h2>After the Applause</h2>
-    <p>Marcus Hall's dark comedy follows a fictional theater company through the tech rehearsal 
-    of a show that keeps falling apart. Part backstage farce, part existential reckoning, 
-    <em>After the Applause</em> asks: when the show must go on — should it?</p>
-    <p><em>September 11 – October 4, 2026</em></p>
-
-    <blockquote>
-      <p>"This season is about confronting the stories we inherit and choosing which ones we 
-      carry forward. Each of these plays challenges us — as artists, as citizens, as humans — 
-      to look at the world with fresh eyes."</p>
-      <cite>— Elena Vasquez, Artistic Director</cite>
-    </blockquote>
-
-    <h2>Season Subscriptions</h2>
-    <p>Season subscriptions will go on sale <strong>March 15, 2026</strong>. Subscribers save 
-    25% on tickets and get priority seating, plus invitations to exclusive talkbacks with the 
-    creative teams.</p>
-    <p>Individual show tickets go on sale one month before each production's opening night.</p>
-  `,
-  cover_image: null,
-  publish_date: '2026-03-01',
-  tags: ['Announcements', 'Season'],
-  author: {
-    first_name: 'Elena',
-    last_name: 'Vasquez',
-    headshot: null,
-    bio: 'Elena Vasquez is the Artistic Director of Flux Theatre Ensemble.',
-  },
-  meta_title: null,
-  meta_description: null,
-};
+// Handle 404 if post not found
+if (!post.value && !error.value) {
+  throw createError({ statusCode: 404, statusMessage: 'Post not found' });
+}
 
 useSeoMeta({
-  title: `${post.title} — Flux Theatre Ensemble`,
-  description: post.meta_description || post.excerpt || '',
+  title: () => `${post.value?.title || 'News'} — Flux Theatre Ensemble`,
+  description: () => post.value?.excerpt || '',
 });
 
 const formattedDate = computed(() => {
-  return new Date(post.publish_date).toLocaleDateString('en-US', {
+  if (!post.value?.publish_date) return '';
+  return new Date(post.value.publish_date).toLocaleDateString('en-US', {
     weekday: 'long',
     month: 'long',
     day: 'numeric',
@@ -71,18 +37,30 @@ const formattedDate = computed(() => {
 });
 
 const authorName = computed(() => {
-  if (!post.author) return 'Flux Theatre Ensemble';
-  return `${post.author.first_name} ${post.author.last_name}`;
+  const author = post.value?.author;
+  if (!author || typeof author === 'string') return 'Flux Theatre Ensemble';
+  return `${author.first_name} ${author.last_name}`;
+});
+
+const authorInitials = computed(() => {
+  const author = post.value?.author;
+  if (!author || typeof author === 'string') return 'F';
+  return `${author.first_name[0]}${author.last_name[0]}`;
+});
+
+const postTags = computed(() => {
+  if (!post.value?.tags) return [];
+  return (post.value.tags as any).map((t: any) => t.tags_id?.name).filter(Boolean);
 });
 </script>
 
 <template>
   <article class="pb-24">
     <!-- Cover Image Hero -->
-    <div class="relative h-64 sm:h-80 lg:h-96 bg-stage-900 overflow-hidden" id="post-hero">
+    <div v-if="post" class="relative h-64 sm:h-80 lg:h-96 bg-stage-900 overflow-hidden" id="post-hero">
       <img
         v-if="post.cover_image"
-        :src="post.cover_image"
+        :src="getAssetUrl(post.cover_image)!"
         :alt="post.title"
         class="w-full h-full object-cover"
       />
@@ -91,7 +69,7 @@ const authorName = computed(() => {
     </div>
 
     <!-- Content -->
-    <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 -mt-24 relative z-10">
+    <div v-if="post" class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 -mt-24 relative z-10">
       <!-- Meta -->
       <div class="flex flex-wrap items-center gap-3 mb-4">
         <NuxtLink to="/news" class="text-xs text-stage-400 hover:text-brand-400 transition-colors">
@@ -106,24 +84,24 @@ const authorName = computed(() => {
         {{ post.title }}
       </h1>
 
-      <!-- Author -->
       <div class="mt-6 flex items-center gap-3 pb-8 border-b border-stage-800/60">
         <div class="w-10 h-10 rounded-full bg-gradient-to-br from-brand-400 to-brand-600 flex items-center justify-center flex-shrink-0">
-          <span v-if="post.author" class="text-stage-950 font-sans text-sm font-bold">
-            {{ post.author.first_name[0] }}{{ post.author.last_name[0] }}
+          <span class="text-stage-950 font-sans text-sm font-bold">
+            {{ authorInitials }}
           </span>
-          <span v-else class="text-stage-950 font-serif font-bold text-sm">F</span>
         </div>
         <div>
           <p class="text-sm font-medium text-stage-200">{{ authorName }}</p>
-          <p v-if="post.author?.bio" class="text-xs text-stage-500 line-clamp-1">{{ post.author.bio }}</p>
+          <p v-if="typeof post.author !== 'string' && post.author?.bio" class="text-xs text-stage-500 line-clamp-1">
+            {{ post.author.bio }}
+          </p>
         </div>
       </div>
 
       <!-- Tags -->
-      <div v-if="post.tags.length" class="mt-6 flex flex-wrap gap-2">
+      <div v-if="postTags.length" class="mt-6 flex flex-wrap gap-2">
         <span
-          v-for="tag in post.tags"
+          v-for="tag in postTags"
           :key="tag"
           class="text-xs px-2.5 py-1 rounded-full bg-stage-800/80 text-stage-400 border border-stage-700/40"
         >

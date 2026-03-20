@@ -1,20 +1,13 @@
 <script setup lang="ts">
-interface BlogPostSummary {
-  title: string;
-  slug: string;
-  excerpt: string | null;
-  cover_image: string | null;
-  publish_date: string;
-  tags: string[];
-  author: { first_name: string; last_name: string } | null;
-}
+import type { BlogPost, Person } from '@flux-theatre/shared';
 
 interface Props {
-  post: BlogPostSummary;
+  post: BlogPost;
   featured?: boolean;
 }
 
 const props = withDefaults(defineProps<Props>(), { featured: false });
+const { getAssetUrl } = useDirectus();
 
 const formattedDate = computed(() => {
   return new Date(props.post.publish_date).toLocaleDateString('en-US', {
@@ -25,8 +18,9 @@ const formattedDate = computed(() => {
 });
 
 const authorName = computed(() => {
-  if (!props.post.author) return 'Flux Theatre';
-  return `${props.post.author.first_name} ${props.post.author.last_name}`;
+  const author = props.post.author;
+  if (!author || typeof author === 'string') return 'Flux Theatre';
+  return `${author.first_name} ${author.last_name}`;
 });
 </script>
 
@@ -42,7 +36,7 @@ const authorName = computed(() => {
     <div class="relative aspect-video lg:aspect-auto lg:min-h-[320px] bg-stage-800 overflow-hidden">
       <img
         v-if="post.cover_image"
-        :src="post.cover_image"
+        :src="getAssetUrl(post.cover_image)!"
         :alt="post.title"
         class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
         loading="lazy"
@@ -98,7 +92,7 @@ const authorName = computed(() => {
     <div class="relative aspect-video bg-stage-800 overflow-hidden">
       <img
         v-if="post.cover_image"
-        :src="post.cover_image"
+        :src="getAssetUrl(post.cover_image)!"
         :alt="post.title"
         class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
         loading="lazy"

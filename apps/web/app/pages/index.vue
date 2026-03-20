@@ -1,63 +1,50 @@
 <script setup lang="ts">
-// In production, these would come from useFetch('/api/productions')
-// For now, using placeholder data matching the shared types
+import type { Production, BlogPost, HomePage } from '@flux-theatre/shared';
+const { client, readItems, readSingleton, getAssetUrl } = useDirectus();
 
-const upcomingProductions = [
-  {
-    title: 'The Tempest Reimagined',
-    slug: 'the-tempest-reimagined',
-    tagline: 'A storm is coming. So is the reckoning.',
-    poster_image: null,
-    season: '2025–2026',
-    playwright: 'William Shakespeare',
-    opening_date: '2026-04-10',
-    closing_date: '2026-05-02',
-  },
-  {
-    title: 'Neon Wilderness',
-    slug: 'neon-wilderness',
-    tagline: 'Where does the city end and the self begin?',
-    poster_image: null,
-    season: '2025–2026',
-    playwright: 'Aria Chen',
-    opening_date: '2026-06-05',
-    closing_date: '2026-06-28',
-  },
-  {
-    title: 'After the Applause',
-    slug: 'after-the-applause',
-    tagline: 'The show must go on — but should it?',
-    poster_image: null,
-    season: '2025–2026',
-    playwright: 'Marcus Hall',
-    opening_date: '2026-09-11',
-    closing_date: '2026-10-04',
-  },
-];
+// Fetch homepage content (singleton)
+const { data: homeData } = await useAsyncData<HomePage>('home-data', () => 
+  client.request(readSingleton('homepage'))
+);
 
-const newsHighlights = [
-  {
-    title: 'Flux Announces 2025–2026 Season',
-    excerpt: 'Three bold new productions exploring technology, identity, and the myths we tell ourselves.',
-    date: 'March 1, 2026',
-    slug: 'season-announcement-2025-2026',
-  },
-  {
-    title: 'Open Auditions: The Tempest Reimagined',
-    excerpt: 'We\'re seeking adventurous actors for our spring production. All backgrounds welcome.',
-    date: 'February 15, 2026',
-    slug: 'auditions-tempest',
-  },
-];
+// Fetch upcoming productions (published, sorted by opening date)
+const { data: upcomingProductions } = await useAsyncData<Production[]>('home-productions', () => 
+  client.request(readItems('productions', {
+    filter: { status: { _eq: 'published' } },
+    sort: ['opening_date'],
+    limit: 3
+  }))
+);
+
+// Fetch latest news highlights (published, sorted by date descending)
+const { data: newsHighlights } = await useAsyncData<BlogPost[]>('home-news', () => 
+  client.request(readItems('posts', {
+    filter: { status: { _eq: 'published' } },
+    sort: ['-publish_date'],
+    limit: 2
+  }))
+);
 </script>
 
 <template>
   <div>
     <!-- ═══ HERO ═══ -->
     <section class="relative min-h-[85vh] flex items-center overflow-hidden" id="hero-section">
-      <!-- Animated background -->
+      <!-- Background layers -->
       <div class="absolute inset-0">
-        <div class="absolute inset-0 bg-gradient-to-br from-stage-950 via-stage-900 to-curtain-700/20" />
+        <!-- Optional CMS Background Image -->
+        <img
+          v-if="homeData?.hero_image"
+          :src="getAssetUrl(homeData.hero_image)!"
+          class="absolute inset-0 w-full h-full object-cover"
+          alt="Hero background"
+        />
+        
+        <!-- Gradient overlays to ensure text readability -->
+        <div class="absolute inset-0 bg-gradient-to-br from-stage-950 via-stage-900/80 to-curtain-700/20" />
+        <div class="absolute inset-0 bg-stage-950/40" v-if="homeData?.hero_image" />
+        
+        <!-- Animated glow elements -->
         <div class="absolute top-0 right-0 w-[600px] h-[600px] rounded-full bg-brand-500/5 blur-3xl" />
         <div class="absolute bottom-0 left-0 w-[400px] h-[400px] rounded-full bg-curtain-500/5 blur-3xl" />
       </div>
@@ -65,23 +52,28 @@ const newsHighlights = [
       <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
         <div class="max-w-3xl">
           <p class="text-brand-400 font-medium text-sm uppercase tracking-[0.2em] mb-4 animate-fade-in">
-            Now in our 20th Season
+            {{ homeData?.hero_tagline || 'Now in our 20th Season' }}
           </p>
-          <h1 class="text-5xl sm:text-6xl lg:text-7xl font-serif font-bold text-stage-50 leading-[1.1] tracking-tight animate-slide-up">
+          <h1 
+            class="hero-title-dynamic text-5xl sm:text-6xl lg:text-7xl font-serif font-bold text-stage-50 leading-[1.1] tracking-tight animate-slide-up"
+            v-if="homeData?.hero_title"
+            v-html="homeData.hero_title"
+          ></h1>
+          <h1 v-else class="text-5xl sm:text-6xl lg:text-7xl font-serif font-bold text-stage-50 leading-[1.1] tracking-tight animate-slide-up">
             Adventurous Theatre<br />
             <span class="bg-gradient-to-r from-brand-400 to-brand-200 bg-clip-text text-transparent">
               in New York City
             </span>
           </h1>
           <p class="mt-6 text-lg sm:text-xl text-stage-300 leading-relaxed max-w-xl animate-slide-up" style="animation-delay: 0.1s">
-            Flux Theatre Ensemble builds new works and reimagines classics with a company of adventurous artists and an engaged audience.
+            {{ homeData?.hero_description || 'Flux Theatre Ensemble builds new works and reimagines classics with a company of adventurous artists and an engaged audience.' }}
           </p>
           <div class="mt-8 flex flex-wrap gap-4 animate-slide-up" style="animation-delay: 0.2s">
-            <NuxtLink to="/productions" class="btn-primary" id="hero-cta-tickets">
-              View Current Season
+            <NuxtLink :to="homeData?.hero_cta_primary_link || '/productions'" class="btn-primary" id="hero-cta-tickets">
+              {{ homeData?.hero_cta_primary_text || 'View Current Season' }}
             </NuxtLink>
-            <NuxtLink to="/about" class="btn-secondary" id="hero-cta-about">
-              Our Story
+            <NuxtLink :to="homeData?.hero_cta_secondary_link || '/about'" class="btn-secondary" id="hero-cta-about">
+              {{ homeData?.hero_cta_secondary_text || 'Our Story' }}
             </NuxtLink>
           </div>
         </div>
@@ -108,7 +100,7 @@ const newsHighlights = [
           </NuxtLink>
         </div>
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div v-if="upcomingProductions" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           <ProductionCard
             v-for="prod in upcomingProductions"
             :key="prod.slug"
@@ -129,7 +121,9 @@ const newsHighlights = [
 
       <div class="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
         <p class="text-brand-400 font-medium text-sm uppercase tracking-[0.15em] mb-4">Our Mission</p>
-        <blockquote class="text-2xl sm:text-3xl lg:text-4xl font-serif text-stage-100 leading-relaxed">
+        <blockquote v-if="homeData?.mission_statement" class="text-2xl sm:text-3xl lg:text-4xl font-serif text-stage-100 leading-relaxed" v-html="homeData.mission_statement">
+        </blockquote>
+        <blockquote v-else class="text-2xl sm:text-3xl lg:text-4xl font-serif text-stage-100 leading-relaxed">
           &ldquo;To create theatre that is <em class="text-brand-400 not-italic font-semibold">alive</em>, 
           <em class="text-brand-300 not-italic font-semibold">daring</em>, and 
           <em class="text-brand-200 not-italic font-semibold">communal</em> &mdash; 
@@ -156,14 +150,14 @@ const newsHighlights = [
           </NuxtLink>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div v-if="newsHighlights" class="grid grid-cols-1 md:grid-cols-2 gap-6">
           <NuxtLink
             v-for="post in newsHighlights"
             :key="post.slug"
             :to="`/news/${post.slug}`"
             class="card-glass p-6 group"
           >
-            <p class="text-xs text-brand-400/70 font-medium uppercase tracking-wider mb-3">{{ post.date }}</p>
+            <p class="text-xs text-brand-400/70 font-medium uppercase tracking-wider mb-3">{{ post.publish_date }}</p>
             <h3 class="text-xl font-serif font-bold text-stage-50 group-hover:text-brand-400 transition-colors">
               {{ post.title }}
             </h3>
@@ -197,3 +191,9 @@ const newsHighlights = [
     </section>
   </div>
 </template>
+
+<style scoped>
+.hero-title-dynamic :deep(span) {
+  @apply bg-gradient-to-r from-brand-400 to-brand-200 bg-clip-text text-transparent;
+}
+</style>

@@ -1,84 +1,34 @@
 <script setup lang="ts">
+import type { Production } from '@flux-theatre/shared';
+
 useSeoMeta({
   title: 'Productions — Flux Theatre Ensemble',
   description: 'Browse current and past productions from Flux Theatre Ensemble in New York City.',
 });
 
-const allProductions = [
-  {
-    title: 'The Tempest Reimagined',
-    slug: 'the-tempest-reimagined',
-    tagline: 'A storm is coming. So is the reckoning.',
-    poster_image: null,
-    season: '2025–2026',
-    playwright: 'William Shakespeare',
-    opening_date: '2026-04-10',
-    closing_date: '2026-05-02',
-  },
-  {
-    title: 'Neon Wilderness',
-    slug: 'neon-wilderness',
-    tagline: 'Where does the city end and the self begin?',
-    poster_image: null,
-    season: '2025–2026',
-    playwright: 'Aria Chen',
-    opening_date: '2026-06-05',
-    closing_date: '2026-06-28',
-  },
-  {
-    title: 'After the Applause',
-    slug: 'after-the-applause',
-    tagline: 'The show must go on — but should it?',
-    poster_image: null,
-    season: '2025–2026',
-    playwright: 'Marcus Hall',
-    opening_date: '2026-09-11',
-    closing_date: '2026-10-04',
-  },
-  {
-    title: 'Glass Menagerie: Unboxed',
-    slug: 'glass-menagerie-unboxed',
-    tagline: 'Memory is a living thing.',
-    poster_image: null,
-    season: '2024–2025',
-    playwright: 'Tennessee Williams',
-    opening_date: '2025-03-14',
-    closing_date: '2025-04-05',
-  },
-  {
-    title: 'Signal Fire',
-    slug: 'signal-fire',
-    tagline: 'A new play about old wounds and blue flames.',
-    poster_image: null,
-    season: '2024–2025',
-    playwright: 'Jasmine Torres',
-    opening_date: '2025-06-20',
-    closing_date: '2025-07-12',
-  },
-  {
-    title: 'The Cherry Orchard: Redux',
-    slug: 'cherry-orchard-redux',
-    tagline: 'What do we lose when the trees come down?',
-    poster_image: null,
-    season: '2024–2025',
-    playwright: 'Anton Chekhov',
-    opening_date: '2025-10-03',
-    closing_date: '2025-10-25',
-  },
-];
+const { client, readItems } = useDirectus();
+
+// Fetch all published productions
+const { data: allProductions } = await useAsyncData<Production[]>('all-productions', () => 
+  client.request(readItems('productions', {
+    filter: { status: { _eq: 'published' } },
+    sort: ['-opening_date'],
+  }))
+);
 
 type FilterOption = 'all' | 'current' | 'past';
 const activeFilter = ref<FilterOption>('all');
 
 const filteredProductions = computed(() => {
+  if (!allProductions.value) return [];
   const now = new Date();
   if (activeFilter.value === 'current') {
-    return allProductions.filter(p => !p.closing_date || new Date(p.closing_date) >= now);
+    return allProductions.value.filter(p => !p.closing_date || new Date(p.closing_date) >= now);
   }
   if (activeFilter.value === 'past') {
-    return allProductions.filter(p => p.closing_date && new Date(p.closing_date) < now);
+    return allProductions.value.filter(p => p.closing_date && new Date(p.closing_date) < now);
   }
-  return allProductions;
+  return allProductions.value;
 });
 
 const filters: { label: string; value: FilterOption }[] = [

@@ -18,6 +18,7 @@ interface EventSummary {
 }
 
 const props = defineProps<{ event: EventSummary }>();
+const { getAssetUrl } = useDirectus();
 
 const formattedDate = computed(() => {
   const d = new Date(props.event.start_datetime);
@@ -70,7 +71,7 @@ const categoryLabel = computed(() => {
     <div class="relative aspect-video bg-stage-800 overflow-hidden">
       <img
         v-if="event.cover_image"
-        :src="event.cover_image"
+        :src="getAssetUrl(event.cover_image)!"
         :alt="event.title"
         class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
         loading="lazy"

@@ -1,79 +1,64 @@
 <script setup lang="ts">
+import type { Production } from '@flux-theatre/shared';
+
 const route = useRoute();
 const slug = route.params.slug as string;
+const { client, readItems, getAssetUrl } = useDirectus();
 
-// In production: const { data } = await useFetch(`/api/productions/${slug}`)
-// Placeholder data for scaffolding:
+// Fetch the production from Directus based on slug
+const { data: productions, error } = await useAsyncData<Production[]>(`production-${slug}`, () => 
+  client.request(readItems('productions' as any, {
+    filter: { slug: { _eq: slug }, status: { _eq: 'published' } },
+    fields: [
+      '*', 
+      { 
+        venue: ['name', 'city', 'maps_url'],
+        showtimes: ['*'],
+        cast: ['role_name', { person: ['first_name', 'last_name', 'slug', 'headshot', 'bio', 'pronouns'] }],
+        crew: ['title', { person: ['first_name', 'last_name', 'slug', 'headshot', 'bio', 'pronouns'] }]
+      }
+    ] as any,
+    limit: 1
+  } as any) as any)
+);
 
-const production = {
-  title: 'The Tempest Reimagined',
-  slug: 'the-tempest-reimagined',
-  tagline: 'A storm is coming. So is the reckoning.',
-  description: `
-    <p>In this daring reimagination of Shakespeare's final masterpiece, Flux Theatre Ensemble 
-    strips <em>The Tempest</em> down to its elemental core and rebuilds it as a meditation on 
-    power, forgiveness, and the stories we tell to survive.</p>
-    <p>Set on a fractured island that exists somewhere between memory and dream, this production 
-    uses live music, movement, and immersive staging to place the audience inside Prospero's storm.</p>
-  `,
-  playwright: 'William Shakespeare',
-  director: 'Elena Vasquez',
-  poster_image: null,
-  gallery: [],
-  season: '2025–2026',
-  opening_date: '2026-04-10',
-  closing_date: '2026-05-02',
-  venue: {
-    name: 'The 4th Street Theatre',
-    address: '83 East 4th Street',
-    city: 'New York',
-    state: 'NY',
-    maps_url: '#',
-  },
-  showtimes: [
-    { id: '1', datetime: '2026-04-10T20:00:00', ticket_url: '#', is_sold_out: false, notes: 'Opening Night' },
-    { id: '2', datetime: '2026-04-11T20:00:00', ticket_url: '#', is_sold_out: false, notes: null },
-    { id: '3', datetime: '2026-04-12T14:00:00', ticket_url: '#', is_sold_out: false, notes: 'Matinee' },
-    { id: '4', datetime: '2026-04-12T20:00:00', ticket_url: '#', is_sold_out: true, notes: null },
-    { id: '5', datetime: '2026-04-17T20:00:00', ticket_url: '#', is_sold_out: false, notes: 'Pay-What-You-Can' },
-    { id: '6', datetime: '2026-04-18T20:00:00', ticket_url: '#', is_sold_out: false, notes: null },
-    { id: '7', datetime: '2026-04-24T20:00:00', ticket_url: '#', is_sold_out: false, notes: null },
-    { id: '8', datetime: '2026-05-02T20:00:00', ticket_url: '#', is_sold_out: false, notes: 'Closing Night' },
-  ],
-  cast: [
-    { person: { first_name: 'Jordan', last_name: 'Blake', slug: 'jordan-blake', headshot: null, bio: '<p>Jordan is a NYC-based actor and teaching artist. Previous credits include <em>Hamlet</em> (Shakespeare in the Park), <em>Sweat</em> (Public Theater).</p>', pronouns: 'they/them' }, role_name: 'Prospero' },
-    { person: { first_name: 'Miriam', last_name: 'Ortega', slug: 'miriam-ortega', headshot: null, bio: '<p>Miriam recently appeared in <em>In the Heights</em> (national tour) and <em>The Clean House</em> (Atlantic Theater).</p>', pronouns: 'she/her' }, role_name: 'Ariel' },
-    { person: { first_name: 'David', last_name: 'Kim', slug: 'david-kim', headshot: null, bio: null, pronouns: 'he/him' }, role_name: 'Caliban' },
-    { person: { first_name: 'Sasha', last_name: 'Williams', slug: 'sasha-williams', headshot: null, bio: '<p>Sasha is a founding member of Flux Theatre Ensemble.</p>', pronouns: 'she/her' }, role_name: 'Miranda' },
-  ],
-  crew: [
-    { title: 'Director', person: { first_name: 'Elena', last_name: 'Vasquez', slug: 'elena-vasquez', headshot: null, bio: null, pronouns: 'she/her' } },
-    { title: 'Stage Manager', person: { first_name: 'Chris', last_name: 'Tanaka', slug: 'chris-tanaka', headshot: null, bio: null, pronouns: 'he/they' } },
-    { title: 'Scenic Designer', person: { first_name: 'Nora', last_name: 'Brennan', slug: 'nora-brennan', headshot: null, bio: null, pronouns: 'she/her' } },
-    { title: 'Lighting Designer', person: { first_name: 'Leo', last_name: 'Park', slug: 'leo-park', headshot: null, bio: null, pronouns: 'he/him' } },
-  ],
-  meta_title: null,
-  meta_description: null,
-};
+const production = computed(() => productions.value?.[0] || null);
+
+// Handle 404 if production not found
+if (!production.value && !error.value) {
+  throw createError({ statusCode: 404, statusMessage: 'Production not found' });
+}
 
 useSeoMeta({
-  title: `${production.title} — Flux Theatre Ensemble`,
-  description: production.meta_description || production.tagline || '',
+  title: () => `${production.value?.title || 'Production'} — Flux Theatre Ensemble`,
+  description: () => production.value?.meta_description || production.value?.tagline || '',
 });
 
 function formatShowtime(iso: string) {
+  if (!iso) return { date: '', time: '' };
   const d = new Date(iso);
   return {
     date: d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }),
     time: d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }),
   };
 }
+
+// Ensure cast and crew have populated person objects
+const cast = computed(() => {
+  return (production.value?.cast || [])
+    .filter(c => c && typeof c.person !== 'string') as any[];
+});
+
+const crew = computed(() => {
+  return (production.value?.crew || [])
+    .filter(c => c && typeof c.person !== 'string') as any[];
+});
 </script>
 
 <template>
   <div>
     <!-- ═══ Hero ═══ -->
-    <section class="relative pt-8 pb-16" id="production-hero">
+    <section v-if="production" class="relative pt-8 pb-16" id="production-hero">
       <div class="absolute inset-0 bg-gradient-to-b from-curtain-700/10 via-stage-950 to-stage-950" />
       <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex flex-col lg:flex-row gap-10">
@@ -82,7 +67,7 @@ function formatShowtime(iso: string) {
             <div class="card-glass aspect-[3/4] overflow-hidden">
               <img
                 v-if="production.poster_image"
-                :src="production.poster_image"
+                :src="getAssetUrl(production.poster_image)!"
                 :alt="`${production.title} poster`"
                 class="w-full h-full object-cover"
               />
@@ -136,7 +121,7 @@ function formatShowtime(iso: string) {
     </section>
 
     <!-- ═══ Showtimes ═══ -->
-    <section class="py-16 bg-stage-900/40" id="showtimes">
+    <section v-if="production && production.showtimes?.length" class="py-16 bg-stage-900/40" id="showtimes">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <h2 class="section-heading mb-8">Showtimes & Tickets</h2>
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -175,7 +160,7 @@ function formatShowtime(iso: string) {
         <h2 class="section-heading mb-8">Cast</h2>
         <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
           <PersonCard
-            v-for="credit in production.cast"
+            v-for="credit in cast"
             :key="credit.person.slug"
             :person="credit.person"
             :role="credit.role_name"
@@ -191,7 +176,7 @@ function formatShowtime(iso: string) {
         <h2 class="section-heading mb-8">Creative Team</h2>
         <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
           <PersonCard
-            v-for="credit in production.crew"
+            v-for="credit in crew"
             :key="credit.person.slug"
             :person="credit.person"
             :role="credit.title"

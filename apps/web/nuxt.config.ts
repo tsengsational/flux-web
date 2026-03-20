@@ -53,7 +53,7 @@ export default defineNuxtConfig({
   // ── Runtime Config (env-driven) ──
   runtimeConfig: {
     public: {
-      directusUrl: process.env.NUXT_PUBLIC_DIRECTUS_URL || 'http://localhost:8055',
+      directusUrl: process.env.NUXT_PUBLIC_DIRECTUS_URL || 'https://flux-theatrecms-production.up.railway.app',
     },
   },
 
