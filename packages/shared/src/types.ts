@@ -178,15 +178,25 @@ export interface CalendarEntry {
 
 // ─── Blog / News ───
 
+export interface Tag extends DirectusBaseFields {
+    name: string;
+}
+
+export interface PostTag {
+    id: string;
+    posts_id: string | BlogPost;
+    tags_id: string | Tag;
+}
+
 export interface BlogPost extends DirectusBaseFields {
     title: string;
     slug: string;
     excerpt: string | null;
-    body: string;                 // Rich-text / HTML
+    body: string;                 // Rich-text / HTML or EditorJS JSON
     cover_image: string | null;
     gallery: string[] | null;     // Array of file UUIDs
     author: string | Person;
-    tags: string[];
+    tags: PostTag[];
     publish_date: string;
     meta_title: string | null;
     meta_description: string | null;

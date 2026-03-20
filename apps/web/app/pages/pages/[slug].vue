@@ -41,10 +41,9 @@ useHead({
         {{ page.title }}
       </h1>
       
-      <div 
-        class="page-detail__content prose prose-invert prose-brand max-w-none"
-        v-html="page.body"
-      />
+      <div class="page-detail__content">
+        <BlockRenderer :content="page.body" />
+      </div>
     </div>
   </main>
 </template>

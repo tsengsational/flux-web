@@ -7,11 +7,11 @@ const { client, readItems, getAssetUrl } = useDirectus();
 
 // Fetch the post from Directus based on slug
 const { data: posts, error } = await useAsyncData<BlogPost[]>(`post-${slug}`, () => 
-  client.request(readItems('posts' as any, {
+  client.request(readItems('posts', {
     filter: { slug: { _eq: slug }, status: { _eq: 'published' } },
     fields: ['*', { author: ['first_name', 'last_name', 'bio'], tags: [{ tags_id: ['name'] }] }, 'gallery'] as any,
     limit: 1
-  } as any) as any)
+  })) as any
 );
 
 const post = computed(() => posts.value?.[0] || null);
@@ -111,17 +111,9 @@ const postTags = computed(() => {
       </div>
 
       <!-- Body -->
-      <div
-        class="news-post__body mt-8 prose prose-invert prose-lg max-w-none
-               prose-headings:font-serif prose-headings:text-stage-50
-               prose-p:text-stage-300 prose-p:leading-relaxed
-               prose-a:text-brand-400 prose-a:no-underline hover:prose-a:underline
-               prose-blockquote:border-l-brand-500 prose-blockquote:text-stage-200 prose-blockquote:font-serif prose-blockquote:not-italic
-               prose-strong:text-stage-100
-               prose-em:text-stage-200"
-        v-html="post.body"
-        id="post-body"
-      />
+      <div class="news-post__body mt-8" id="post-body">
+        <BlockRenderer :content="post.body" />
+      </div>
       
       <!-- Gallery -->
       <div v-if="post.gallery?.length" class="news-post__gallery mt-16" id="post-gallery">

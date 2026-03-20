@@ -10,11 +10,11 @@ const { client, readItems } = useDirectus();
 
 // Fetch all published blog posts with tag details
 const { data: blogPosts, error } = await useAsyncData<BlogPost[]>('all-news', () => 
-  client.request(readItems('posts' as any, {
+  client.request(readItems('posts', {
     filter: { status: { _eq: 'published' } },
     sort: ['-publish_date'],
     fields: ['*', { tags: [{ tags_id: ['name'] }] }] as any,
-  } as any) as any)
+  })) as any
 );
 
 const allTags = computed(() => {
@@ -22,9 +22,10 @@ const allTags = computed(() => {
   if (!posts) return [];
   const tags = new Set<string>();
   posts.forEach((p: BlogPost) => {
-    // Handle Directus M2M structure: p.tags is [{ tags_id: { name: '...' } }, ...]
-    (p.tags as any)?.forEach((t: any) => {
-      if (t.tags_id?.name) tags.add(t.tags_id.name);
+    // Handle Directus M2M structure: p.tags is PostTag[]
+    p.tags?.forEach((t) => {
+      const tagName = (t.tags_id as any)?.name;
+      if (tagName) tags.add(tagName);
     });
   });
   return Array.from(tags).sort();
@@ -37,7 +38,7 @@ const filteredPosts = computed(() => {
   if (!posts) return [];
   if (!activeTag.value) return posts;
   return posts.filter((p: BlogPost) => 
-    (p.tags as any)?.some((t: any) => t.tags_id?.name === activeTag.value)
+    p.tags?.some((t) => (t.tags_id as any)?.name === activeTag.value)
   );
 });
 

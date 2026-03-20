@@ -69,13 +69,13 @@ const authorName = computed(() => {
           Read more &rarr;
         </span>
       </div>
-      <div v-if="post.tags.length" class="blog-post-card__tags mt-4 flex flex-wrap gap-2">
+      <div v-if="post.tags && post.tags.length" class="blog-post-card__tags mt-4 flex flex-wrap gap-2">
         <span
           v-for="tag in post.tags.slice(0, 3)"
-          :key="tag"
+          :key="tag.id"
           class="blog-post-card__tag text-xs px-2 py-0.5 rounded-full bg-stage-800/80 text-stage-400 border border-stage-700/40"
         >
-          {{ tag }}
+          {{ (tag.tags_id as any)?.name }}
         </span>
       </div>
     </div>
@@ -124,13 +124,13 @@ const authorName = computed(() => {
           Read &rarr;
         </span>
       </div>
-      <div v-if="post.tags.length" class="blog-post-card__tags mt-3 flex flex-wrap gap-1.5">
+      <div v-if="post.tags && post.tags.length" class="blog-post-card__tags mt-3 flex flex-wrap gap-1.5">
         <span
           v-for="tag in post.tags.slice(0, 3)"
-          :key="tag"
+          :key="tag.id"
           class="blog-post-card__tag text-xs px-2 py-0.5 rounded-full bg-stage-800/80 text-stage-400 border border-stage-700/40"
         >
-          {{ tag }}
+          {{ (tag.tags_id as any)?.name }}
         </span>
       </div>
     </div>
