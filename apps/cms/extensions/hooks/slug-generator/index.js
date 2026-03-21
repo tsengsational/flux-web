@@ -12,23 +12,19 @@ export default ({ filter }) => {
     const sourceText = sources.map(s => payload[s]).filter(Boolean).join(' ');
     
     if (sourceText && !existingSlug) {
+      console.log(`[Slug Hook] Generating slug from: "${sourceText}"`);
       let slug = sourceText
         .toLowerCase()
-        .replace(/[^\w\s-]/g, '') // Remove punctuation
+        .replace(/[^\w\s-]/g, '')
         .trim()
-        .replace(/[-\s]+/g, '-'); // Kebab-case and whitespace to dashes
+        .replace(/[-\s]+/g, '-');
 
       const MAX_LENGTH = 50;
       if (slug.length > MAX_LENGTH) {
-        // Find last dash within the limit to avoid cutting words
         let lastDash = slug.lastIndexOf('-', MAX_LENGTH);
-        if (lastDash > 0) {
-          slug = slug.substring(0, lastDash);
-        } else {
-          // If no dash found, just hard cap
-          slug = slug.substring(0, MAX_LENGTH);
-        }
+        slug = lastDash > 0 ? slug.substring(0, lastDash) : slug.substring(0, MAX_LENGTH);
       }
+      console.log(`[Slug Hook] Result: "${slug}"`);
       return slug;
     }
     return existingSlug;
@@ -36,11 +32,13 @@ export default ({ filter }) => {
 
   collections.forEach(({ name, source }) => {
     filter(`${name}.items.create`, (payload) => {
+      console.log(`[Slug Hook] Create trigger for ${name}`);
       payload.slug = generateSlug(payload, source, payload.slug);
       return payload;
     });
 
-    filter(`${name}.items.update`, (payload) => {
+    filter(`${name}.items.update`, (payload, meta) => {
+      console.log(`[Slug Hook] Update trigger for ${name}`);
       payload.slug = generateSlug(payload, source, payload.slug);
       return payload;
     });
