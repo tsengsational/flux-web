@@ -5,7 +5,8 @@ RUN corepack enable \
     && pnpm install @directus/storage-driver-s3
 
 # Copy custom extensions
-COPY extensions ./extensions
+# We use a wildcard in case the context is the root or the app dir
+COPY extensions/ ./extensions/
 
 # Expose default Directus port
 EXPOSE 8055
