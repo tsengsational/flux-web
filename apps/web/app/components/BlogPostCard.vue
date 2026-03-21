@@ -64,7 +64,13 @@ const authorName = computed(() => {
         {{ post.excerpt }}
       </p>
       <div class="blog-post-card__footer mt-4 flex items-center justify-between">
-        <span class="blog-post-card__author text-xs text-stage-500">By {{ authorName }}</span>
+        <span class="blog-post-card__author text-xs text-stage-500">
+          By 
+          <NuxtLink v-if="typeof post.author !== 'string'" :to="`/people/${post.author.slug}`" class="hover:text-brand-400 transition-colors">
+            {{ authorName }}
+          </NuxtLink>
+          <span v-else>{{ authorName }}</span>
+        </span>
         <span class="blog-post-card__more text-sm text-brand-400 font-medium group-hover:translate-x-1 transition-transform">
           Read more &rarr;
         </span>
@@ -119,7 +125,13 @@ const authorName = computed(() => {
         {{ post.excerpt }}
       </p>
       <div class="blog-post-card__footer mt-4 flex items-center justify-between">
-        <span class="blog-post-card__author text-xs text-stage-500">{{ authorName }}</span>
+        <span class="blog-post-card__author text-xs text-stage-500">
+          By 
+          <NuxtLink v-if="typeof post.author !== 'string'" :to="`/people/${post.author.slug}`" class="hover:text-brand-400 transition-colors">
+            {{ authorName }}
+          </NuxtLink>
+          <span v-else>{{ authorName }}</span>
+        </span>
         <span class="blog-post-card__more text-sm text-brand-400 font-medium group-hover:translate-x-1 transition-transform">
           Read &rarr;
         </span>

@@ -98,6 +98,18 @@ const isModalOpen = ref(false);
                 <p v-if="role" class="person-modal__role text-sm text-brand-400 font-medium mt-2">{{ role }}</p>
                 <div v-if="person.bio" class="person-modal__bio mt-4 text-sm text-stage-300 leading-relaxed prose prose-invert prose-sm" v-html="person.bio" />
                 <p v-else class="person-modal__no-bio mt-4 text-sm text-stage-500 italic">Bio coming soon.</p>
+                <div class="person-modal__footer mt-6 pt-6 border-t border-stage-800">
+                  <NuxtLink
+                    :to="`/people/${person.slug}`"
+                    class="text-xs font-bold text-brand-400 hover:text-brand-300 transition-colors uppercase tracking-widest flex items-center gap-2"
+                    @click="isModalOpen = false"
+                  >
+                    View Full Profile
+                    <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
+                    </svg>
+                  </NuxtLink>
+                </div>
               </div>
             </div>
           </div>

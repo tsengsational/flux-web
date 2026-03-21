@@ -23,7 +23,7 @@ const { data: cmsData } = await useAsyncData('calendar-data', async () => {
 });
 
 const calendarEntries = computed<CalendarEntry[]>(() => {
-  if (!cmsData.value) return [];
+  if (!cmsData.value || !cmsData.value.events || !cmsData.value.productions) return [];
   
   const entries: CalendarEntry[] = [];
   
@@ -149,7 +149,10 @@ const calendarDays = computed(() => {
 
 // Get entries for a specific date
 function getEntriesForDate(fullDate: string): CalendarEntry[] {
-  return calendarEntries.value
+  const allEntries = calendarEntries.value;
+  if (!allEntries || !Array.isArray(allEntries)) return [];
+  
+  return allEntries
     .filter(e => {
       if (activeType.value !== 'all' && e.type !== activeType.value) return false;
       return e.datetime.startsWith(fullDate);
@@ -161,7 +164,11 @@ function getEntriesForDate(fullDate: string): CalendarEntry[] {
 const upcomingEntries = computed(() => {
   const now = new Date();
   const thirtyDays = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
-  return calendarEntries.value
+  const allEntries = calendarEntries.value;
+  
+  if (!allEntries || !Array.isArray(allEntries)) return [];
+  
+  return allEntries
     .filter(e => {
       const d = new Date(e.datetime);
       if (d < now || d > thirtyDays) return false;
