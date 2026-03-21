@@ -29,7 +29,6 @@ pnpm-debug.log*
 
 # Directus
 apps/cms/uploads/
-apps/cms/extensions/
 
 # Turborepo (if adopted later)
 .turbo/
