@@ -5,11 +5,11 @@ RUN corepack enable \
     && pnpm install @directus/storage-driver-s3
 
 # Copy custom extensions with correct ownership for Directus
-# The official image uses the 'node' user
-COPY --chown=node:node extensions/ /directus/extensions/
+# We use the single-file hook format for maximum compatibility
+COPY --chown=node:node extensions/hooks/slug-generator.js /directus/extensions/hooks/slug-generator.js
 
-# Verify final location
-RUN ls -laR /directus/extensions/hooks
+# Debug: Verifying location in the container
+RUN ls -la /directus/extensions/hooks/
 
 # Expose default Directus port
 EXPOSE 8055
