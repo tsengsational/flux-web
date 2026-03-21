@@ -1,18 +1,29 @@
-export default ({ filter }) => {
-  const collections = [
-    { name: 'productions', source: ['title'] },
-    { name: 'events', source: ['title'] },
-    { name: 'posts', source: ['title'] },
-    { name: 'pages', source: ['title'] },
-    { name: 'venues', source: ['name'] },
-    { name: 'people', source: ['first_name', 'last_name'] }
-  ];
+console.log('[Slug Hook] Extension module loaded');
 
-  function generateSlug(payload, sources, existingSlug) {
+export default ({ filter }) => {
+  console.log('[Slug Hook] Registering filters...');
+
+  const config = {
+    productions: ['title'],
+    events: ['title'],
+    posts: ['title'],
+    pages: ['title'],
+    venues: ['name'],
+    people: ['first_name', 'last_name']
+  };
+
+  function generateSlug(payload, collection) {
+    const sources = config[collection];
+    if (!sources) return;
+
+    // Only generate if we have at least one source field in the payload
+    // and the slug itself is not being set manually
     const sourceText = sources.map(s => payload[s]).filter(Boolean).join(' ');
     
-    if (sourceText && !existingSlug) {
-      console.log(`[Slug Hook] Generating slug from: "${sourceText}"`);
+    // Check if slug is present in payload (even if empty string)
+    // If it's undefined, it wasn't sent, so we fill it.
+    if (sourceText && payload.slug === undefined) {
+      console.log(`[Slug Hook] Generating slug for ${collection} from: "${sourceText}"`);
       let slug = sourceText
         .toLowerCase()
         .replace(/[^\w\s-]/g, '')
@@ -25,21 +36,21 @@ export default ({ filter }) => {
         slug = lastDash > 0 ? slug.substring(0, lastDash) : slug.substring(0, MAX_LENGTH);
       }
       console.log(`[Slug Hook] Result: "${slug}"`);
-      return slug;
+      payload.slug = slug;
     }
-    return existingSlug;
   }
 
-  collections.forEach(({ name, source }) => {
-    filter(`${name}.items.create`, (payload) => {
-      console.log(`[Slug Hook] Create trigger for ${name}`);
-      payload.slug = generateSlug(payload, source, payload.slug);
+  // Use a wildcard filter if supported, or individual ones
+  Object.keys(config).forEach((collection) => {
+    filter(`${collection}.items.create`, (payload) => {
+      console.log(`[Slug Hook] Create trigger for ${collection}`);
+      generateSlug(payload, collection);
       return payload;
     });
 
-    filter(`${name}.items.update`, (payload, meta) => {
-      console.log(`[Slug Hook] Update trigger for ${name}`);
-      payload.slug = generateSlug(payload, source, payload.slug);
+    filter(`${collection}.items.update`, (payload) => {
+      console.log(`[Slug Hook] Update trigger for ${collection}`);
+      generateSlug(payload, collection);
       return payload;
     });
   });
