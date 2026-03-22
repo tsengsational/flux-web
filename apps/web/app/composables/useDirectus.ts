@@ -1,5 +1,5 @@
 import { createDirectus, rest, readItems, readSingleton } from '@directus/sdk';
-import type { Production, BlogPost, Event, Venue, HomePage, SiteSettings, Page, Person, CastCredit, CrewCredit } from '@flux-theatre/shared';
+import type { Production, BlogPost, Event, Venue, HomePage, HeroSlide, SiteSettings, Page, Person, CastCredit, CrewCredit } from '@flux-theatre/shared';
 
 /**
  * Interface for the Directus schema
@@ -11,6 +11,7 @@ export interface Schema {
   events: Event[];
   venues: Venue[];
   homepage: HomePage;
+  hero_slides: HeroSlide[];
   site_settings: SiteSettings;
   pages: Page[];
   people: Person[];

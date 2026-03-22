@@ -222,6 +222,30 @@ export interface SiteSettings {
     mailing_list_url: string | null;
 }
 
+// ─── Hero Slides ───
+
+export interface HeroSlide {
+    id: string;
+    status: 'published' | 'draft' | 'archived';
+    sort: number | null;
+    title: string | null;
+    subtitle: string | null;
+    description: string | null;
+    background_image: string | null;  // Directus file UUID
+    cta_primary_label: string | null;
+    cta_primary_url: string | null;    // Calculated by Flow
+    cta_primary_type: 'internal' | 'external' | null;
+    cta_primary_link: any | null;      // M2A relationship
+    cta_primary_external: string | null;
+
+    cta_secondary_label: string | null;
+    cta_secondary_url: string | null;  // Calculated by Flow
+    cta_secondary_type: 'internal' | 'external' | null;
+    cta_secondary_link: any | null;    // M2A relationship
+    cta_secondary_external: string | null;
+    homepage_id: string | null;
+}
+
 // ─── Homepage (Singleton) ───
 
 export interface HomePage {
@@ -236,6 +260,8 @@ export interface HomePage {
     hero_cta_secondary_link: string | null;
     mission_statement: string | null;
     mission_background_image: string | null;
+    // Hero carousel slides (O2M)
+    hero_slides: HeroSlide[] | null;
 }
 
 // ─── Pages ───
