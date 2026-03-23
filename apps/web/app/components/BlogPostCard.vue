@@ -66,7 +66,7 @@ const authorName = computed(() => {
       <div class="blog-post-card__footer mt-4 flex items-center justify-between">
         <span class="blog-post-card__author text-xs text-stage-500">
           By 
-          <NuxtLink v-if="typeof post.author !== 'string'" :to="`/people/${post.author.slug}`" class="hover:text-brand-400 transition-colors">
+          <NuxtLink v-if="post.author && typeof post.author !== 'string'" :to="`/people/${post.author.slug}`" class="hover:text-brand-400 transition-colors">
             {{ authorName }}
           </NuxtLink>
           <span v-else>{{ authorName }}</span>
@@ -127,7 +127,7 @@ const authorName = computed(() => {
       <div class="blog-post-card__footer mt-4 flex items-center justify-between">
         <span class="blog-post-card__author text-xs text-stage-500">
           By 
-          <NuxtLink v-if="typeof post.author !== 'string'" :to="`/people/${post.author.slug}`" class="hover:text-brand-400 transition-colors">
+          <NuxtLink v-if="post.author && typeof post.author !== 'string'" :to="`/people/${post.author.slug}`" class="hover:text-brand-400 transition-colors">
             {{ authorName }}
           </NuxtLink>
           <span v-else>{{ authorName }}</span>

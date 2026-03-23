@@ -72,7 +72,7 @@ const categoryFilters: { label: string; value: CategoryFilter }[] = [
           <button
             v-for="f in formatFilters"
             :key="f.value"
-            class="events-page__filter-btn px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-200"
+            class="events-page__filter-btn px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-200 text-stage-50"
             :class="activeFormat === f.value
               ? 'bg-brand-500 text-stage-950'
               : 'bg-stage-800/60 text-stage-400 hover:text-stage-200 border border-stage-700/40'"

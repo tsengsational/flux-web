@@ -35,7 +35,7 @@ useHead({
 <template>
   <main v-if="page" class="page-detail prose-custom py-16 sm:py-24">
     <div class="page-detail__container max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-      <h1 class="page-detail__title text-4xl sm:text-5xl font-serif font-bold text-stage-50 mb-12">
+      <h1 class="page-detail__title text-4xl sm:text-5xl font-serif font-bold text-stage-950 mb-12">
         {{ page.title }}
       </h1>
       

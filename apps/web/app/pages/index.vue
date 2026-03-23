@@ -335,7 +335,7 @@ onUnmounted(() => { if (autoTimer) clearInterval(autoTimer); });
         <p class="mt-3 text-stage-300">Get updates on auditions, upcoming shows, and behind-the-scenes stories.</p>
         <form class="mt-8 flex flex-col sm:flex-row gap-3 max-w-md mx-auto" @submit.prevent>
           <input type="email" placeholder="your@email.com" class="flex-1 px-4 py-3 rounded-lg bg-stage-800/60 border border-stage-700/40 text-stage-100 placeholder-stage-500 focus:outline-none focus:ring-2 focus:ring-brand-500/50 focus:border-brand-500/50 transition-all" id="newsletter-email" />
-          <button type="submit" class="btn-primary whitespace-nowrap" id="newsletter-submit">Subscribe</button>
+          <button type="submit" class="btn-primary whitespace-nowrap text-brand-400" id="newsletter-submit">Subscribe</button>
         </form>
       </div>
     </section>
