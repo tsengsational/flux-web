@@ -73,7 +73,6 @@ const { getAssetUrl } = useDirectus();
     <!-- Case 2: Structured Blocks (EditorJS) -->
     <div v-else-if="parsedData" class="block-renderer__blocks space-y-6">
       <template v-for="(block, index) in parsedData.blocks" :key="index">
-        
         <!-- Header -->
         <component 
           :is="`h${block.data.level || 2}`"
@@ -85,14 +84,15 @@ const { getAssetUrl } = useDirectus();
             'text-2xl lg:text-3xl': (block.data.level === 3),
             'text-xl lg:text-2xl': (block.data.level >= 4)
           }"
-          v-html="block.data.text"
-        />
+        >
+          <span v-html="block.data.text || block.data.content" />
+        </component>
 
         <!-- Paragraph -->
         <p 
           v-else-if="block.type === 'paragraph'"
           class="text-stage-300 leading-relaxed text-lg"
-          v-html="block.data.text"
+          v-html="block.data.text || block.data.content"
         />
 
         <!-- List -->

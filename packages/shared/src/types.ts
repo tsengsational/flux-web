@@ -19,8 +19,7 @@ export interface Production extends DirectusBaseFields {
     title: string;
     slug: string;
     tagline: string | null;
-    description: string;          // Rich-text / HTML fallback
-    content: any | null;          // Structured JSON for Block Editor
+    description: any | null;      // Structured JSON for Block Editor
     playwright: string;
     director: string | null;
 
@@ -58,7 +57,7 @@ export interface Person extends DirectusBaseFields {
     first_name: string;
     last_name: string;
     slug: string;
-    bio: string | null;           // Rich-text
+    bio: string | any | null;      // Rich-text or Block Editor JSON
     headshot: string | null;      // Directus file UUID
     website: string | null;
     pronouns: string | null;
@@ -73,6 +72,7 @@ export interface CastCredit {
     role_name: string;            // e.g. "Hamlet"
     sort: number;
     is_understudy: boolean;
+    content?: any | null;         // Production-specific bio override
 }
 
 export interface CrewCredit {
@@ -82,6 +82,7 @@ export interface CrewCredit {
     department: CrewDepartment;
     title: string;                // e.g. "Stage Manager", "Lighting Designer"
     sort: number;
+    content?: any | null;         // Production-specific bio override
 }
 
 export type CrewDepartment =
