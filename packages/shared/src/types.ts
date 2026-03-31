@@ -19,8 +19,7 @@ export interface Production extends DirectusBaseFields {
     title: string;
     slug: string;
     tagline: string | null;
-    description: string;          // Rich-text / HTML fallback
-    content: any | null;          // Structured JSON for Block Editor
+    description: any | null;      // Structured JSON for Block Editor
     playwright: string;
     director: string | null;
 
