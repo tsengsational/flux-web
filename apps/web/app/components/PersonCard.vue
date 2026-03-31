@@ -96,7 +96,9 @@ const isModalOpen = ref(false);
                 <h2 class="person-modal__name text-xl font-serif font-bold text-stage-50">{{ fullName }}</h2>
                 <p v-if="person.pronouns" class="person-modal__pronouns text-sm text-stage-400 mt-1">({{ person.pronouns }})</p>
                 <p v-if="role" class="person-modal__role text-sm text-brand-400 font-medium mt-2">{{ role }}</p>
-                <div v-if="person.bio" class="person-modal__bio mt-4 text-sm text-stage-300 leading-relaxed prose prose-invert prose-sm" v-html="person.bio" />
+                <div v-if="person.bio" class="person-modal__bio mt-4 text-sm text-stage-300 leading-relaxed prose prose-invert prose-sm">
+                  <BlockRenderer :content="person.bio" />
+                </div>
                 <p v-else class="person-modal__no-bio mt-4 text-sm text-stage-500 italic">Bio coming soon.</p>
                 <div class="person-modal__footer mt-6 pt-6 border-t border-stage-800">
                   <NuxtLink

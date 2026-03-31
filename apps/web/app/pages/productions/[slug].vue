@@ -14,8 +14,8 @@ const { data: productions, error } = await useAsyncData<Production[]>(`productio
       { 
         venue: ['name', 'city', 'maps_url'],
         showtimes: ['*'],
-        cast: ['role_name', { person: ['first_name', 'last_name', 'slug', 'headshot', 'bio', 'pronouns'] }],
-        crew: ['title', { person: ['first_name', 'last_name', 'slug', 'headshot', 'bio', 'pronouns'] }]
+        Cast: ['role_name', 'content', { person: ['first_name', 'last_name', 'slug', 'headshot', 'bio', 'pronouns'] }],
+        Crew: ['title', 'content', { person: ['first_name', 'last_name', 'slug', 'headshot', 'bio', 'pronouns'] }]
       }
     ] as any,
     limit: 1
@@ -28,6 +28,8 @@ const production = computed(() => productions.value?.[0] || null);
 if (!production.value && !error.value) {
   throw createError({ statusCode: 404, statusMessage: 'Production not found' });
 }
+
+
 
 useSeoMeta({
   title: () => `${production.value?.title || 'Production'} — Flux Theatre Ensemble`,
@@ -43,15 +45,31 @@ function formatShowtime(iso: string) {
   };
 }
 
-// Ensure cast and crew have populated person objects
+// Map cast with bio override (Credit Bio > Master Bio)
 const cast = computed(() => {
-  return (production.value?.cast || [])
-    .filter(c => c && typeof c.person !== 'string') as any[];
+  return (production.value?.Cast || [])
+    .filter(c => c && typeof (c.person as any) !== 'string')
+    .map(c => ({
+      ...c,
+      person: {
+        ...(c.person as any),
+        // Override master bio with credit content if present
+        bio: (c as any).content || (c.person as any).bio
+      }
+    }));
 });
 
+// Map crew with bio override
 const crew = computed(() => {
-  return (production.value?.crew || [])
-    .filter(c => c && typeof c.person !== 'string') as any[];
+  return (production.value?.Crew || [])
+    .filter(c => c && typeof (c.person as any) !== 'string')
+    .map(c => ({
+      ...c,
+      person: {
+        ...(c.person as any),
+        bio: (c as any).content || (c.person as any).bio
+      }
+    }));
 });
 </script>
 
@@ -59,7 +77,7 @@ const crew = computed(() => {
   <div class="production-detail">
     <!-- ═══ Hero ═══ -->
     <section v-if="production" class="production-detail__hero relative pt-8 pb-16" id="production-hero">
-      <div class="production-detail__hero-bg absolute inset-0 bg-gradient-to-b from-curtain-700/10 via-stage-950 to-stage-950" />
+      <div class="production-detail__hero-bg absolute inset-0 bg-black" />
       <div class="production-detail__hero-container relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="production-detail__hero-layout flex flex-col lg:flex-row gap-10">
           <!-- Poster -->
@@ -69,7 +87,7 @@ const crew = computed(() => {
                 v-if="production.poster_image"
                 :src="getAssetUrl(production.poster_image)!"
                 :alt="`${production.title} poster`"
-                class="production-detail__poster-image w-full h-full object-cover"
+                class="production-detail__poster-image w-full h-full object-contain"
               />
               <div v-else class="production-detail__poster-placeholder w-full h-full flex items-center justify-center bg-gradient-to-br from-stage-800 to-stage-900">
                 <span class="production-detail__placeholder-text text-stage-600 font-serif text-8xl">F</span>
