@@ -39,7 +39,7 @@ const isModalOpen = ref(false);
 
       <!-- Info -->
       <div class="person-card__info p-4">
-        <h3 class="person-card__name text-sm font-semibold text-stage-100 group-hover:text-brand-400 transition-colors">
+        <h3 class="person-card__name text-sm font-semibold text-stage-500 group-hover:text-brand-400 transition-colors">
           {{ fullName }}
         </h3>
         <p v-if="person.pronouns" class="person-card__pronouns text-xs text-stage-500 mt-0.5">({{ person.pronouns }})</p>
@@ -66,7 +66,7 @@ const isModalOpen = ref(false);
           <div class="person-modal__backdrop absolute inset-0 bg-stage-950/80 backdrop-blur-sm" />
 
           <!-- Modal Content -->
-          <div class="person-modal__content relative max-w-lg w-full bg-stage-900 border border-stage-700/40 rounded-2xl shadow-2xl overflow-hidden animate-scale-in">
+          <div class="person-modal__content relative max-w-lg md:max-w-3xl w-full max-h-[90vh] bg-stage-900 border border-stage-700/40 rounded-2xl shadow-2xl flex flex-col overflow-hidden animate-scale-in">
             <button
               class="person-modal__close absolute top-4 right-4 z-10 w-8 h-8 rounded-full bg-stage-800/80 flex items-center justify-center text-stage-400 hover:text-stage-100 transition-colors"
               @click="isModalOpen = false"
@@ -77,9 +77,9 @@ const isModalOpen = ref(false);
               </svg>
             </button>
 
-            <div class="person-modal__layout flex flex-col sm:flex-row">
+            <div class="person-modal__layout flex flex-col md:flex-row flex-1 overflow-y-auto">
               <!-- Headshot -->
-              <div class="person-modal__image-wrapper sm:w-48 aspect-[3/4] sm:aspect-auto bg-stage-800 flex-shrink-0">
+              <div class="person-modal__image-wrapper w-full md:w-2/5 aspect-[3/4] md:aspect-auto md:h-full bg-stage-800 flex-shrink-0">
                 <img
                   v-if="person.headshot"
                   :src="getAssetUrl(person.headshot)!"
@@ -92,11 +92,11 @@ const isModalOpen = ref(false);
               </div>
 
               <!-- Bio -->
-              <div class="person-modal__info p-6 flex-1">
-                <h2 class="person-modal__name text-xl font-serif font-bold text-stage-50">{{ fullName }}</h2>
+              <div class="person-modal__info p-6 md:p-8 flex-1 md:overflow-y-auto">
+                <h2 class="person-modal__name text-xl md:text-2xl font-serif font-bold text-stage-50">{{ fullName }}</h2>
                 <p v-if="person.pronouns" class="person-modal__pronouns text-sm text-stage-400 mt-1">({{ person.pronouns }})</p>
-                <p v-if="role" class="person-modal__role text-sm text-brand-400 font-medium mt-2">{{ role }}</p>
-                <div v-if="person.bio" class="person-modal__bio mt-4 text-sm text-stage-300 leading-relaxed prose prose-invert prose-sm">
+                <p v-if="role" class="person-modal__role text-sm md:text-base text-brand-400 font-medium mt-2">{{ role }}</p>
+                <div v-if="person.bio" class="person-modal__bio mt-4 text-sm md:text-base text-stage-300 leading-relaxed prose prose-invert prose-sm md:prose-base">
                   <BlockRenderer :content="person.bio" />
                 </div>
                 <p v-else class="person-modal__no-bio mt-4 text-sm text-stage-500 italic">Bio coming soon.</p>

@@ -20,6 +20,7 @@ export interface Production extends DirectusBaseFields {
     slug: string;
     tagline: string | null;
     description: any | null;      // Structured JSON for Block Editor
+    content: any | null;          // Main production content/overview
     playwright: string;
     director: string | null;
 
@@ -31,7 +32,8 @@ export interface Production extends DirectusBaseFields {
     season: string;               // e.g. "2025–2026"
     opening_date: string | null;  // ISO date
     closing_date: string | null;
-    showtimes: Showtime[];
+    showtimes: Showtime[]; // Keeping for backward compatibility if needed, but we'll use events
+    events: Event[];        // Unified event-based showtimes
 
     // Relations
     venue: string | Venue;        // UUID or populated
@@ -126,6 +128,7 @@ export type EventCategory =
     | 'audition'
     | 'masterclass'
     | 'community'
+    | 'performance'
     | 'other';
 
 export interface Event extends DirectusBaseFields {

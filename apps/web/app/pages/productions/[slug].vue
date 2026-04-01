@@ -15,7 +15,7 @@ const { data: productions, error } = await useAsyncData<Production[]>(`productio
       '*', 
       { 
         venue: ['name', 'city', 'maps_url'],
-        showtimes: ['*'],
+        events: ['*'],
         Cast: ['role_name', 'content', { person: ['first_name', 'last_name', 'slug', 'headshot', 'bio', 'pronouns'] }],
         Crew: ['title', 'content', { person: ['first_name', 'last_name', 'slug', 'headshot', 'bio', 'pronouns'] }]
       }
@@ -46,6 +46,13 @@ function formatShowtime(iso: string) {
     time: d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }),
   };
 }
+
+// Filter events to only show performances
+const performances = computed(() => {
+  return (production.value?.events || [])
+    .filter(e => e.category === 'performance')
+    .sort((a, b) => new Date(a.start_datetime).getTime() - new Date(b.start_datetime).getTime());
+});
 
 // Map cast with bio override (Credit Bio > Master Bio)
 const cast = computed(() => {
@@ -148,7 +155,7 @@ const crew = computed(() => {
             </div>
 
             <!-- Description -->
-            <div class="production-detail__description mt-8 text-stage-300 leading-relaxed max-w-none">
+            <div class="production-detail__description mt-8 text-stage-300 leading-relaxed max-w-none prose prose-invert prose-sm sm:prose-base">
               <BlockRenderer :content="production.description" />
             </div>
           </div>
@@ -157,32 +164,33 @@ const crew = computed(() => {
     </section>
 
     <!-- ═══ Showtimes ═══ -->
-    <section v-if="production && production.showtimes?.length" class="production-showtimes py-16 bg-stage-900/40" id="showtimes">
+    <section v-if="production && performances.length" class="production-showtimes production-section py-16" id="showtimes">
       <div class="production-showtimes__container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <h2 class="production-showtimes__title section-heading mb-8">Showtimes & Tickets</h2>
+        <h2 class="production-showtimes__title section-heading mb-8 md:text-xl">Showtimes & Tickets</h2>
         <div class="production-showtimes__grid grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <div
-            v-for="show in production.showtimes"
+            v-for="show in performances"
             :key="show.id"
             class="production-showtimes__card card-glass p-4 flex flex-col"
           >
             <div class="production-showtimes__card-header flex items-center justify-between mb-2">
-              <span class="production-showtimes__date text-stage-100 font-medium text-sm">{{ formatShowtime(show.datetime).date }}</span>
-              <span v-if="show.notes" class="production-showtimes__notes text-xs px-2 py-0.5 rounded-full bg-brand-500/20 text-brand-300 font-medium">
-                {{ show.notes }}
+              <span class="production-showtimes__date text-stage-100 font-medium text-sm">{{ formatShowtime(show.start_datetime).date }}</span>
+              <span v-if="show.category === 'performance'" class="production-showtimes__notes text-xs px-2 py-0.5 rounded-full bg-brand-500/20 text-brand-300 font-medium">
+                Performance
               </span>
             </div>
-            <span class="production-showtimes__time text-stage-400 text-sm">{{ formatShowtime(show.datetime).time }}</span>
+            <span class="production-showtimes__time text-stage-400 text-sm">{{ formatShowtime(show.start_datetime).time }}</span>
             <div class="production-showtimes__card-footer mt-auto pt-3">
               <a
-                v-if="!show.is_sold_out"
-                :href="show.ticket_url || '#'"
+                v-if="show.ticket_url"
+                :href="show.ticket_url"
+                target="_blank"
                 class="production-showtimes__ticket-btn btn-primary w-full text-center text-xs py-2"
               >
                 Get Tickets
               </a>
               <span v-else class="production-showtimes__sold-out block text-center text-xs py-2 px-4 rounded-lg bg-stage-800 text-stage-500 font-medium">
-                Sold Out
+                Tickets Coming Soon
               </span>
             </div>
           </div>
@@ -190,10 +198,19 @@ const crew = computed(() => {
       </div>
     </section>
 
+    <!-- ═══ Overview / Content ═══ -->
+    <section v-if="production && production.content" class="production-content py-16 production-section" id="overview">
+      <div class="production-content__container max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="production-content__body prose prose-invert prose-lg max-w-none">
+          <BlockRenderer :content="production.content" />
+        </div>
+      </div>
+    </section>
+
     <!-- ═══ Cast ═══ -->
-    <section class="production-cast py-16" id="cast-section">
+    <section class="production-cast  production-section py-16" id="cast-section">
       <div class="production-cast__container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <h2 class="production-cast__title section-heading mb-8">Cast</h2>
+        <h2 class="production-cast__title section-heading mb-8 md:text-xl">Cast</h2>
         <div class="production-cast__grid grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
           <PersonCard
             v-for="credit in cast"
@@ -208,9 +225,9 @@ const crew = computed(() => {
     </section>
 
     <!-- ═══ Creative Team ═══ -->
-    <section class="production-crew py-16 bg-stage-900/40" id="crew-section">
+    <section class="production-crew py-16 production-section" id="crew-section">
       <div class="production-crew__container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <h2 class="production-crew__title section-heading mb-8">Creative Team</h2>
+        <h2 class="production-crew__title section-heading mb-8 md:text-xl">Creative Team</h2>
         <div class="production-crew__grid grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
           <PersonCard
             v-for="credit in crew"
@@ -263,3 +280,30 @@ const crew = computed(() => {
     </Teleport>
   </div>
 </template>
+
+<style lang="scss" scoped>
+  .production-section {
+    @apply relative;
+    &::after {
+      content: '';
+      /* Fix: Anchor to left/right and use mx-auto to center based on max-width */
+      @apply absolute bottom-0 left-0 right-0 mx-auto;
+      @apply h-px w-full max-w-7xl;
+      /* Matching your inner container's padding so the line doesn't hit the screen edges */
+      @apply px-4 sm:px-6 lg:px-8;
+      /* Decorative styling */
+      /* Using a subtle stage color + horizontal gradient for a more "theatrical" look */
+      background: linear-gradient(
+        to right, 
+        transparent, 
+        theme('colors.stage.800' / 40%) 15%, 
+        theme('colors.stage.800' / 40%) 85%, 
+        transparent
+      );
+    }
+  }
+  /* Remove the divider from the very last section to keep the footer clean */
+  .production-section:last-of-type::after {
+    content: none;
+  }
+</style>
