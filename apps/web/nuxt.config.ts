@@ -8,13 +8,10 @@ export default defineNuxtConfig({
     '@nuxtjs/google-fonts',
   ],
 
-  // ── Static Site Generation (SSG) ──
+  // ── Server-Side Rendering (SSR) via Netlify Functions ──
   ssr: true,
   nitro: {
-    preset: 'static',
-    prerender: {
-      failOnError: false,
-    },
+    preset: 'netlify',
   },
 
   // ── Tailwind CSS ──
