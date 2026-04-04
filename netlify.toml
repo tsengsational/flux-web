@@ -1,10 +1,11 @@
 [build]
-  command = "pnpm --filter @flux-theatre/web build"
-  publish = "apps/web/.output/public"
-  base = "/"
+  base = "apps/web"
+  command = "pnpm build"
+  publish = ".output/public"
 
 [build.environment]
   NODE_VERSION = "20"
   PNPM_VERSION = "9"
+  NUXT_PUBLIC_DIRECTUS_URL = "https://flux-theatrecms-production.up.railway.app"
 
 
