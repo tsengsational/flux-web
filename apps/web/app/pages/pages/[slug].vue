@@ -7,21 +7,25 @@ const { client, readItems } = useDirectus();
 const slug = route.params.slug as string;
 
 // Fetch the page content with fallback support
-const { data: pages, error } = await useAsyncData<Page[]>(`page-${slug}`, () => 
-  client.request(readItems('pages', {
+const { data: pages, error } = await useAsyncData<Page[]>(`page-${slug}`, async () => {
+  const result = await client.request(readItems('pages', {
     filter: { slug: { _eq: slug }, status: { _eq: 'published' } },
     fields: ['*', 'content'] as any,
     limit: 1
-  })) as any
-);
+  })) as any;
+  
+  if (process.server) {
+    console.log(`[SSR Fetch] Slug: ${slug} | Found: ${Array.isArray(result) && result.length > 0}`);
+  }
+  
+  return result;
+});
 
 const page = computed(() => pages.value?.[0] || null);
 
-if (error.value || !page.value) {
+if (!page.value && !error.value) {
   // If useAsyncData fails or page is not found
-  if (!process.server) {
-    throw createError({ statusCode: 404, statusMessage: 'Page not found' });
-  }
+  throw createError({ statusCode: 404, statusMessage: `Page "${slug}" not found in Directus`, fatal: true });
 }
 
 useHead({
