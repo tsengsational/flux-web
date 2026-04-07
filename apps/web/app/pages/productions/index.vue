@@ -12,6 +12,7 @@ const { client, readItems } = useDirectus();
 const { data: allProductions } = await useAsyncData<Production[]>('all-productions', () => 
   client.request(readItems('productions', {
     filter: { status: { _eq: 'published' } },
+    fields: ['*', { Venue: [{ venues_id: ['name', 'city'] }] }] as any,
     sort: ['-opening_date'],
   }))
 );
