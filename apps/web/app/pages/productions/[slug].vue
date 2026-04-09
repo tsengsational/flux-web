@@ -174,24 +174,24 @@ const crew = computed(() => {
             class="production-showtimes__card card-glass p-4 flex flex-col"
           >
             <div class="production-showtimes__card-header flex items-center justify-between mb-2">
-              <span class="production-showtimes__date text-stage-100 font-medium text-sm">{{ formatShowtime(show.start_datetime).date }}</span>
+              <span class="production-showtimes__date text-stage-500 font-medium text-sm">{{ formatShowtime(show.start_datetime).date }}</span>
               <span v-if="show.category === 'performance'" class="production-showtimes__notes text-xs px-2 py-0.5 rounded-full bg-brand-500/20 text-brand-300 font-medium">
                 Performance
               </span>
             </div>
             <span class="production-showtimes__time text-stage-400 text-sm">{{ formatShowtime(show.start_datetime).time }}</span>
             <div class="production-showtimes__card-footer mt-auto pt-3">
-              <a
+              <button
                 v-if="show.ticket_url"
                 :href="show.ticket_url"
                 target="_blank"
                 class="production-showtimes__ticket-btn btn-primary w-full text-center text-xs py-2"
               >
                 Get Tickets
-              </a>
-              <span v-else class="production-showtimes__sold-out block text-center text-xs py-2 px-4 rounded-lg bg-stage-800 text-stage-500 font-medium">
+              </button>
+              <button v-else class="production-showtimes__sold-out block text-center text-xs py-2 px-4 rounded-lg bg-stage-800 text-stage-100 font-medium">
                 Tickets Coming Soon
-              </span>
+              </button>
             </div>
           </div>
         </div>
@@ -200,7 +200,7 @@ const crew = computed(() => {
 
     <!-- ═══ Overview / Content ═══ -->
     <section v-if="production && production.content" class="production-content py-16 production-section" id="overview">
-      <div class="production-content__container max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="production-content__container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="production-content__body prose prose-invert prose-lg max-w-none">
           <BlockRenderer :content="production.content" />
         </div>

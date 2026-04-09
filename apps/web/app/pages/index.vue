@@ -85,7 +85,7 @@ function getSlideUrl(slide: any, primary: boolean) {
   if (!link || !link.item || !link.collection) return primary ? slide.cta_primary_url : slide.cta_secondary_url;
 
   const paths: Record<string, string> = {
-    'pages': '/pages/',
+    'pages': '/',
     'posts': '/news/',
     'productions': '/productions/',
     'events': '/events/'

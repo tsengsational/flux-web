@@ -91,7 +91,7 @@ const { getAssetUrl } = useDirectus();
         <!-- Paragraph -->
         <p 
           v-else-if="block.type === 'paragraph'"
-          class="text-stage-300 leading-relaxed text-lg"
+          class="text-stage-900 leading-relaxed text-lg"
           v-html="block.data.text || block.data.content"
         />
 

@@ -26,7 +26,7 @@ const navTree = computed(() => {
     // Resolve URL: Page slug takes priority over manual URL
     let resolvedUrl = item.url;
     if (item.page?.slug) {
-      resolvedUrl = `/pages/${item.page.slug}`;
+      resolvedUrl = `/${item.page.slug}`;
     }
 
     return { 
@@ -59,7 +59,6 @@ const staticNav: NavigationItem[] = [
   { id: 'static-events', label: 'Events', url: '/events', sort: 2, parent: null, children: [], is_external: false, page: null },
   { id: 'static-calendar', label: 'Calendar', url: '/calendar', sort: 3, parent: null, children: [], is_external: false, page: null },
   { id: 'static-news', label: 'News', url: '/news', sort: 4, parent: null, children: [], is_external: false, page: null },
-  { id: 'static-about', label: 'About', url: '/about', sort: 5, parent: null, children: [], is_external: false, page: null },
 ];
 
 const combinedNav = computed(() => {
@@ -91,12 +90,7 @@ if (import.meta.client) {
       <div class="site-header__wrapper flex items-center justify-between h-16 lg:h-20">
         <!-- Logo -->
         <NuxtLink to="/" class="site-header__logo flex items-center gap-3 group" id="site-logo">
-          <div class="site-header__logo-icon w-9 h-9 rounded-full bg-gradient-to-br from-brand-400 to-brand-600 flex items-center justify-center shadow-lg shadow-brand-500/20 group-hover:shadow-brand-500/40 transition-shadow">
-            <span class="site-header__logo-text text-stage-950 font-serif font-bold text-lg leading-none">F</span>
-          </div>
-          <span class="site-header__site-name text-stage-50 font-serif text-xl font-semibold tracking-tight hidden sm:block">
-            Flux Theatre Ensemble
-          </span>
+          <img src="/logo.svg" alt="Flux Theatre Ensemble" class="h-10 w-auto group-hover:opacity-90 transition-opacity" />
         </NuxtLink>
 
         <!-- Desktop Nav -->

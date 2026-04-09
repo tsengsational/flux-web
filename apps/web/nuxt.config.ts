@@ -8,6 +8,11 @@ export default defineNuxtConfig({
     '@nuxtjs/google-fonts',
   ],
 
+  // ── Server-Side Routing Rules ──
+  routeRules: {
+    '/fear-wonder': { redirect: '/productions/fear-wonder' },
+  },
+
   // ── Server-Side Rendering (SSR) via Netlify Functions ──
   ssr: true,
   nitro: {

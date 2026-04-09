@@ -18,17 +18,17 @@ export default {
             colors: {
                 // Primary — deep theatrical black & warm gold
                 brand: {
-                    50: '#fdf8e8',
-                    100: '#faefc4',
-                    200: '#f5df85',
-                    300: '#edc94a',
-                    400: '#e4b423',
-                    500: '#d4a017',  // primary gold
-                    600: '#b37d11',
-                    700: '#8f5c12',
-                    800: '#774a17',
-                    900: '#633d19',
-                    950: '#3a1f0a',
+                    50: '#fff0eb',
+                    100: '#ffded4',
+                    200: '#ffbda8',
+                    300: '#ff997a',
+                    400: '#ff774d',
+                    500: '#ff5533',  // primary brand
+                    600: '#e63b19',
+                    700: '#bf2d11',
+                    800: '#9e2511',
+                    900: '#822211',
+                    950: '#460e04',
                 },
                 stage: {
                     50: '#f5f5f7',

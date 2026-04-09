@@ -9,12 +9,7 @@ const currentYear = new Date().getFullYear();
         <!-- Brand Column -->
         <div class="site-footer__brand lg:col-span-1">
           <NuxtLink to="/" class="site-footer__logo flex items-center gap-3 group mb-4">
-            <div class="site-footer__logo-icon w-9 h-9 rounded-full bg-gradient-to-br from-brand-400 to-brand-600 flex items-center justify-center">
-              <span class="site-footer__logo-text text-stage-950 font-serif font-bold text-lg leading-none">F</span>
-            </div>
-            <span class="site-footer__site-name text-stage-50 font-serif text-xl font-semibold tracking-tight">
-              Flux Theatre
-            </span>
+            <img src="/logo.svg" alt="Flux Theatre Ensemble" class="h-10 w-auto group-hover:opacity-90 transition-opacity" />
           </NuxtLink>
           <p class="site-footer__tagline text-stage-400 text-sm leading-relaxed">
             Adventurous theatre in the heart of New York City. Building new works and reimagining classics since 2006.
@@ -29,7 +24,6 @@ const currentYear = new Date().getFullYear();
               { label: 'Current Season', to: '/productions' },
               { label: 'Past Productions', to: '/productions?filter=past' },
               { label: 'News & Blog', to: '/news' },
-              { label: 'About Us', to: '/about' },
             ]" :key="link.to" class="site-footer__item">
               <NuxtLink :to="link.to" class="site-footer__link text-stage-400 text-sm hover:text-brand-400 transition-colors">
                 {{ link.label }}

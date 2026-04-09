@@ -4,7 +4,8 @@ import type { Page } from '@flux-theatre/shared';
 const route = useRoute();
 const { client, readItems } = useDirectus();
 
-const slug = route.params.slug as string;
+const slugParam = route.params.slug;
+const slug = Array.isArray(slugParam) ? slugParam.join('/') : slugParam;
 
 // Fetch the page content with fallback support
 const { data: pages, error } = await useAsyncData<Page[]>(`page-${slug}`, async () => {
