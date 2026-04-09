@@ -11,6 +11,7 @@ export default defineNuxtConfig({
   // ── Server-Side Routing Rules ──
   routeRules: {
     '/fear-wonder': { redirect: '/productions/fear-wonder' },
+    '/assets/**': { proxy: `${process.env.NUXT_PUBLIC_DIRECTUS_URL || 'https://flux-theatrecms-production.up.railway.app'}/assets/**` },
   },
 
   // ── Server-Side Rendering (SSR) via Netlify Functions ──

@@ -77,7 +77,7 @@ const { getAssetUrl } = useDirectus();
         <component 
           :is="`h${block.data.level || 2}`"
           v-if="block.type === 'header'"
-          class="font-serif font-bold text-stage-50 mt-12 mb-6"
+          class="font-serif font-bold text-stage-900 mt-12 mb-6"
           :class="{
             'text-4xl lg:text-5xl': (block.data.level === 1),
             'text-3xl lg:text-4xl': (block.data.level === 2),
