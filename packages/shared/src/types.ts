@@ -36,9 +36,9 @@ export interface Production extends DirectusBaseFields {
     events: Event[];        // Unified event-based showtimes
 
     // Relations
-    venue: string | Venue;        // UUID or populated
-    cast: CastCredit[];
-    crew: CrewCredit[];
+    Venue: string | Venue;        // UUID or populated
+    Cast: CastCredit[];
+    Crew: CrewCredit[];
 
     // SEO
     meta_title: string | null;

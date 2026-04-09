@@ -8,28 +8,32 @@ const { client, readItems, getAssetUrl } = useDirectus();
 const isLightboxOpen = ref(false);
 
 // Fetch the production from Directus based on slug
-const { data: productions, error } = await useAsyncData<Production[]>(`production-${slug}`, () => 
-  client.request(readItems('productions' as any, {
+const { data: productions, error } = await useAsyncData(`production-${slug}`, async () => {
+  return await client.request(readItems('productions' as any, {
     filter: { slug: { _eq: slug }, status: { _eq: 'published' } },
     fields: [
       '*', 
       { 
-        venue: ['name', 'city', 'maps_url'],
+        Venue: [{ venues_id: ['*'] }],
         events: ['*'],
         Cast: ['role_name', 'content', { person: ['first_name', 'last_name', 'slug', 'headshot', 'bio', 'pronouns'] }],
         Crew: ['title', 'content', { person: ['first_name', 'last_name', 'slug', 'headshot', 'bio', 'pronouns'] }]
       }
     ] as any,
     limit: 1
-  } as any) as any)
-);
+  } as any)) as any;
+});
 
-const production = computed(() => productions.value?.[0] || null);
-
-// Handle 404 if production not found
-if (!production.value && !error.value) {
-  throw createError({ statusCode: 404, statusMessage: 'Production not found' });
-}
+const production = computed(() => {
+  if (!productions.value || !productions.value[0]) return null;
+  const prod = productions.value[0] as any;
+  // Map the M2M Venue array to a single venue object for simpler template access
+  const primaryVenue = prod.Venue?.[0]?.venues_id;
+  return {
+    ...prod,
+    venueData: typeof primaryVenue === 'object' ? primaryVenue : null
+  };
+});
 
 
 
@@ -143,15 +147,18 @@ const crew = computed(() => {
 
             <!-- Venue & Dates -->
             <div class="production-detail__location mt-6 flex flex-wrap gap-4 text-sm">
-              <div v-if="typeof production.venue === 'object'" class="production-detail__venue flex items-center gap-2 text-stage-300">
+            <!-- Venue & Dates -->
+            <div class="production-detail__location mt-6 flex flex-wrap gap-4 text-sm">
+              <div v-if="production.venueData" class="production-detail__venue flex items-center gap-2 text-stage-300">
                 <svg class="production-detail__location-icon w-4 h-4 text-brand-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" />
                   <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" />
                 </svg>
-                <a :href="production.venue.maps_url || '#'" target="_blank" class="production-detail__venue-link hover:text-brand-400 transition-colors">
-                  {{ production.venue.name }}, {{ production.venue.city }}
+                <a :href="production.venueData.maps_url || '#'" target="_blank" class="production-detail__venue-link hover:text-brand-400 transition-colors">
+                  {{ production.venueData.name }}, {{ production.venueData.city }}
                 </a>
               </div>
+            </div>
             </div>
 
             <!-- Description -->
@@ -251,7 +258,7 @@ const crew = computed(() => {
         leave-to-class="opacity-0"
       >
         <div 
-          v-if="isLightboxOpen" 
+          v-if="isLightboxOpen && production" 
           class="fixed inset-0 z-[200] flex items-center justify-center p-4 md:p-12"
           @click="isLightboxOpen = false"
         >
