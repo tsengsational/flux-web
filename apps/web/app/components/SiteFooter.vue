@@ -38,8 +38,6 @@ const currentYear = new Date().getFullYear();
           <ul class="site-footer__list space-y-2">
             <li v-for="link in [
               { label: 'Donate', to: '/donate' },
-              { label: 'Volunteer', to: '/volunteer' },
-              { label: 'Sponsor', to: '/sponsor' },
               { label: 'Contact', to: '/contact' },
             ]" :key="link.to" class="site-footer__item">
               <NuxtLink :to="link.to" class="site-footer__link text-stage-400 text-sm hover:text-brand-400 transition-colors">

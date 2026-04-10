@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { Production, BlogPost, HomePage } from '@flux-theatre/shared';
+import type { Production, BlogPost, HomePage, Event } from '@flux-theatre/shared';
 const { client, readItems, readSingleton, getAssetUrl } = useDirectus();
 
 const { data: homeData } = await useAsyncData<HomePage>('home-data', async () => {
@@ -18,14 +18,43 @@ const { data: homeData } = await useAsyncData<HomePage>('home-data', async () =>
   return raw as HomePage;
 });
 
-// Fetch upcoming productions
-const { data: upcomingProductions } = await useAsyncData<Production[]>('home-productions', () =>
-  client.request(readItems('productions', {
-    filter: { status: { _eq: 'published' } },
+// Fetch on-stage items (productions first, then events)
+const { data: onStageItems } = await useAsyncData<{_type: 'production' | 'event', data: any}[]>('home-on-stage', async () => {
+  const nowStr = new Date().toISOString();
+  
+  // 1. Fetch upcoming/running productions
+  const prodRaw = await client.request(readItems('productions', {
+    filter: { 
+      status: { _eq: 'published' },
+      _or: [
+        { closing_date: { _gte: nowStr } },
+        { closing_date: { _null: true } }
+      ]
+    },
     sort: ['opening_date'],
     limit: 3
-  }))
-);
+  }));
+
+  // 2. Fetch recent/upcoming events
+  const eventsRaw = await client.request(readItems('events', {
+    filter: { status: { _eq: 'published' } },
+    sort: ['-start_datetime'],
+    limit: 3
+  }));
+
+  // Merge them (Productions first, then events) up to 3 total
+  const items: {_type: 'production' | 'event', data: any}[] = [];
+  
+  for (const p of prodRaw) {
+    if (items.length < 3) items.push({ _type: 'production', data: p });
+  }
+  
+  for (const e of eventsRaw) {
+    if (items.length < 3) items.push({ _type: 'event', data: e });
+  }
+
+  return items;
+});
 
 // Fetch latest news highlights
 const { data: newsHighlights } = await useAsyncData<BlogPost[]>('home-news', () =>
@@ -252,23 +281,24 @@ onUnmounted(() => { if (autoTimer) clearInterval(autoTimer); });
       </div>
     </section>
 
-    <!-- ═══ UPCOMING PRODUCTIONS ═══ -->
+    <!-- ═══ UPCOMING PRODUCTIONS & EVENTS ═══ -->
     <section class="upcoming-productions py-24 bg-stage-950" id="upcoming-productions">
       <div class="upcoming-productions__container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="upcoming-productions__header flex items-end justify-between mb-12">
           <div class="upcoming-productions__titles">
-            <p class="text-brand-400 font-medium text-sm uppercase tracking-[0.15em] mb-2">On Stage</p>
-            <h2 class="section-heading text-stage-50">Upcoming Productions</h2>
+            <p class="text-brand-400 font-medium text-sm uppercase tracking-[0.15em] mb-2">On Stage & Upcoming</p>
+            <h2 class="section-heading text-stage-50">Productions & Events</h2>
           </div>
-          <NuxtLink to="/productions" class="btn-secondary hidden sm:inline-flex text-brand-400 hover:text-brand-200 transition-colors" id="view-all-productions">
-            View All
-          </NuxtLink>
         </div>
-        <div v-if="upcomingProductions" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          <ProductionCard v-for="prod in upcomingProductions" :key="prod.slug" :production="prod" />
+        <div v-if="onStageItems && onStageItems.length > 0" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <template v-for="item in onStageItems" :key="item.data.slug">
+            <ProductionCard v-if="item._type === 'production'" :production="item.data" />
+            <EventCard v-else-if="item._type === 'event'" :event="item.data" />
+          </template>
         </div>
-        <div class="mt-8 text-center sm:hidden">
-          <NuxtLink to="/productions" class="btn-secondary">View All Productions</NuxtLink>
+        <div v-else class="text-stage-400 italic">No upcoming productions or events scheduled.</div>
+        <div class="mt-8 flex gap-4 justify-center">
+          <NuxtLink to="/productions" class="btn-secondary">View Past Productions</NuxtLink>
         </div>
       </div>
     </section>
@@ -328,15 +358,49 @@ onUnmounted(() => { if (autoTimer) clearInterval(autoTimer); });
     </section>
 
     <!-- ═══ NEWSLETTER CTA ═══ -->
-    <section class="newsletter py-20 relative overflow-hidden" id="newsletter-cta">
-      <div class="absolute inset-0 bg-gradient-to-r from-curtain-700/20 via-stage-900 to-brand-900/20" />
-      <div class="relative max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-        <h2 class="text-2xl sm:text-3xl font-serif font-bold text-stage-50">Stay in the Loop</h2>
-        <p class="mt-3 text-stage-300">Get updates on auditions, upcoming shows, and behind-the-scenes stories.</p>
-        <form class="mt-8 flex flex-col sm:flex-row gap-3 max-w-md mx-auto" @submit.prevent>
-          <input type="email" placeholder="your@email.com" class="flex-1 px-4 py-3 rounded-lg bg-stage-800/60 border border-stage-700/40 text-stage-100 placeholder-stage-500 focus:outline-none focus:ring-2 focus:ring-brand-500/50 focus:border-brand-500/50 transition-all" id="newsletter-email" />
-          <button type="submit" class="btn-primary whitespace-nowrap text-brand-400" id="newsletter-submit">Subscribe</button>
-        </form>
+    <section class="newsletter py-24 sm:py-32 relative overflow-hidden border-t border-stage-800/50" id="newsletter-cta">
+      <!-- Deep Background -->
+      <div class="absolute inset-0 bg-stage-950" />
+      
+      <!-- Artistic Gradient Mesh (Floating Orbs) -->
+      <div class="absolute inset-0 overflow-hidden pointer-events-none opacity-50">
+        <div class="orb orb-1 bg-brand-500/40"></div>
+        <div class="orb orb-2 bg-curtain-600/30"></div>
+        <div class="orb orb-3 bg-brand-300/20"></div>
+      </div>
+
+      <!-- Atmospheric Noise Texture (Frontend Design Style) -->
+      <div class="absolute inset-0 opacity-[0.06] mix-blend-overlay pointer-events-none" style="background-image: url('data:image/svg+xml,%3Csvg viewBox=%220 0 200 200%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cfilter id=%22noiseFilter%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.8%22 numOctaves=%223%22 stitchTiles=%22stitch%22/%3E%3C/filter%3E%3Crect width=%22100%25%22 height=%22100%25%22 filter=%22url(%23noiseFilter)%22/%3E%3C/svg%3E');"></div>
+
+      <!-- Main Content -->
+      <div class="relative max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 text-center z-10">
+        <h2 class="text-3xl sm:text-4xl lg:text-5xl font-serif font-bold text-transparent bg-clip-text bg-gradient-to-br from-stage-50 to-stage-400 mb-4 tracking-tight drop-shadow-xl">
+          Stay in the Loop
+        </h2>
+        <p class="text-lg text-stage-200 mb-10 max-w-xl mx-auto font-medium tracking-wide drop-shadow-md">
+          Get updates on auditions, upcoming shows, and behind-the-scenes stories.
+        </p>
+        
+        <!-- Glassmorphism Form Container -->
+        <div class="backdrop-blur-2xl bg-stage-900/30 border border-stage-500/20 p-2 sm:p-3 rounded-2xl shadow-2xl shadow-brand-900/20 max-w-md mx-auto transform transition-transform hover:scale-[1.01]">
+          <form 
+            action="https://fluxtheatre.us11.list-manage.com/subscribe/post?u=c140115304951f2b16fb2ffde&amp;id=5fdf6f58f7&amp;f_id=00c9dfe3f0" 
+            method="post" 
+            id="mc-embedded-subscribe-form" 
+            name="mc-embedded-subscribe-form" 
+            class="flex flex-col sm:flex-row gap-3 relative" 
+            target="_blank"
+          >
+            <input type="email" name="EMAIL" placeholder="your@email.com" class="flex-1 px-5 py-4 rounded-xl bg-stage-950/50 border border-stage-700/50 text-stage-50 placeholder-stage-400 focus:outline-none focus:ring-2 focus:ring-brand-400/50 transition-all text-lg shadow-inner" id="mce-EMAIL" required />
+            <!-- Anti-bot honeypot -->
+            <div style="position: absolute; left: -5000px;" aria-hidden="true">
+              <input type="text" name="b_c140115304951f2b16fb2ffde_5fdf6f58f7" tabindex="-1" value="">
+            </div>
+            <button type="submit" name="subscribe" class="bg-brand-500 hover:bg-brand-400 text-stage-950 font-bold px-8 py-4 rounded-xl transition-all hover:shadow-[0_0_20px_rgba(255,85,51,0.4)] active:scale-95 whitespace-nowrap text-lg" id="mc-embedded-subscribe">
+              Subscribe
+            </button>
+          </form>
+        </div>
       </div>
     </section>
   </div>
@@ -393,6 +457,50 @@ onUnmounted(() => { if (autoTimer) clearInterval(autoTimer); });
 /* Static hero title gradient spans */
 .hero-title-dynamic :deep(span) {
   @apply bg-gradient-to-r from-brand-400 to-brand-200 bg-clip-text text-transparent;
+}
+
+/* Artistic Mesh Gradient Orbs */
+.orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  animation: float 20s infinite alternate ease-in-out;
+}
+
+.orb-1 {
+  width: 60%;
+  height: 120%;
+  top: -20%;
+  left: -10%;
+  transform-origin: center right;
+  animation-duration: 25s;
+}
+
+.orb-2 {
+  width: 80%;
+  height: 150%;
+  bottom: -40%;
+  right: -20%;
+  transform-origin: bottom left;
+  animation-duration: 28s;
+  animation-delay: -5s;
+}
+
+.orb-3 {
+  width: 50%;
+  height: 100%;
+  top: 10%;
+  left: 20%;
+  transform-origin: center center;
+  animation-duration: 22s;
+  animation-delay: -10s;
+}
+
+@keyframes float {
+  0% { transform: translate(0, 0) scale(1) rotate(0deg); }
+  33% { transform: translate(5%, 5%) scale(1.05) rotate(5deg); }
+  66% { transform: translate(-5%, -2%) scale(0.95) rotate(-3deg); }
+  100% { transform: translate(-2%, 5%) scale(1.1) rotate(2deg); }
 }
 </style>
 
