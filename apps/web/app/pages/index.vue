@@ -342,17 +342,11 @@ onUnmounted(() => { if (autoTimer) clearInterval(autoTimer); });
           <NuxtLink to="/news" class="btn-secondary hidden sm:inline-flex text-brand-400 hover:text-brand-200 transition-colors" id="view-all-news">All News</NuxtLink>
         </div>
         <div v-if="newsHighlights" class="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <NuxtLink
+          <BlogPostCard
             v-for="post in newsHighlights"
             :key="post.slug"
-            :to="`/news/${post.slug}`"
-            class="card-glass p-6 group"
-          >
-            <p class="text-xs text-brand-400/70 font-medium uppercase tracking-wider mb-3">{{ post.publish_date }}</p>
-            <h3 class="text-xl font-serif font-bold text-stage-50 group-hover:text-brand-400 transition-colors">{{ post.title }}</h3>
-            <p class="text-sm text-stage-400 mt-3 leading-relaxed">{{ post.excerpt }}</p>
-            <span class="inline-block mt-4 text-sm text-brand-400 font-medium group-hover:translate-x-1 transition-transform">Read more &rarr;</span>
-          </NuxtLink>
+            :post="post"
+          />
         </div>
       </div>
     </section>
