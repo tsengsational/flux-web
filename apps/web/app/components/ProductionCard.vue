@@ -48,7 +48,7 @@ const dateRange = computed(() => {
 
     <!-- Info -->
     <div class="production-card__info p-5">
-      <h3 class="production-card__title text-lg font-serif font-bold text-stage-50 group-hover:text-brand-400 transition-colors line-clamp-2">
+      <h3 class="production-card__title text-lg font-serif font-bold text-stage-900 group-hover:text-brand-400 transition-colors line-clamp-2">
         {{ production.title }}
       </h3>
       <p class="production-card__playwright text-sm text-stage-400 mt-1">by {{ production.playwright }}</p>

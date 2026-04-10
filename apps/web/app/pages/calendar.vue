@@ -225,7 +225,7 @@ const weekDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
               class="calendar-page__filter-btn px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-200"
               :class="activeType === f.value
                 ? 'bg-brand-500 text-stage-950'
-                : 'bg-stage-800/60 text-stage-400 hover:text-stage-200 border border-stage-700/40'"
+                : 'bg-stage-800/60 text-stage-100 hover:text-stage-50 border border-stage-700/40'"
               @click="activeType = f.value"
             >
               {{ f.label }}
@@ -276,7 +276,7 @@ const weekDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
             </svg>
           </button>
           <div class="calendar-page__month-info text-center">
-            <h2 class="calendar-page__month-title text-2xl font-serif font-bold text-stage-50">{{ monthLabel }}</h2>
+            <h2 class="calendar-page__month-title text-2xl font-serif font-bold text-stage-9n 50">{{ monthLabel }}</h2>
             <button
               @click="goToToday"
               class="calendar-page__today-btn text-xs text-brand-400 hover:text-brand-300 transition-colors mt-1"

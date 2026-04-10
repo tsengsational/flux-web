@@ -61,8 +61,8 @@ const filters: { label: string; value: FilterOption }[] = [
             :key="f.value"
             class="productions-page__filter-btn px-4 py-2.5 text-sm font-medium rounded-t-lg transition-all duration-200"
             :class="activeFilter === f.value
-              ? 'productions-page__filter-btn--active text-brand-400 bg-stage-800/50 border-b-2 border-brand-400 -mb-px'
-              : 'productions-page__filter-btn--inactive text-stage-400 hover:text-stage-200 hover:bg-stage-800/30'"
+              ? 'productions-page__filter-btn--active text-brand-400 bg-stage-300/50 border-b-2 border-brand-400 -mb-px'
+              : 'productions-page__filter-btn--inactive text-stage-400 hover:text-stage-200 hover:bg-stage-300/30'"
             @click="activeFilter = f.value"
           >
             {{ f.label }}
