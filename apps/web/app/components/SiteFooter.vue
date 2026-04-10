@@ -12,7 +12,7 @@ const currentYear = new Date().getFullYear();
             <img src="/logo.svg" alt="Flux Theatre Ensemble" class="h-10 w-auto group-hover:opacity-90 transition-opacity" />
           </NuxtLink>
           <p class="site-footer__tagline text-stage-400 text-sm leading-relaxed">
-            Adventurous theatre in the heart of New York City. Building new works and reimagining classics since 2006.
+            Consenus-driven, artist-led, and community-focused theatre in New York City and beyond.
           </p>
         </div>
 
