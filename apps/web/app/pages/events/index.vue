@@ -8,12 +8,18 @@ useSeoMeta({
 
 const { client, readItems } = useDirectus();
 
-const { data: cmsEvents } = await useAsyncData<Event[]>('events-all', () => 
-  client.request(readItems('events' as any, {
-    filter: { status: { _eq: 'published' } },
-    fields: ['*', { venue: ['name'] }] as any,
+const { data: cmsEvents, error } = await useAsyncData<Event[]>('events-list-v1', () => 
+  client.request(readItems('events', {
+    filter: { 
+      status: { _eq: 'published' }
+    },
+    fields: [
+      '*', 
+      { venue: ['name'] },
+      { tags: ['*', { tags_id: ['*'] }] }
+    ] as any,
     sort: ['start_datetime']
-  } as any)) as any
+  }))
 );
 
 const events = computed(() => cmsEvents.value || []);
@@ -101,6 +107,11 @@ const categoryFilters: { label: string; value: CategoryFilter }[] = [
     <!-- Events Grid -->
     <section class="events-page__grid-section pb-24" id="events-grid">
       <div class="events-page__grid-container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-[10px] text-stage-600 mb-2 whitespace-pre-wrap">
+          DEBUG: {{ Array.isArray(cmsEvents) ? cmsEvents.length : 'Not an array' }} items. 
+          Raw: {{ JSON.stringify(cmsEvents)?.substring(0, 100) }}
+          Error: {{ error }}
+        </div>
         <TransitionGroup
           tag="div"
           class="events-page__grid grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
@@ -114,7 +125,7 @@ const categoryFilters: { label: string; value: CategoryFilter }[] = [
           <EventCard
             v-for="ev in filteredEvents"
             :key="ev.slug"
-            :event="ev"
+            :event="{ ...ev, view_type: 'light' }"
             class="events-page__card"
           />
         </TransitionGroup>
@@ -124,9 +135,12 @@ const categoryFilters: { label: string; value: CategoryFilter }[] = [
         </p>
 
         <!-- Calendar link -->
-        <div class="events-page__footer mt-12 text-center">
+        <div class="events-page__footer mt-12 flex flex-col sm:flex-row items-center justify-center gap-4">
           <NuxtLink to="/calendar" class="events-page__calendar-btn btn-secondary" id="go-to-calendar">
             View Full Calendar
+          </NuxtLink>
+          <NuxtLink to="/events/past" class="events-page__past-btn text-sm text-stage-500 hover:text-brand-400 transition-colors" id="view-past-events">
+            View Past Events
           </NuxtLink>
         </div>
       </div>

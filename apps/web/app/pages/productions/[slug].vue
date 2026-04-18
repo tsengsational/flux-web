@@ -15,7 +15,7 @@ const { data: productions, error } = await useAsyncData(`production-${slug}`, as
       '*', 
       { 
         Venue: [{ venues_id: ['*'] }],
-        events: ['*'],
+        events: ['*', { tags: ['*', { tags_id: ['*'] }] }],
         Cast: ['role_name', 'content', { person: ['first_name', 'last_name', 'slug', 'headshot', 'bio', 'pronouns'] }],
         Crew: ['title', 'content', { person: ['first_name', 'last_name', 'slug', 'headshot', 'bio', 'pronouns'] }]
       }
@@ -42,6 +42,91 @@ useSeoMeta({
   description: () => production.value?.meta_description || production.value?.tagline || '',
 });
 
+// ── View States ──
+type ViewMode = 'calendar' | 'list';
+const viewMode = ref<ViewMode>('list');
+
+// ── Calendar Logic (Scoped to this production's performances) ──
+const today = new Date();
+const currentMonth = ref(today.getMonth());
+const currentYear = ref(today.getFullYear());
+
+// Set initial calendar view to opening date if available
+onMounted(() => {
+  if (production.value?.opening_date) {
+    const opening = new Date(production.value.opening_date);
+    currentMonth.value = opening.getMonth();
+    currentYear.value = opening.getFullYear();
+  }
+});
+
+const monthLabel = computed(() => {
+  return new Date(currentYear.value, currentMonth.value).toLocaleDateString('en-US', {
+    month: 'long',
+    year: 'numeric',
+  });
+});
+
+function prevMonth() {
+  if (currentMonth.value === 0) {
+    currentMonth.value = 11;
+    currentYear.value--;
+  } else {
+    currentMonth.value--;
+  }
+}
+
+function nextMonth() {
+  if (currentMonth.value === 11) {
+    currentMonth.value = 0;
+    currentYear.value++;
+  } else {
+    currentMonth.value++;
+  }
+}
+
+const calendarDays = computed(() => {
+  const firstDay = new Date(currentYear.value, currentMonth.value, 1);
+  const startOffset = firstDay.getDay(); // 0 = Sunday
+  const daysInMonth = new Date(currentYear.value, currentMonth.value + 1, 0).getDate();
+  const daysInPrevMonth = new Date(currentYear.value, currentMonth.value, 0).getDate();
+
+  const days: { date: number; month: 'prev' | 'current' | 'next'; fullDate: string; isToday: boolean }[] = [];
+
+  for (let i = startOffset - 1; i >= 0; i--) {
+    const d = daysInPrevMonth - i;
+    const m = currentMonth.value === 0 ? 11 : currentMonth.value - 1;
+    const y = currentMonth.value === 0 ? currentYear.value - 1 : currentYear.value;
+    days.push({
+      date: d,
+      month: 'prev',
+      fullDate: `${y}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`,
+      isToday: false,
+    });
+  }
+
+  for (let d = 1; d <= daysInMonth; d++) {
+    const fullDate = `${currentYear.value}-${String(currentMonth.value + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+    const isToday = d === today.getDate() && currentMonth.value === today.getMonth() && currentYear.value === today.getFullYear();
+    days.push({ date: d, month: 'current', fullDate, isToday });
+  }
+
+  const remaining = 42 - days.length;
+  for (let d = 1; d <= remaining; d++) {
+    const m = currentMonth.value === 11 ? 0 : currentMonth.value + 1;
+    const y = currentMonth.value === 11 ? currentYear.value + 1 : currentYear.value;
+    days.push({
+      date: d,
+      month: 'next',
+      fullDate: `${y}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`,
+      isToday: false,
+    });
+  }
+  return days;
+});
+
+const weekDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
 function formatShowtime(iso: string) {
   if (!iso) return { date: '', time: '' };
   const d = new Date(iso);
@@ -57,6 +142,10 @@ const performances = computed(() => {
     .filter(e => e.category === 'performance')
     .sort((a, b) => new Date(a.start_datetime).getTime() - new Date(b.start_datetime).getTime());
 });
+
+function getPerformancesForDate(fullDate: string) {
+  return performances.value.filter(p => p.start_datetime.startsWith(fullDate));
+}
 
 // Map cast with bio override (Credit Bio > Master Bio)
 const cast = computed(() => {
@@ -173,32 +262,146 @@ const crew = computed(() => {
     <!-- ═══ Showtimes ═══ -->
     <section v-if="production && performances.length" class="production-showtimes production-section py-16" id="showtimes">
       <div class="production-showtimes__container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <h2 class="production-showtimes__title section-heading mb-8 md:text-xl">Showtimes & Tickets</h2>
-        <div class="production-showtimes__grid grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="production-showtimes__header flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8">
+          <h2 class="production-showtimes__title section-heading md:text-xl mb-0">Showtimes & Tickets</h2>
+          
+          <!-- View Toggle -->
+          <div class="production-showtimes__view-toggle flex items-center bg-stage-900/50 p-1 rounded-lg border border-stage-800/50">
+            <button 
+              @click="viewMode = 'calendar'"
+              class="px-3 py-1.5 rounded-md text-xs font-medium transition-all flex items-center gap-2"
+              :class="viewMode === 'calendar' ? 'bg-stage-800 text-brand-300 shadow-sm' : 'text-stage-300 hover:text-stage-100'"
+            >
+              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
+              </svg>
+              Calendar
+            </button>
+            <button 
+              @click="viewMode = 'list'"
+              class="px-3 py-1.5 rounded-md text-xs font-medium transition-all flex items-center gap-2"
+              :class="viewMode === 'list' ? 'bg-stage-800 text-brand-300 shadow-sm' : 'text-stage-300 hover:text-stage-100'"
+            >
+              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 6.75h12M8.25 12h12m-12 5.25h12M3.75 6.75h.007v.008H3.75V6.75zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zM3.75 12h.007v.008H3.75V12zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm-.375 5.25h.007v.008H3.75v-.008zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
+              </svg>
+              List
+            </button>
+          </div>
+        </div>
+
+        <!-- ═══ List View ═══ -->
+        <div v-if="viewMode === 'list'" class="production-showtimes__grid grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <div
             v-for="show in performances"
             :key="show.id"
-            class="production-showtimes__card card-glass p-4 flex flex-col"
+            class="production-showtimes__card card-glass p-5 border-l-4 transition-all hover:translate-y-[-2px]"
+            :class="show.ticket_url ? 'border-brand-500/50' : 'border-stage-700/50'"
           >
-            <div class="production-showtimes__card-header flex items-center justify-between mb-2">
-              <span class="production-showtimes__date text-stage-500 font-medium text-sm">{{ formatShowtime(show.start_datetime).date }}</span>
-              <span v-if="show.category === 'performance'" class="production-showtimes__notes text-xs px-2 py-0.5 rounded-full bg-brand-500/20 text-brand-300 font-medium">
-                Performance
+            <div class="production-showtimes__card-header flex items-center justify-between mb-3">
+              <div class="flex flex-col">
+                <span class="production-showtimes__date text-stage-950 font-bold text-base leading-tight">{{ formatShowtime(show.start_datetime).date }}</span>
+                <span class="production-showtimes__time text-brand-700 text-sm font-bold">{{ formatShowtime(show.start_datetime).time }}</span>
+              </div>
+              <span v-if="show.is_sold_out" class="production-showtimes__status-badge px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-red-100 text-red-700 border border-red-200">
+                Sold Out
               </span>
             </div>
-            <span class="production-showtimes__time text-stage-400 text-sm">{{ formatShowtime(show.start_datetime).time }}</span>
-            <div class="production-showtimes__card-footer mt-auto pt-3">
-              <button
-                v-if="show.ticket_url"
+
+            <!-- Tags -->
+            <div v-if="show.tags?.length" class="production-showtimes__tags flex flex-wrap gap-1.5 mb-4">
+              <span 
+                v-for="tag in show.tags" 
+                :key="tag.id"
+                class="text-[11px] px-2 py-0.5 rounded bg-stage-50 text-stage-700 border border-stage-200 font-bold"
+              >
+                {{ tag.tags_id?.name || tag.tags_id }}
+              </span>
+            </div>
+
+            <div class="production-showtimes__card-footer mt-auto pt-2">
+              <a
+                v-if="show.ticket_url && !show.is_sold_out"
                 :href="show.ticket_url"
                 target="_blank"
-                class="production-showtimes__ticket-btn btn-primary w-full text-center text-xs py-2"
+                class="production-showtimes__ticket-btn btn-primary w-full text-center text-xs py-2 block"
               >
                 Get Tickets
-              </button>
-              <button v-else class="production-showtimes__sold-out block text-center text-xs py-2 px-4 rounded-lg bg-stage-800 text-stage-100 font-medium">
+              </a>
+              <div v-else-if="show.is_sold_out" class="production-showtimes__sold-out block text-center text-xs py-2 px-4 rounded-lg bg-stage-50 text-stage-500 font-bold border border-stage-200">
+                Sold Out
+              </div>
+              <div v-else class="production-showtimes__pending block text-center text-xs py-2 px-4 rounded-lg bg-stage-50 text-stage-500 font-bold border border-stage-200 italic">
                 Tickets Coming Soon
-              </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ═══ Calendar View ═══ -->
+        <div v-if="viewMode === 'calendar'" class="production-showtimes__calendar">
+          <div class="production-showtimes__calendar-wrapper card-glass p-6 md:p-8">
+            <!-- Nav -->
+            <div class="flex items-center justify-between mb-8">
+               <button @click="prevMonth" class="p-2 rounded-lg hover:bg-stage-100 text-stage-600 transition-colors">
+                 <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg>
+               </button>
+               <h3 class="text-xl font-serif font-bold text-stage-900">{{ monthLabel }}</h3>
+               <button @click="nextMonth" class="p-2 rounded-lg hover:bg-stage-100 text-stage-600 transition-colors">
+                 <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
+               </button>
+            </div>
+
+            <!-- Grid -->
+            <div class="grid grid-cols-7 gap-px bg-stage-800/30 border border-stage-800/50 rounded-lg overflow-hidden">
+               <div v-for="day in weekDays" :key="day" class="py-3 text-center text-[11px] uppercase tracking-wider font-bold text-stage-600 bg-stage-50/50 border-b border-stage-200">
+                 {{ day }}
+               </div>
+               <div 
+                 v-for="day in calendarDays" 
+                 :key="day.fullDate"
+                 class="min-h-[80px] md:min-h-[100px] p-2 flex flex-col transition-colors border-t border-r border-stage-800/50"
+                 :class="[
+                   day.month !== 'current' ? 'bg-stage-50/50 opacity-40 text-stage-400' : 'bg-white text-stage-700',
+                   day.isToday ? 'ring-1 ring-inset ring-brand-500/20 bg-brand-500/5' : ''
+                 ]"
+               >
+                 <span class="text-xs font-bold mb-1" :class="day.isToday ? 'text-brand-700' : 'text-stage-900'">{{ day.date }}</span>
+                 
+                 <!-- Performance indicators -->
+                 <div class="flex flex-col gap-1.5 mt-1">
+                   <a 
+                     v-for="perf in getPerformancesForDate(day.fullDate)" 
+                     :key="perf.id"
+                     :href="perf.ticket_url || '#'"
+                     :target="perf.ticket_url ? '_blank' : '_self'"
+                     class="group relative flex flex-col p-1.5 rounded transition-all border-l-2"
+                     :class="[
+                       perf.ticket_url && !perf.is_sold_out 
+                         ? 'bg-brand-50 border-brand-200 hover:bg-brand-100' 
+                         : 'bg-stage-50 border-stage-200 opacity-90'
+                     ]"
+                     :title="`${formatShowtime(perf.start_datetime).time}${perf.is_sold_out ? ' (Sold Out)' : ''}`"
+                   >
+                     <div class="flex items-center justify-between gap-1 mb-0.5">
+                       <span class="text-[9px] md:text-[10px] font-bold text-stage-950">{{ formatShowtime(perf.start_datetime).time }}</span>
+                       <span v-if="perf.ticket_url && !perf.is_sold_out" class="text-[8px] md:text-[9px] uppercase font-black text-brand-700 group-hover:text-brand-900 transition-colors">Tickets</span>
+                       <span v-else-if="perf.is_sold_out" class="text-[8px] md:text-[9px] uppercase font-black text-red-700">Sold Out</span>
+                     </div>
+                     
+                     <!-- Mini Tags -->
+                     <div v-if="perf.tags?.length" class="flex flex-wrap gap-0.5">
+                       <span 
+                         v-for="tag in perf.tags.slice(0, 1)" 
+                         :key="tag.id"
+                         class="text-[8px] md:text-[9px] px-1 py-0.5 rounded-sm bg-stage-50 text-stage-700 border border-stage-200 font-bold truncate max-w-full"
+                       >
+                         {{ tag.tags_id?.name || tag.tags_id }}
+                       </span>
+                     </div>
+                   </a>
+                 </div>
+               </div>
             </div>
           </div>
         </div>

@@ -160,10 +160,17 @@ export interface Event extends DirectusBaseFields {
 
     // Relations
     related_production: string | Production | null;
+    tags: EventTag[];
 
     // SEO
     meta_title: string | null;
     meta_description: string | null;
+}
+
+export interface EventTag {
+    id: string;
+    events_id: string | Event;
+    tags_id: string | Tag;
 }
 
 // ─── Calendar (unified view helper) ───
@@ -180,6 +187,7 @@ export interface CalendarEntry {
     venue_name?: string;
     is_sold_out?: boolean;
     notes?: string | null;
+    tags?: string[];
 }
 
 // ─── Blog / News ───

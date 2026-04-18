@@ -3,9 +3,12 @@ import type { Production } from '@flux-theatre/shared';
 
 interface Props {
   production: Pick<Production, 'title' | 'slug' | 'tagline' | 'poster_image' | 'season' | 'playwright' | 'opening_date' | 'closing_date'>;
+  view_type?: 'light' | 'dark';
 }
 
-const props = defineProps<Props>();
+const props = withDefaults(defineProps<Props>(), {
+  view_type: 'light'
+});
 const { getAssetUrl } = useDirectus();
 
 const dateRange = computed(() => {
@@ -40,7 +43,7 @@ const dateRange = computed(() => {
 
       <!-- Season badge -->
       <div class="production-card__badge absolute top-3 right-3">
-        <span class="production-card__badge-text px-2.5 py-1 rounded-full text-xs font-semibold bg-brand-500/90 text-stage-950 backdrop-blur-sm">
+        <span class="production-card__badge-text px-2.5 py-1 rounded-full text-xs font-bold bg-brand-600 text-white shadow-sm">
           {{ production.season }}
         </span>
       </div>
@@ -48,14 +51,30 @@ const dateRange = computed(() => {
 
     <!-- Info -->
     <div class="production-card__info p-5">
-      <h3 class="production-card__title text-lg font-serif font-bold text-stage-900 group-hover:text-brand-400 transition-colors line-clamp-2">
+      <h3 
+        class="production-card__title text-lg font-serif font-bold group-hover:text-brand-400 transition-colors line-clamp-2"
+        :class="view_type === 'light' ? 'text-stage-950' : 'text-stage-50'"
+      >
         {{ production.title }}
       </h3>
-      <p class="production-card__playwright text-sm text-stage-400 mt-1">by {{ production.playwright }}</p>
-      <p v-if="production.tagline" class="production-card__tagline text-sm text-stage-300 mt-2 line-clamp-2">
+      <p 
+        class="production-card__playwright text-sm mt-1 font-medium"
+        :class="view_type === 'light' ? 'text-stage-700' : 'text-stage-200'"
+      >
+        by {{ production.playwright }}
+      </p>
+      <p 
+        v-if="production.tagline" 
+        class="production-card__tagline text-sm mt-2 line-clamp-2 leading-relaxed"
+        :class="view_type === 'light' ? 'text-stage-600' : 'text-stage-300'"
+      >
         {{ production.tagline }}
       </p>
-      <p v-if="dateRange" class="production-card__date-range text-xs text-brand-400/80 mt-3 font-medium">
+      <p 
+        v-if="dateRange" 
+        class="production-card__date-range text-xs mt-3 font-bold"
+        :class="view_type === 'light' ? 'text-brand-700' : 'text-brand-300'"
+      >
         {{ dateRange }}
       </p>
     </div>

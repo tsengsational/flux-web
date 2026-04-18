@@ -15,6 +15,7 @@ interface EventSummary {
   is_free: boolean;
   price: string | null;
   rsvp_url: string | null;
+  tags?: Array<{ id: string; tags_id: { name: string } | string }>;
 }
 
 const props = defineProps<{ event: EventSummary }>();
@@ -56,8 +57,16 @@ const categoryLabel = computed(() => {
     masterclass: 'Masterclass',
     community: 'Community',
     other: 'Event',
+    performance: 'Performance',
   };
   return labels[props.event.category];
+});
+
+const eventTags = computed(() => {
+  if (!props.event.tags) return [];
+  return props.event.tags
+    .map(t => typeof t.tags_id === 'object' ? t.tags_id.name : null)
+    .filter(Boolean);
 });
 </script>
 
@@ -84,15 +93,15 @@ const categoryLabel = computed(() => {
 
       <!-- Badges -->
       <div class="event-card__badges absolute top-3 left-3 flex gap-2">
-        <span class="event-card__category px-2.5 py-1 rounded-full text-xs font-semibold bg-brand-500/90 text-stage-950 backdrop-blur-sm">
+        <span class="event-card__category px-2.5 py-1 rounded-full text-xs font-bold bg-brand-600 text-white shadow-sm">
           {{ categoryLabel }}
         </span>
         <span
-          class="event-card__format px-2.5 py-1 rounded-full text-xs font-semibold backdrop-blur-sm"
+          class="event-card__format px-2.5 py-1 rounded-full text-xs font-bold shadow-sm"
           :class="{
-            'event-card__format--digital bg-blue-500/80 text-white': event.format === 'digital',
-            'event-card__format--hybrid bg-purple-500/80 text-white': event.format === 'hybrid',
-            'event-card__format--in-person bg-stage-950/70 text-stage-200': event.format === 'in_person',
+            'event-card__format--digital bg-blue-600 text-white': event.format === 'digital',
+            'event-card__format--hybrid bg-purple-600 text-white': event.format === 'hybrid',
+            'event-card__format--in-person bg-stage-900 text-stage-100': event.format === 'in_person',
           }"
         >
           <!-- Format icon -->
@@ -112,23 +121,50 @@ const categoryLabel = computed(() => {
 
     <!-- Info -->
     <div class="event-card__info p-5">
-      <div class="event-card__date-time flex items-center gap-2 text-xs text-brand-400/80 font-medium mb-2">
-        <svg class="event-card__time-icon w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+      <div 
+        class="event-card__date-time flex items-center gap-2 text-xs font-bold mb-2"
+        :class="event.view_type === 'light' ? 'text-brand-700' : 'text-brand-300'"
+      >
+        <svg class="event-card__time-icon w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
           <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
         </svg>
         {{ formattedDate }} · {{ formattedTime }}
       </div>
 
-      <h3 class="event-card__title text-lg font-serif font-bold text-stage-50 group-hover:text-brand-400 transition-colors line-clamp-2">
+      <h3 
+        class="event-card__title text-lg font-serif font-bold group-hover:text-brand-400 transition-colors line-clamp-2"
+        :class="event.view_type === 'light' ? 'text-stage-950' : 'text-stage-50'"
+      >
         {{ event.title }}
       </h3>
 
-      <p v-if="event.excerpt" class="event-card__excerpt text-sm text-stage-400 mt-2 leading-relaxed line-clamp-2">
+      <p 
+        v-if="event.excerpt" 
+        class="event-card__excerpt text-sm mt-2 leading-relaxed line-clamp-2"
+        :class="event.view_type === 'light' ? 'text-stage-700' : 'text-stage-200'"
+      >
         {{ event.excerpt }}
       </p>
 
+      <!-- Tags -->
+      <div v-if="eventTags.length" class="event-card__tags mt-3 flex flex-wrap gap-1.5">
+        <span
+          v-for="tag in eventTags"
+          :key="tag"
+          class="event-card__tag text-[10px] px-2 py-0.5 rounded-full font-bold"
+          :class="event.view_type === 'light' 
+            ? 'bg-stage-50 text-stage-700 border border-stage-200' 
+            : 'bg-stage-800 text-stage-200 border border-stage-700'"
+        >
+          {{ tag }}
+        </span>
+      </div>
+
       <!-- Location / Price row -->
-      <div class="event-card__footer mt-3 flex items-center justify-between text-xs text-stage-500">
+      <div 
+        class="event-card__footer mt-3 flex items-center justify-between text-xs font-medium"
+        :class="event.view_type === 'light' ? 'text-stage-700' : 'text-stage-300'"
+      >
         <span v-if="event.venue" class="event-card__location flex items-center gap-1">
           <svg class="event-card__location-icon w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
             <path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" />

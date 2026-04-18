@@ -12,7 +12,7 @@ const { data: cmsData } = await useAsyncData('calendar-data', async () => {
   const [events, productions] = await Promise.all([
     client.request(readItems('events' as any, {
       filter: { status: { _eq: 'published' } },
-      fields: ['id', 'title', 'slug', 'start_datetime', 'end_datetime', 'category', 'format', { venue: ['name'] }] as any
+      fields: ['id', 'title', 'slug', 'start_datetime', 'end_datetime', 'category', 'format', { venue: ['name'] }, { tags: ['*', { tags_id: ['*'] }] }] as any
     } as any)),
     client.request(readItems('productions' as any, {
       filter: { status: { _eq: 'published' } },
@@ -38,7 +38,8 @@ const calendarEntries = computed<CalendarEntry[]>(() => {
       slug: ev.slug,
       category: ev.category,
       format: ev.format,
-      venue_name: typeof ev.venue === 'string' ? ev.venue : ev.venue?.name
+      venue_name: typeof ev.venue === 'string' ? ev.venue : ev.venue?.name,
+      tags: ev.tags?.map((t: any) => typeof t.tags_id === 'object' ? t.tags_id.name : t.tags_id).filter(Boolean) || []
     });
   });
   
@@ -409,6 +410,14 @@ const weekDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
                 </span>
                 <span v-if="entry.notes" class="calendar-page__notes text-[10px] text-stage-500">{{ entry.notes }}</span>
                 <span v-if="entry.is_sold_out" class="calendar-page__sold-out-tag text-[10px] text-red-400 font-semibold">Sold Out</span>
+                <!-- Event Tags -->
+                <span 
+                  v-for="tag in (entry.tags || [])" 
+                  :key="tag"
+                  class="calendar-page__custom-tag px-2 py-0.5 rounded-full text-[10px] font-medium bg-stage-800 text-stage-400 border border-stage-700/50"
+                >
+                  {{ tag }}
+                </span>
               </div>
               <h3 class="calendar-page__item-title text-sm font-semibold text-stage-100 group-hover:text-brand-400 transition-colors truncate">
                 {{ entry.title }}

@@ -37,6 +37,11 @@ const { data: onStageItems } = await useAsyncData<{_type: 'production' | 'event'
 
   // 2. Fetch recent/upcoming events
   const eventsRaw = await client.request(readItems('events', {
+    fields: [
+      '*', 
+      'venue.*',
+      { tags: ['*', { tags_id: ['*'] }] }
+    ],
     filter: { status: { _eq: 'published' } },
     sort: ['-start_datetime'],
     limit: 3
@@ -292,8 +297,8 @@ onUnmounted(() => { if (autoTimer) clearInterval(autoTimer); });
         </div>
         <div v-if="onStageItems && onStageItems.length > 0" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           <template v-for="item in onStageItems" :key="item.data.slug">
-            <ProductionCard v-if="item._type === 'production'" :production="item.data" />
-            <EventCard v-else-if="item._type === 'event'" :event="item.data" />
+            <ProductionCard v-if="item._type === 'production'" :production="item.data" view_type="dark" />
+            <EventCard v-else-if="item._type === 'event'" :event="{ ...item.data, view_type: 'dark' }" />
           </template>
         </div>
         <div v-else class="text-stage-400 italic">No upcoming productions or events scheduled.</div>
