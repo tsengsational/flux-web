@@ -95,6 +95,7 @@ const remainingPosts = computed(() => filteredPosts.value.slice(1));
           v-if="featuredPost"
           :post="featuredPost"
           featured
+          view_type="light"
           class="news-page__featured-post mb-8"
         />
 
@@ -104,6 +105,7 @@ const remainingPosts = computed(() => filteredPosts.value.slice(1));
             v-for="post in remainingPosts"
             :key="post.slug"
             :post="post"
+            view_type="light"
             class="news-page__card"
           />
         </div>

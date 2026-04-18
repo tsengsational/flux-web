@@ -4,9 +4,13 @@ import type { BlogPost, Person } from '@flux-theatre/shared';
 interface Props {
   post: BlogPost;
   featured?: boolean;
+  view_type?: 'light' | 'dark';
 }
 
-const props = withDefaults(defineProps<Props>(), { featured: false });
+const props = withDefaults(defineProps<Props>(), { 
+  featured: false,
+  view_type: 'light'
+});
 const { getAssetUrl } = useDirectus();
 
 const formattedDate = computed(() => {
@@ -52,19 +56,35 @@ const authorName = computed(() => {
     <!-- Content -->
     <div class="blog-post-card__content p-6 lg:p-8 flex flex-col justify-center">
       <div class="blog-post-card__meta flex items-center gap-3 mb-3">
-        <span class="blog-post-card__badge px-2.5 py-1 rounded-full text-xs font-semibold bg-brand-500/20 text-brand-300">
+        <span 
+          class="blog-post-card__badge px-2.5 py-1 rounded-full text-xs font-bold"
+          :class="view_type === 'light' ? 'bg-brand-600 text-white' : 'bg-brand-500/20 text-brand-300'"
+        >
           Featured
         </span>
-        <span class="blog-post-card__date text-xs text-stage-500">{{ formattedDate }}</span>
+        <span 
+          class="blog-post-card__date text-xs"
+          :class="view_type === 'light' ? 'text-stage-600' : 'text-stage-500'"
+        >{{ formattedDate }}</span>
       </div>
-      <h2 class="blog-post-card__title text-2xl lg:text-3xl font-serif font-bold text-stage-950 group-hover:text-brand-400 transition-colors leading-tight">
+      <h2 
+        class="blog-post-card__title text-2xl lg:text-3xl font-serif font-bold group-hover:text-brand-400 transition-colors leading-tight"
+        :class="view_type === 'light' ? 'text-stage-950' : 'text-stage-50'"
+      >
         {{ post.title }}
       </h2>
-      <p v-if="post.excerpt" class="blog-post-card__excerpt mt-3 text-stage-400 leading-relaxed line-clamp-3">
+      <p 
+        v-if="post.excerpt" 
+        class="blog-post-card__excerpt mt-3 leading-relaxed line-clamp-3"
+        :class="view_type === 'light' ? 'text-stage-700' : 'text-stage-400'"
+      >
         {{ post.excerpt }}
       </p>
-      <div class="blog-post-card__footer mt-4 flex items-center justify-between">
-        <span class="blog-post-card__author text-xs text-stage-500">
+      <div 
+        class="blog-post-card__footer mt-4 flex items-center justify-between"
+        :class="view_type === 'light' ? 'text-stage-700' : 'text-stage-500'"
+      >
+        <span class="blog-post-card__author text-xs">
           By 
           <NuxtLink v-if="post.author && typeof post.author !== 'string'" :to="`/people/${post.author.slug}`" class="hover:text-brand-400 transition-colors">
             {{ authorName }}
@@ -79,7 +99,10 @@ const authorName = computed(() => {
         <span
           v-for="tag in post.tags.slice(0, 3)"
           :key="tag.id"
-          class="blog-post-card__tag text-xs px-2 py-0.5 rounded-full bg-stage-800/80 text-stage-400 border border-stage-700/40"
+          class="blog-post-card__tag text-xs px-2 py-0.5 rounded-full"
+          :class="view_type === 'light' 
+            ? 'bg-stage-50 text-stage-700 border border-stage-200' 
+            : 'bg-stage-800/80 text-stage-400 border border-stage-700/40'"
         >
           {{ (tag.tags_id as any)?.name }}
         </span>
@@ -110,7 +133,10 @@ const authorName = computed(() => {
       </div>
       <!-- Date badge -->
       <div class="blog-post-card__badge-container absolute top-3 left-3">
-        <span class="blog-post-card__badge px-2.5 py-1 rounded-full text-xs font-semibold bg-stage-950/80 text-stage-200 backdrop-blur-sm">
+        <span 
+          class="blog-post-card__badge px-2.5 py-1 rounded-full text-xs font-semibold backdrop-blur-sm"
+          :class="view_type === 'light' ? 'bg-stage-100/90 text-stage-800' : 'bg-stage-950/80 text-stage-200'"
+        >
           {{ formattedDate }}
         </span>
       </div>
@@ -118,14 +144,24 @@ const authorName = computed(() => {
 
     <!-- Content -->
     <div class="blog-post-card__content p-5">
-      <h3 class="blog-post-card__title text-lg font-serif font-bold text-stage-950 group-hover:text-brand-400 transition-colors line-clamp-2">
+      <h3 
+        class="blog-post-card__title text-lg font-serif font-bold group-hover:text-brand-400 transition-colors line-clamp-2"
+        :class="view_type === 'light' ? 'text-stage-950' : 'text-stage-50'"
+      >
         {{ post.title }}
       </h3>
-      <p v-if="post.excerpt" class="blog-post-card__excerpt text-sm text-stage-400 mt-2 leading-relaxed line-clamp-3">
+      <p 
+        v-if="post.excerpt" 
+        class="blog-post-card__excerpt text-sm mt-2 leading-relaxed line-clamp-3"
+        :class="view_type === 'light' ? 'text-stage-700' : 'text-stage-400'"
+      >
         {{ post.excerpt }}
       </p>
-      <div class="blog-post-card__footer mt-4 flex items-center justify-between">
-        <span class="blog-post-card__author text-xs text-stage-500">
+      <div 
+        class="blog-post-card__footer mt-4 flex items-center justify-between"
+        :class="view_type === 'light' ? 'text-stage-700' : 'text-stage-500'"
+      >
+        <span class="blog-post-card__author text-xs">
           By 
           <NuxtLink v-if="post.author && typeof post.author !== 'string'" :to="`/people/${post.author.slug}`" class="hover:text-brand-400 transition-colors">
             {{ authorName }}
@@ -140,7 +176,10 @@ const authorName = computed(() => {
         <span
           v-for="tag in post.tags.slice(0, 3)"
           :key="tag.id"
-          class="blog-post-card__tag text-xs px-2 py-0.5 rounded-full bg-stage-800/80 text-stage-400 border border-stage-700/40"
+          class="blog-post-card__tag text-xs px-2 py-0.5 rounded-full"
+          :class="view_type === 'light' 
+            ? 'bg-stage-50 text-stage-700 border border-stage-200' 
+            : 'bg-stage-800/80 text-stage-400 border border-stage-700/40'"
         >
           {{ (tag.tags_id as any)?.name }}
         </span>

@@ -351,6 +351,7 @@ onUnmounted(() => { if (autoTimer) clearInterval(autoTimer); });
             v-for="post in newsHighlights"
             :key="post.slug"
             :post="post"
+            view_type="dark"
           />
         </div>
       </div>
