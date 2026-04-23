@@ -418,7 +418,7 @@ const crew = computed(() => {
     </section>
 
     <!-- ═══ Cast ═══ -->
-    <section class="production-cast  production-section py-16" id="cast-section">
+    <section v-if="cast.length" class="production-cast  production-section py-16" id="cast-section">
       <div class="production-cast__container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <h2 class="production-cast__title section-heading mb-8 md:text-xl">Cast</h2>
         <div class="production-cast__grid grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
@@ -435,7 +435,7 @@ const crew = computed(() => {
     </section>
 
     <!-- ═══ Creative Team ═══ -->
-    <section class="production-crew py-16 production-section" id="crew-section">
+    <section v-if="crew.length" class="production-crew py-16 production-section" id="crew-section">
       <div class="production-crew__container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <h2 class="production-crew__title section-heading mb-8 md:text-xl">Creative Team</h2>
         <div class="production-crew__grid grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
