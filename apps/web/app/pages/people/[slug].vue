@@ -1,36 +1,44 @@
 <script setup lang="ts">
-import type { Person, CastCredit, CrewCredit, BlogPost } from '@flux-theatre/shared';
+import type { Person } from '@flux-theatre/shared';
 
 const route = useRoute();
 const slug = route.params.slug as string;
-const { client, readItems } = useDirectus();
+const { client, readItems, getAssetUrl } = useDirectus();
 
-// Fetch everything related to this person
-const { data: personRecord, error } = await useAsyncData(`person-${slug}`, async () => {
-  // 1. Fetch the person with their credits and posts
-  const p = await client.request(readItems('people' as any, {
-    filter: { slug: { _eq: slug }, status: { _eq: 'published' } },
-    fields: [
-      '*',
-      { cast: ['role_name', { production: ['title', 'slug', 'season', 'poster_image'] }] },
-      { crew: ['title', 'department', { production: ['title', 'slug', 'season', 'poster_image'] }] },
-      { posts: ['title', 'slug', 'publish_date', 'excerpt', 'cover_image'] }
-    ] as any,
+// Fetch everything related to this person using separate requests for robustness
+const { data: personRecord, error } = await useAsyncData(`person-full-${slug}`, async () => {
+  // 1. Fetch the person (removed status filter just in case, similar to funders)
+  const people = await client.request(readItems('people' as any, {
+    filter: { slug: { _eq: slug } },
     limit: 1
   } as any)) as any[];
   
-  if (!p.length) return null;
-  const person = p[0] as any;
+  if (!people.length) return null;
+  const person = people[0];
+
+  // 2. Fetch credits in parallel
+  // We filter by the person's ID to get their specific credits
+  const [cast, crew] = await Promise.all([
+    client.request(readItems('cast_credits' as any, {
+      filter: { person: { _eq: person.id } },
+      fields: ['role_name', { production: ['title', 'slug', 'season', 'poster_image'] }]
+    } as any)),
+    client.request(readItems('crew_credits' as any, {
+      filter: { person: { _eq: person.id } },
+      fields: ['title', 'department', { production: ['title', 'slug', 'season', 'poster_image'] }]
+    } as any))
+  ]);
 
   return {
     ...person,
-    cast: (person.cast || []) as any[],
-    crew: (person.crew || []) as any[],
-    posts: (person.posts || []) as any[]
+    cast: (cast || []) as any[],
+    crew: (crew || []) as any[],
+    posts: [] // Temporarily empty until we confirm the field name in the posts collection
   };
 });
 
 if (error.value) {
+  console.error('Error fetching person data:', error.value);
   throw createError({ 
     statusCode: 500, 
     statusMessage: `Failed to fetch person data: ${error.value.message || 'Unknown error'}` 
@@ -45,11 +53,6 @@ useSeoMeta({
   title: () => `${personRecord.value?.first_name} ${personRecord.value?.last_name} — Flux Theatre Ensemble`,
   description: () => personRecord.value?.bio?.substring(0, 160) || '',
 });
-
-const getAssetUrl = (id: string) => {
-  const config = useRuntimeConfig();
-  return `${config.public.directusUrl}/assets/${id}`;
-};
 
 const fullName = computed(() => {
   if (!personRecord.value) return '';
@@ -72,7 +75,7 @@ const hasAnyCredits = computed(() => {
             <div class="person-page__image-wrapper aspect-[3/4] rounded-2xl overflow-hidden border border-stage-700/50 shadow-2xl bg-stage-800">
               <img
                 v-if="personRecord.headshot"
-                :src="getAssetUrl(personRecord.headshot)"
+                :src="getAssetUrl(personRecord.headshot)!"
                 :alt="fullName"
                 class="person-page__image w-full h-full object-cover"
               />
@@ -119,7 +122,7 @@ const hasAnyCredits = computed(() => {
     <!-- Credits Section -->
     <section v-if="hasAnyCredits" class="person-page__credits py-20" id="person-credits">
       <div class="person-page__credits-container max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-        <h2 class="person-page__section-title text-2xl font-serif font-bold text-stage-100 mb-10 pb-4 border-b border-stage-800">
+        <h2 class="person-page__section-title text-2xl font-serif font-bold text-stage-900 mb-10 pb-4 border-b border-stage-800">
           Production Credits
         </h2>
 
@@ -131,13 +134,13 @@ const hasAnyCredits = computed(() => {
             </h3>
             <ul class="person-page__credit-list space-y-6">
               <li v-for="credit in personRecord.cast" :key="credit.id" class="person-page__credit-item group">
-                <NuxtLink :to="`/productions/${credit.production.slug}`" class="person-page__credit-link block">
+                <NuxtLink v-if="credit.production" :to="`/productions/${credit.production.slug}`" class="person-page__credit-link block">
                   <div class="flex items-center gap-4">
                     <div class="person-page__credit-info flex-1">
-                      <p class="person-page__credit-role text-lg font-bold text-stage-100 group-hover:text-brand-400 transition-colors">
+                      <p class="person-page__credit-role text-lg font-bold text-stage-900 group-hover:text-brand-400 transition-colors">
                         {{ credit.role_name }}
                       </p>
-                      <p class="person-page__credit-prod text-sm text-stage-400">
+                      <p class="person-page__credit-prod text-sm text-stage-600">
                         {{ credit.production.title }}
                       </p>
                     </div>
@@ -159,13 +162,13 @@ const hasAnyCredits = computed(() => {
             </h3>
             <ul class="person-page__credit-list space-y-6">
               <li v-for="credit in personRecord.crew" :key="credit.id" class="person-page__credit-item group">
-                <NuxtLink :to="`/productions/${credit.production.slug}`" class="person-page__credit-link block">
+                <NuxtLink v-if="credit.production" :to="`/productions/${credit.production.slug}`" class="person-page__credit-link block">
                   <div class="flex items-center gap-4">
                     <div class="person-page__credit-info flex-1">
-                      <p class="person-page__credit-role text-lg font-bold text-stage-100 group-hover:text-brand-400 transition-colors">
+                      <p class="person-page__credit-role text-lg font-bold text-stage-900 group-hover:text-brand-400 transition-colors">
                         {{ credit.title }}
                       </p>
-                      <p class="person-page__credit-prod text-sm text-stage-400">
+                      <p class="person-page__credit-prod text-sm text-stage-600">
                         {{ credit.production.title }}
                       </p>
                     </div>
@@ -184,7 +187,7 @@ const hasAnyCredits = computed(() => {
     </section>
 
     <!-- Latest Posts Section -->
-    <section v-if="personRecord.posts.length" class="person-page__posts py-20 bg-stage-900/20" id="person-posts">
+    <section v-if="personRecord.posts && personRecord.posts.length" class="person-page__posts py-20 bg-stage-900/20" id="person-posts">
       <div class="person-page__posts-container max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex items-center justify-between mb-10">
           <h2 class="person-page__section-title text-2xl font-serif font-bold text-stage-100">
@@ -203,7 +206,7 @@ const hasAnyCredits = computed(() => {
             <div class="aspect-video relative overflow-hidden bg-stage-800">
               <img
                 v-if="post.cover_image"
-                :src="getAssetUrl(post.cover_image)"
+                :src="getAssetUrl(post.cover_image)!"
                 class="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
               />
             </div>
