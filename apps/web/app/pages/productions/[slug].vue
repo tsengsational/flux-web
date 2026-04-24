@@ -16,13 +16,18 @@ const { data: productions, error } = await useAsyncData(`production-${slug}`, as
       { 
         Venue: [{ venues_id: ['*'] }],
         events: ['*', { tags: ['*', { tags_id: ['*'] }] }],
-        Cast: ['role_name', 'content', { person: ['first_name', 'last_name', 'slug', 'headshot', 'bio', 'pronouns'] }],
-        Crew: ['title', 'content', { person: ['first_name', 'last_name', 'slug', 'headshot', 'bio', 'pronouns'] }],
+        Cast: ['role_name', 'content', 'sort', { person: ['first_name', 'last_name', 'slug', 'headshot', 'bio', 'pronouns'] }],
+        Crew: ['title', 'content', 'sort', { person: ['first_name', 'last_name', 'slug', 'headshot', 'bio', 'pronouns'] }],
         funders: ['*', { funder_id: ['name', 'slug', 'image', 'url'] }]
       }
     ] as any,
+    deep: {
+      Cast: { _sort: ['sort'] },
+      Crew: { _sort: ['sort'] }
+    } as any,
     limit: 1
   } as any)) as any;
+
 });
 
 const production = computed(() => {
