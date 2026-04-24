@@ -77,7 +77,7 @@ const { getAssetUrl } = useDirectus();
         <component 
           :is="`h${block.data.level || 2}`"
           v-if="block.type === 'header'"
-          class="font-serif font-bold text-stage-900 mt-12 mb-6"
+          class="font-serif font-bold mt-12 mb-6"
           :class="{
             'text-4xl lg:text-5xl': (block.data.level === 1),
             'text-3xl lg:text-4xl': (block.data.level === 2),
@@ -91,20 +91,20 @@ const { getAssetUrl } = useDirectus();
         <!-- Paragraph -->
         <p 
           v-else-if="block.type === 'paragraph'"
-          class="text-stage-900 leading-relaxed text-lg"
+          class="leading-relaxed text-lg"
           v-html="block.data.text || block.data.content"
         />
 
         <!-- List -->
         <ul 
           v-else-if="block.type === 'list' && block.data.style === 'unordered'"
-          class="list-disc list-inside space-y-2 text-stage-300 ml-4"
+          class="list-disc list-inside space-y-2 ml-4"
         >
           <li v-for="(item, i) in block.data.items" :key="i" v-html="item" />
         </ul>
         <ol 
           v-else-if="block.type === 'list' && block.data.style === 'ordered'"
-          class="list-decimal list-inside space-y-2 text-stage-300 ml-4"
+          class="list-decimal list-inside space-y-2 ml-4"
         >
           <li v-for="(item, i) in block.data.items" :key="i" v-html="item" />
         </ol>
@@ -112,10 +112,10 @@ const { getAssetUrl } = useDirectus();
         <!-- Quote -->
         <blockquote 
           v-else-if="block.type === 'quote'"
-          class="border-l-4 border-brand-500 pl-6 py-2 my-8 italic text-stage-200 bg-stage-900/40 rounded-r-lg"
+          class="border-l-4 border-brand-500 pl-6 py-2 my-8 italic bg-stage-900/40 rounded-r-lg"
         >
           <p class="text-xl font-serif mb-2" v-html="block.data.text" />
-          <cite v-if="block.data.caption" class="text-sm text-stage-500 not-italic">— {{ block.data.caption }}</cite>
+          <cite v-if="block.data.caption" class="text-sm not-italic opacity-60">— {{ block.data.caption }}</cite>
         </blockquote>
 
         <!-- Image -->
@@ -125,7 +125,7 @@ const { getAssetUrl } = useDirectus();
             :alt="block.data.caption || ''"
             class="w-full h-auto object-cover"
           />
-          <figcaption v-if="block.data.caption" class="p-4 text-center text-sm text-stage-500 bg-stage-900/20">
+          <figcaption v-if="block.data.caption" class="p-4 text-center text-sm opacity-60 bg-stage-900/20">
             {{ block.data.caption }}
           </figcaption>
         </figure>
@@ -138,11 +138,11 @@ const { getAssetUrl } = useDirectus();
           <div v-for="(col, i) in block.data.cols" :key="i" class="space-y-4">
              <!-- Nested Blocks in Columns -->
              <template v-for="(colBlock, j) in col.blocks" :key="j">
-                <p v-if="colBlock.type === 'paragraph'" v-html="colBlock.data.text" class="text-stage-300 leading-relaxed" />
+                <p v-if="colBlock.type === 'paragraph'" v-html="colBlock.data.text" class="leading-relaxed" />
                 <component 
                   :is="`h${colBlock.data.level || 3}`"
                   v-else-if="colBlock.type === 'header'"
-                  class="font-serif font-bold text-stage-50"
+                  class="font-serif font-bold"
                   v-html="colBlock.data.text"
                 />
              </template>

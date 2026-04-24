@@ -57,9 +57,12 @@ const staticNav: NavigationItem[] = [
   { id: 'static-home', label: 'Home', url: '/', sort: 0, parent: null, children: [], is_external: false, page: null },
   { id: 'static-productions', label: 'Productions', url: '/productions', sort: 1, parent: null, children: [], is_external: false, page: null },
   { id: 'static-events', label: 'Events', url: '/events', sort: 2, parent: null, children: [], is_external: false, page: null },
-  { id: 'static-calendar', label: 'Calendar', url: '/calendar', sort: 3, parent: null, children: [], is_external: false, page: null },
-  { id: 'static-news', label: 'News', url: '/news', sort: 4, parent: null, children: [], is_external: false, page: null },
+  { id: 'static-calendar', label: 'Calendar', url: '/calendar', sort: 4, parent: null, children: [], is_external: false, page: null },
+  
+  { id: 'static-news', label: 'News', url: '/news', sort: 5, parent: null, children: [], is_external: false, page: null },
+  { id: 'static-creative-partners', label: 'Creative Partners', url: '/groups/creative-partners', sort: 3, parent: null, children: [], is_external: false, page: null },
 ];
+
 
 const combinedNav = computed(() => {
   return [...staticNav, ...navTree.value];

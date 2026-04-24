@@ -64,7 +64,15 @@ export interface Person extends DirectusBaseFields {
     headshot: string | null;      // Directus file UUID
     website: string | null;
     pronouns: string | null;
+    tags: PersonTag[];
 }
+
+export interface PersonTag {
+    id: string;
+    people_id: string | Person;
+    tags_id: string | Tag;
+}
+
 
 // ─── Credits (Junction tables) ───
 
@@ -318,6 +326,26 @@ export interface Page extends DirectusBaseFields {
     meta_title: string | null;
     meta_description: string | null;
 }
+
+// ─── Groups ───
+
+export interface Group extends DirectusBaseFields {
+    title: string;
+    slug: string;
+    subtitle: string | null;
+    tag_label: string | null;     // Custom label for related content section
+    content: any | null;          // Structured JSON for Block Editor
+    hero_image: string | null;    // Directus file UUID
+    tags: GroupTag[];
+}
+
+
+export interface GroupTag {
+    id: string;
+    groups_id: string | Group;
+    tags_id: string | Tag;
+}
+
 
 // ─── Navigation ───
 
