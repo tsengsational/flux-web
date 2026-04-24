@@ -64,7 +64,7 @@ const hasAnyCredits = computed(() => {
 <template>
   <div v-if="personRecord" class="person-page pb-24">
     <!-- Header / Bio Section -->
-    <section class="person-page__hero pt-16 pb-12 bg-stage-900/40" id="person-hero">
+    <section class="person-page__hero pt-16 pb-12 bg-stage-900" id="person-hero">
       <div class="person-page__hero-container max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="person-page__layout flex flex-col md:flex-row gap-8 lg:gap-12">
           <!-- Headshot -->
@@ -227,12 +227,12 @@ const hasAnyCredits = computed(() => {
     <!-- Support CTA -->
     <section class="person-page__cta py-20 border-t border-stage-800/40">
       <div class="max-w-3xl mx-auto px-4 text-center">
-        <h2 class="text-2xl font-serif font-bold text-stage-50 mb-4">Support Our Artists</h2>
+        <h2 class="text-2xl font-serif font-bold text-stage-900 mb-4">Support Our Artists</h2>
         <p class="text-stage-400 mb-8 leading-relaxed">
           Flux Theatre Ensemble is a values-driven creative home for artists like {{ personRecord.first_name }}. 
           Your support ensures we can continue to produce transformative, artist-centered work.
         </p>
-        <NuxtLink to="/donate" class="btn-primary">Support Flux</NuxtLink>
+        <NuxtLink to="/donate" class="btn-primary text-brand-400">Support Flux</NuxtLink>
       </div>
     </section>
   </div>

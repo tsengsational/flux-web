@@ -9,7 +9,7 @@ const { client, readItems } = useDirectus();
 const { data: events, error } = await useAsyncData<Event[]>(`event-${slug}`, () => 
   client.request(readItems('events' as any, {
     filter: { slug: { _eq: slug }, status: { _eq: 'published' } },
-    fields: ['*', { venue: ['*'] }] as any,
+    fields: ['*', { venue: ['*'] }, { funders: ['*', { funder_id: ['name', 'slug', 'image', 'url'] }] }] as any,
     limit: 1
   } as any)) as any
 );
@@ -60,6 +60,12 @@ const categoryLabel = computed(() => {
     other: 'Event',
   };
   return labels[event.value.category];
+});
+const { getAssetUrl } = useDirectus();
+const funders = computed(() => {
+  return (event.value?.funders || [])
+    .map((f: any) => f.funder_id)
+    .filter(Boolean);
 });
 </script>
 
@@ -187,6 +193,31 @@ const categoryLabel = computed(() => {
             </div>
           </div>
         </aside>
+      </div>
+    </section>
+
+    <!-- Funders -->
+    <section v-if="funders.length" class="event-detail__funders py-16 border-t border-stage-800/40">
+      <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+        <h2 class="text-xl font-serif font-bold text-stage-100 mb-8 text-center">Supported By</h2>
+        <div class="flex flex-wrap items-center justify-center gap-10">
+          <NuxtLink
+            v-for="funder in funders"
+            :key="funder.slug"
+            :to="`/funders/${funder.slug}`"
+            class="group flex flex-col items-center gap-3 transition-transform hover:scale-105"
+          >
+            <div class="w-24 h-24 bg-white rounded-lg shadow-md p-4 flex items-center justify-center overflow-hidden border border-stage-800/10 group-hover:border-brand-500/30 transition-colors">
+              <img
+                v-if="funder.image"
+                :src="getAssetUrl(funder.image)!"
+                :alt="funder.name"
+                class="w-full h-full object-contain grayscale group-hover:grayscale-0 transition-all duration-500"
+              />
+              <span v-else class="text-stage-900 font-serif font-bold text-sm text-center">{{ funder.name }}</span>
+            </div>
+          </NuxtLink>
+        </div>
       </div>
     </section>
   </article>

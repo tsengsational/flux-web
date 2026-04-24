@@ -39,6 +39,7 @@ export interface Production extends DirectusBaseFields {
     Venue: string | Venue;        // UUID or populated
     Cast: CastCredit[];
     Crew: CrewCredit[];
+    funders: ProductionFunder[];
 
     // SEO
     meta_title: string | null;
@@ -71,7 +72,7 @@ export interface CastCredit {
     id: string;
     person: string | Person;      // UUID or populated
     production: string | Production;
-    role_name: string;            // e.g. "Hamlet"
+    role_name: string;            // e.g. Hamlet
     sort: number;
     is_understudy: boolean;
     content?: any | null;         // Production-specific bio override
@@ -113,6 +114,35 @@ export interface Venue extends DirectusBaseFields {
     website: string | null;
     maps_url: string | null;
     photo: string | null;
+}
+
+// ─── Funders ───
+
+export interface Funder {
+    id: string;
+    name: string;
+    slug: string;
+    description: any | null;      // WYSIWYG / Block Editor
+    url: string | null;
+    image: string | null;         // Directus file UUID
+}
+
+export interface ProductionFunder {
+    id: string;
+    production_id: string | Production;
+    funder_id: string | Funder;
+}
+
+export interface EventFunder {
+    id: string;
+    event_id: string | Event;
+    funder_id: string | Funder;
+}
+
+export interface PageFunder {
+    id: string;
+    page_id: string | Page;
+    funder_id: string | Funder;
 }
 
 // ─── Events (non-production) ───
@@ -161,6 +191,7 @@ export interface Event extends DirectusBaseFields {
     // Relations
     related_production: string | Production | null;
     tags: EventTag[];
+    funders: EventFunder[];
 
     // SEO
     meta_title: string | null;
@@ -283,6 +314,7 @@ export interface Page extends DirectusBaseFields {
     slug: string;
     body: string;                 // Rich-text / HTML fallback
     content: any | null;          // Structured JSON for Block Editor
+    funders: PageFunder[];
     meta_title: string | null;
     meta_description: string | null;
 }

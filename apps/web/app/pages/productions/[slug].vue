@@ -17,7 +17,8 @@ const { data: productions, error } = await useAsyncData(`production-${slug}`, as
         Venue: [{ venues_id: ['*'] }],
         events: ['*', { tags: ['*', { tags_id: ['*'] }] }],
         Cast: ['role_name', 'content', { person: ['first_name', 'last_name', 'slug', 'headshot', 'bio', 'pronouns'] }],
-        Crew: ['title', 'content', { person: ['first_name', 'last_name', 'slug', 'headshot', 'bio', 'pronouns'] }]
+        Crew: ['title', 'content', { person: ['first_name', 'last_name', 'slug', 'headshot', 'bio', 'pronouns'] }],
+        funders: ['*', { funder_id: ['name', 'slug', 'image', 'url'] }]
       }
     ] as any,
     limit: 1
@@ -172,6 +173,12 @@ const crew = computed(() => {
         bio: (c as any).content || (c.person as any).bio
       }
     }));
+});
+// Map funders
+const funders = computed(() => {
+  return (production.value?.funders || [])
+    .map((f: any) => f.funder_id)
+    .filter(Boolean);
 });
 </script>
 
@@ -447,6 +454,32 @@ const crew = computed(() => {
             class="production-crew__person-card"
             compact
           />
+        </div>
+      </div>
+    </section>
+    
+    <!-- ═══ Funders ═══ -->
+    <section v-if="funders.length" class="production-funders py-16 production-section" id="funders-section">
+      <div class="production-funders__container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <h2 class="production-funders__title section-heading mb-8 md:text-xl">Our Funders</h2>
+        <div class="production-funders__grid flex flex-wrap items-center justify-center gap-12">
+          <NuxtLink
+            v-for="funder in funders"
+            :key="funder.slug"
+            :to="`/funders/${funder.slug}`"
+            class="production-funders__item group flex flex-col items-center gap-4 transition-all hover:scale-105"
+            :title="funder.name"
+          >
+            <div class="production-funders__logo-wrapper w-32 h-32 bg-white rounded-xl shadow-lg border border-stage-800/20 p-5 flex items-center justify-center overflow-hidden group-hover:border-brand-500/50 transition-colors">
+              <img
+                v-if="funder.image"
+                :src="getAssetUrl(funder.image)!"
+                :alt="funder.name"
+                class="production-funders__logo w-full h-full object-contain grayscale group-hover:grayscale-0 transition-all duration-500"
+              />
+              <span v-else class="text-stage-900 font-serif font-bold text-xl">{{ funder.name }}</span>
+            </div>
+          </NuxtLink>
         </div>
       </div>
     </section>
