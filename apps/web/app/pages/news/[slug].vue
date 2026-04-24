@@ -9,10 +9,19 @@ const { client, readItems, getAssetUrl } = useDirectus();
 const { data: posts, error } = await useAsyncData<BlogPost[]>(`post-${slug}`, () => 
   client.request(readItems('posts', {
     filter: { slug: { _eq: slug }, status: { _eq: 'published' } },
-    fields: ['*', { author: ['first_name', 'last_name', 'bio'], tags: [{ tags_id: ['name'] }] }, 'gallery', 'content'] as any,
+    fields: [
+      '*', 
+      { 
+        author: ['first_name', 'last_name', 'bio'], 
+        tags: [{ tags_id: ['name'] }],
+        gallery: [{ directus_files_id: ['id'] }] 
+      }, 
+      'content'
+    ] as any,
     limit: 1
   })) as any
 );
+
 
 const post = computed(() => posts.value?.[0] || null);
 
@@ -52,7 +61,15 @@ const postTags = computed(() => {
   if (!post.value?.tags) return [];
   return (post.value.tags as any).map((t: any) => t.tags_id?.name).filter(Boolean);
 });
+
+const galleryIds = computed(() => {
+  if (!post.value?.gallery) return [];
+  return post.value.gallery.map((item: any) => 
+    item.directus_files_id?.id || item.directus_files_id
+  ).filter(Boolean);
+});
 </script>
+
 
 <template>
   <article class="news-post pb-24">
@@ -115,20 +132,12 @@ const postTags = computed(() => {
         <BlockRenderer :content="post.content || post.body" />
       </div>
       
-      <!-- Gallery -->
-      <div v-if="post.gallery?.length" class="news-post__gallery mt-16" id="post-gallery">
-        <h2 class="news-post__gallery-title text-2xl font-serif font-bold text-stage-50 mb-6">Gallery</h2>
-        <div class="news-post__gallery-grid grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          <div v-for="fileId in post.gallery" :key="fileId" class="news-post__gallery-item card-glass aspect-square overflow-hidden group">
-            <img 
-              :src="getAssetUrl(fileId)!" 
-              class="news-post__gallery-image w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" 
-              alt="Gallery image"
-              loading="lazy"
-            />
-          </div>
-        </div>
+      <!-- Gallery Section -->
+      <div v-if="galleryIds.length > 0" class="news-post__gallery mt-16" id="post-gallery">
+        <MediaGallery :images="galleryIds" title="Gallery" />
       </div>
+
+
 
       <!-- Share / Actions -->
       <div class="news-post__footer mt-12 pt-8 border-t border-stage-800/60 flex items-center justify-between">
