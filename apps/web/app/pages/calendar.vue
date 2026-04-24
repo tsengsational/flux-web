@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { RRule } from 'rrule';
 import type { CalendarEntry, EventCategory, EventFormat } from '@flux-theatre/shared';
 
 useSeoMeta({
@@ -12,7 +13,7 @@ const { data: cmsData } = await useAsyncData('calendar-data', async () => {
   const [events, productions] = await Promise.all([
     client.request(readItems('events' as any, {
       filter: { status: { _eq: 'published' } },
-      fields: ['id', 'title', 'slug', 'start_datetime', 'end_datetime', 'category', 'format', { venue: ['name'] }, { tags: ['*', { tags_id: ['*'] }] }] as any
+      fields: ['id', 'title', 'slug', 'start_datetime', 'end_datetime', 'category', 'format', 'is_recurring', 'recurrence_rule', { venue: ['name'] }, { tags: ['*', { tags_id: ['*'] }] }] as any
     } as any)),
     client.request(readItems('productions' as any, {
       filter: { status: { _eq: 'published' } },
@@ -29,18 +30,69 @@ const calendarEntries = computed<CalendarEntry[]>(() => {
   
   // Standalone events
   cmsData.value.events.forEach((ev) => {
-    entries.push({
-      id: `ev-${ev.id}`,
-      title: ev.title,
-      datetime: ev.start_datetime,
-      end_datetime: ev.end_datetime,
-      type: 'event',
-      slug: ev.slug,
-      category: ev.category,
-      format: ev.format,
-      venue_name: typeof ev.venue === 'string' ? ev.venue : ev.venue?.name,
-      tags: ev.tags?.map((t: any) => typeof t.tags_id === 'object' ? t.tags_id.name : t.tags_id).filter(Boolean) || []
-    });
+    // If it's recurring, we need to generate multiple entries
+    if (ev.is_recurring && ev.recurrence_rule) {
+      try {
+        const dtstart = new Date(ev.start_datetime);
+        const rule = RRule.fromString(`DTSTART:${dtstart.toISOString().replace(/[-:]/g, '').split('.')[0]}Z\nRRULE:${ev.recurrence_rule}`);
+        
+        // Generate occurrences from the event start up to 6 months from now
+        const now = new Date();
+        const sixMonthsLater = new Date(now.getTime() + 180 * 24 * 60 * 60 * 1000);
+        
+        // We use between to get occurrences in a reasonable window
+        // But we start from dtstart to ensure the first one is included if it's within the window
+        const occurrences = rule.between(dtstart > now ? dtstart : now, sixMonthsLater, true);
+        
+        // Always include the first occurrence if it's in the future
+        if (dtstart >= now && dtstart <= sixMonthsLater && !occurrences.find(d => d.getTime() === dtstart.getTime())) {
+          occurrences.unshift(dtstart);
+        }
+
+        occurrences.forEach((date) => {
+          entries.push({
+            id: `ev-${ev.id}-${date.getTime()}`,
+            title: ev.title,
+            datetime: date.toISOString(),
+            end_datetime: ev.end_datetime ? new Date(date.getTime() + (new Date(ev.end_datetime).getTime() - dtstart.getTime())).toISOString() : null,
+            type: 'event',
+            slug: ev.slug,
+            category: ev.category,
+            format: ev.format,
+            venue_name: typeof ev.venue === 'string' ? ev.venue : ev.venue?.name,
+            tags: ev.tags?.map((t: any) => typeof t.tags_id === 'object' ? t.tags_id.name : t.tags_id).filter(Boolean) || []
+          });
+        });
+      } catch (e) {
+        console.error('Error parsing RRULE for event:', ev.title, e);
+        // Fallback to single entry if parsing fails
+        entries.push({
+          id: `ev-${ev.id}`,
+          title: ev.title,
+          datetime: ev.start_datetime,
+          end_datetime: ev.end_datetime,
+          type: 'event',
+          slug: ev.slug,
+          category: ev.category,
+          format: ev.format,
+          venue_name: typeof ev.venue === 'string' ? ev.venue : ev.venue?.name,
+          tags: ev.tags?.map((t: any) => typeof t.tags_id === 'object' ? t.tags_id.name : t.tags_id).filter(Boolean) || []
+        });
+      }
+    } else {
+      entries.push({
+        id: `ev-${ev.id}`,
+        title: ev.title,
+        datetime: ev.start_datetime,
+        end_datetime: ev.end_datetime,
+        type: 'event',
+        slug: ev.slug,
+        category: ev.category,
+        format: ev.format,
+        venue_name: typeof ev.venue === 'string' ? ev.venue : ev.venue?.name,
+        tags: ev.tags?.map((t: any) => typeof t.tags_id === 'object' ? t.tags_id.name : t.tags_id).filter(Boolean) || []
+      });
+    }
   });
   
   // Production showtimes

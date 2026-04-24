@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { RRule } from 'rrule';
 import type { Event, EventFormat, EventCategory } from '@flux-theatre/shared';
 
 const route = useRoute();
@@ -9,7 +10,7 @@ const { client, readItems } = useDirectus();
 const { data: events, error } = await useAsyncData<Event[]>(`event-${slug}`, () => 
   client.request(readItems('events' as any, {
     filter: { slug: { _eq: slug }, status: { _eq: 'published' } },
-    fields: ['*', { venue: ['*'] }, { funders: ['*', { funder_id: ['name', 'slug', 'image', 'url'] }] }] as any,
+    fields: ['*', 'is_recurring', 'recurrence_rule', { venue: ['*'] }, { funders: ['*', { funder_id: ['name', 'slug', 'image', 'url'] }] }] as any,
     limit: 1
   } as any)) as any
 );
@@ -30,6 +31,27 @@ const formattedDate = computed(() => {
   if (!event.value) return '';
   const d = new Date(event.value.start_datetime);
   return d.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
+});
+
+const recurrenceText = computed(() => {
+  if (!event.value?.is_recurring || !event.value?.recurrence_rule) return null;
+  try {
+    const rule = RRule.fromString(`RRULE:${event.value.recurrence_rule}`);
+    return rule.toText().charAt(0).toUpperCase() + rule.toText().slice(1);
+  } catch (e) {
+    return 'Recurring event';
+  }
+});
+
+const upcomingDates = computed(() => {
+  if (!event.value?.is_recurring || !event.value?.recurrence_rule) return [];
+  try {
+    const dtstart = new Date(event.value.start_datetime);
+    const rule = RRule.fromString(`DTSTART:${dtstart.toISOString().replace(/[-:]/g, '').split('.')[0]}Z\nRRULE:${event.value.recurrence_rule}`);
+    return rule.after(new Date(), true) ? rule.all((date, i) => i < 5) : [];
+  } catch (e) {
+    return [];
+  }
 });
 
 const formattedTime = computed(() => {
@@ -57,6 +79,7 @@ const categoryLabel = computed(() => {
     audition: 'Audition',
     masterclass: 'Masterclass',
     community: 'Community',
+    performance: 'Performance',
     other: 'Event',
   };
   return labels[event.value.category];
@@ -72,7 +95,7 @@ const funders = computed(() => {
 <template>
   <article v-if="event" class="event-detail pb-24">
     <!-- Hero / Header -->
-    <section class="event-detail__hero relative pt-8 pb-16 bg-stage-900/40" id="event-detail-hero">
+    <section class="event-detail__hero relative pt-8 pb-16 bg-stage-900" id="event-detail-hero">
       <div class="event-detail__hero-container relative max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="event-detail__meta flex flex-wrap items-center gap-3 mb-6">
           <NuxtLink to="/events" class="event-detail__back-link text-xs text-stage-400 hover:text-brand-400 transition-colors">
@@ -98,7 +121,8 @@ const funders = computed(() => {
             </div>
             <div class="event-detail__info-text">
               <p class="event-detail__info-label text-xs text-stage-500 uppercase font-bold tracking-wider">Date & Time</p>
-              <p class="event-detail__info-value text-sm font-medium">{{ formattedDate }}</p>
+              <p v-if="event.is_recurring" class="event-detail__info-value text-sm font-medium text-brand-400">{{ recurrenceText }}</p>
+              <p v-else class="event-detail__info-value text-sm font-medium">{{ formattedDate }}</p>
               <p class="event-detail__info-subtext text-xs text-stage-400">{{ formattedTime }}</p>
             </div>
           </div>
@@ -133,6 +157,22 @@ const funders = computed(() => {
             <div class="event-detail__info-text">
               <p class="event-detail__info-label text-xs text-stage-500 uppercase font-bold tracking-wider">Admission</p>
               <p class="event-detail__info-value text-sm font-medium">{{ event.is_free ? 'Free' : (event.price || 'Ticketed') }}</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Recurring Dates List -->
+        <div v-if="event.is_recurring && upcomingDates.length > 0" class="event-detail__recurring-dates mt-10 p-6 rounded-2xl bg-stage-800/40 border border-stage-700/30">
+          <h3 class="text-xs font-bold text-stage-400 uppercase tracking-widest mb-4">Upcoming Occurrences</h3>
+          <div class="flex flex-wrap gap-3">
+            <div 
+              v-for="date in upcomingDates" 
+              :key="date.toISOString()"
+              class="px-3 py-2 rounded-lg bg-stage-900 border border-stage-700/50 flex flex-col items-center min-w-[100px]"
+            >
+              <span class="text-[10px] font-bold text-brand-400 uppercase">{{ date.toLocaleDateString('en-US', { month: 'short' }) }}</span>
+              <span class="text-lg font-serif font-bold text-stage-50">{{ date.getDate() }}</span>
+              <span class="text-[10px] text-stage-500 uppercase">{{ date.toLocaleDateString('en-US', { weekday: 'short' }) }}</span>
             </div>
           </div>
         </div>

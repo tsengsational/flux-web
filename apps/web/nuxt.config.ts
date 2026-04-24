@@ -67,4 +67,21 @@ export default defineNuxtConfig({
   typescript: {
     strict: true,
   },
+
+  // ── Build ──
+  build: {
+    transpile: ['rrule'],
+  },
+
+  // ── Vite ──
+  vite: {
+    optimizeDeps: {
+      include: ['tslib'],
+    },
+    resolve: {
+      alias: {
+        tslib: 'tslib',
+      },
+    },
+  },
 });

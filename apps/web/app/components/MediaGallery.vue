@@ -4,10 +4,13 @@
  * A reusable gallery component with a built-in lightbox and keyboard navigation.
  */
 
-const props = defineProps<{
+const props = withDefaults(defineProps<{
   images: string[]; // Array of Directus file IDs
   title?: string;
-}>();
+  viewtype?: 'light' | 'dark';
+}>(), {
+  viewtype: 'light'
+});
 
 const { getAssetUrl } = useDirectus();
 
@@ -60,7 +63,13 @@ function handleKeydown(e: KeyboardEvent) {
 
 <template>
   <section class="media-gallery">
-    <h2 v-if="title" class="text-2xl font-serif font-bold text-stage-50 mb-8">{{ title }}</h2>
+    <h2 
+      v-if="title" 
+      class="text-2xl font-serif font-bold mb-8"
+      :class="viewtype === 'dark' ? 'text-stage-50' : 'text-stage-900'"
+    >
+      {{ title }}
+    </h2>
     
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
       <div 

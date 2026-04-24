@@ -25,8 +25,12 @@ const { data: pages, error } = await useAsyncData<Page[]>(`page-${slug}`, async 
 const page = computed(() => pages.value?.[0] || null);
 
 if (!page.value && !error.value) {
-  // If useAsyncData fails or page is not found
-  throw createError({ statusCode: 404, statusMessage: `Page "${slug}" not found in Directus`, fatal: true });
+  // If it's a request for a system file (like a source map), don't throw a fatal error
+  const isSystemFile = slug.includes('.') || slug.includes('_nuxt');
+  
+  if (!isSystemFile) {
+    throw createError({ statusCode: 404, statusMessage: `Page "${slug}" not found in Directus`, fatal: true });
+  }
 }
 
 const { getAssetUrl } = useDirectus();

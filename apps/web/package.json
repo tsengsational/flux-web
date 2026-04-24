@@ -16,6 +16,8 @@
     "@directus/sdk": "^21.2.0",
     "@flux-theatre/shared": "workspace:*",
     "nuxt": "^4.3.1",
+    "rrule": "^2.8.1",
+    "tslib": "^2.8.1",
     "vue": "^3.5.29",
     "vue-router": "^4.6.4"
   },

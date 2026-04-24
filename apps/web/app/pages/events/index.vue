@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { RRule } from 'rrule';
 import type { Event, EventFormat, EventCategory } from '@flux-theatre/shared';
 
 useSeoMeta({
@@ -15,6 +16,8 @@ const { data: cmsEvents, error } = await useAsyncData<Event[]>('events-list-v1',
     },
     fields: [
       '*', 
+      'is_recurring',
+      'recurrence_rule',
       { venue: ['name'] },
       { tags: ['*', { tags_id: ['*'] }] }
     ] as any,
@@ -22,7 +25,49 @@ const { data: cmsEvents, error } = await useAsyncData<Event[]>('events-list-v1',
   }))
 );
 
-const events = computed(() => cmsEvents.value || []);
+const events = computed(() => {
+  if (!cmsEvents.value) return [];
+  
+  const expanded: any[] = [];
+  const now = new Date();
+  const threeMonthsLater = new Date(now.getTime() + 90 * 24 * 60 * 60 * 1000);
+
+  cmsEvents.value.forEach((ev: any) => {
+    if (ev.is_recurring && ev.recurrence_rule) {
+      try {
+        const dtstart = new Date(ev.start_datetime);
+        const rule = RRule.fromString(`DTSTART:${dtstart.toISOString().replace(/[-:]/g, '').split('.')[0]}Z\nRRULE:${ev.recurrence_rule}`);
+        
+        // Get occurrences for the next 3 months
+        const occurrences = rule.between(dtstart > now ? dtstart : now, threeMonthsLater, true);
+        
+        // Add the first one if it's in the future and missing
+        if (dtstart >= now && dtstart <= threeMonthsLater && !occurrences.find(d => d.getTime() === dtstart.getTime())) {
+          occurrences.unshift(dtstart);
+        }
+
+        occurrences.forEach((date) => {
+          expanded.push({
+            ...ev,
+            id: `${ev.id}-${date.getTime()}`,
+            start_datetime: date.toISOString(),
+            // Calculate end date based on original duration
+            end_datetime: ev.end_datetime ? new Date(date.getTime() + (new Date(ev.end_datetime).getTime() - dtstart.getTime())).toISOString() : null
+          });
+        });
+      } catch (e) {
+        expanded.push(ev);
+      }
+    } else {
+      // For non-recurring, only show if it's in the future
+      if (new Date(ev.start_datetime) >= now) {
+        expanded.push(ev);
+      }
+    }
+  });
+
+  return expanded.sort((a, b) => new Date(a.start_datetime).getTime() - new Date(b.start_datetime).getTime());
+});
 
 type FormatFilter = 'all' | EventFormat;
 type CategoryFilter = 'all' | EventCategory;
@@ -31,7 +76,7 @@ const activeFormat = ref<FormatFilter>('all');
 const activeCategory = ref<CategoryFilter>('all');
 
 const filteredEvents = computed(() => {
-  return events.value.filter((e: Event) => {
+  return events.value.filter((e: any) => {
     const matchesFormat = activeFormat.value === 'all' || e.format === activeFormat.value;
     const matchesCategory = activeCategory.value === 'all' || e.category === activeCategory.value;
     return matchesFormat && matchesCategory;
@@ -124,7 +169,7 @@ const categoryFilters: { label: string; value: CategoryFilter }[] = [
         >
           <EventCard
             v-for="ev in filteredEvents"
-            :key="ev.slug"
+            :key="ev.id"
             :event="{ ...ev, view_type: 'light' }"
             class="events-page__card"
           />
