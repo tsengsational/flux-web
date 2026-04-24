@@ -26,10 +26,18 @@ const tagIds = computed(() => {
   return group.value.tags.map((t: any) => t.tags_id?.id).filter(Boolean);
 });
 
-// Fetch related items (documents) that share any of the group's tags
-const { data: documents } = await useAsyncData(`group-docs-${slug}`, async () => {
+const pageSize = 16;
+const currentPage = ref(1);
+const allDocuments = ref<any[]>([]);
+const hasMore = ref(true);
+const isLoadingMore = ref(false);
+
+// Helper to fetch a specific page of related documents
+const fetchDocuments = async (page: number) => {
   const ids = tagIds.value;
   if (!ids || ids.length === 0) return [];
+
+  const offset = (page - 1) * pageSize;
 
   // Parallel fetch for collections that support tags (Events, Blog Posts, and People)
   const [events, posts, people] = await Promise.all([
@@ -39,7 +47,8 @@ const { data: documents } = await useAsyncData(`group-docs-${slug}`, async () =>
         tags: { tags_id: { id: { _in: ids } } }
       },
       fields: ['*', { tags: [{ tags_id: ['name'] }] }, { venue: ['name'] }] as any,
-      limit: 12
+      limit: pageSize,
+      offset
     })).catch(() => []),
     client.request(readItems('posts', {
       filter: {
@@ -47,7 +56,8 @@ const { data: documents } = await useAsyncData(`group-docs-${slug}`, async () =>
         tags: { tags_id: { id: { _in: ids } } }
       },
       fields: ['*', { tags: [{ tags_id: ['name'] }] }, { author: ['first_name', 'last_name'] }] as any,
-      limit: 12
+      limit: pageSize,
+      offset
     })).catch(() => []),
     client.request(readItems('people', {
       filter: {
@@ -55,23 +65,63 @@ const { data: documents } = await useAsyncData(`group-docs-${slug}`, async () =>
         tags: { tags_id: { id: { _in: ids } } }
       },
       fields: ['*', { tags: [{ tags_id: ['name'] }] }] as any,
-      limit: 12
+      limit: pageSize,
+      offset
     })).catch(() => [])
   ]);
 
-  const all = [
+  const newItems = [
     ...(events as any[]).map(e => ({ type: 'event', data: e })),
     ...(posts as any[]).map(p => ({ type: 'post', data: p })),
     ...(people as any[]).map(p => ({ type: 'person', data: p }))
   ];
 
-  // Sort by date (descending), using date_created as fallback for people
-  return all.sort((a, b) => {
+  // If any collection returned the full pageSize, there might be more items
+  hasMore.value = events.length === pageSize || posts.length === pageSize || people.length === pageSize;
+
+  return newItems;
+};
+
+// Initial fetch
+const { data: initialDocs } = await useAsyncData(`group-docs-${slug}`, async () => {
+  return await fetchDocuments(1);
+}, { watch: [tagIds] });
+
+// Initialize allDocuments with the data from useAsyncData (works on both server and client)
+if (initialDocs.value) {
+  allDocuments.value = [...initialDocs.value];
+}
+
+// Watch for changes in initialDocs (e.g. when tagIds change) to update the list
+watch(initialDocs, (newItems) => {
+  if (newItems) {
+    allDocuments.value = [...newItems];
+    currentPage.value = 1; // Reset pagination
+  }
+});
+
+const loadMore = async () => {
+  if (isLoadingMore.value || !hasMore.value) return;
+  
+  isLoadingMore.value = true;
+  currentPage.value++;
+  
+  const nextItems = await fetchDocuments(currentPage.value);
+  allDocuments.value = [...allDocuments.value, ...nextItems];
+  isLoadingMore.value = false;
+};
+
+// Unified sorted list of all fetched documents
+const sortedDocuments = computed(() => {
+  if (!allDocuments.value) return [];
+  return [...allDocuments.value].sort((a, b) => {
     const dateA = a.data.start_datetime || a.data.publish_date || a.data.date_created || '';
     const dateB = b.data.start_datetime || b.data.publish_date || b.data.date_created || '';
     return new Date(dateB).getTime() - new Date(dateA).getTime();
   });
-}, { watch: [tagIds] });
+});
+
+
 
 
 useSeoMeta({
@@ -147,13 +197,31 @@ useSeoMeta({
           </div>
         </div>
 
-        <div v-if="documents && documents.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          <template v-for="doc in documents" :key="doc.data.id">
-            <EventCard v-if="doc.type === 'event'" :event="{ ...doc.data, view_type: 'dark' }" />
-            <BlogPostCard v-else-if="doc.type === 'post'" :post="doc.data" view_type="dark" />
-            <PersonCard v-else-if="doc.type === 'person'" :person="doc.data" />
-          </template>
+        <div v-if="sortedDocuments.length > 0" class="group-page__documents-grid-wrapper">
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <template v-for="doc in sortedDocuments" :key="`${doc.type}-${doc.data.id}`">
+              <EventCard v-if="doc.type === 'event'" :event="{ ...doc.data, view_type: 'dark' }" />
+              <BlogPostCard v-else-if="doc.type === 'post'" :post="doc.data" view_type="dark" />
+              <PersonCard v-else-if="doc.type === 'person'" :person="doc.data" />
+            </template>
+          </div>
+
+          <!-- Pagination / Load More -->
+          <div v-if="hasMore" class="mt-16 flex justify-center">
+            <button 
+              @click="loadMore" 
+              class="btn-secondary group/more px-8 py-3 text-brand-500 flex items-center gap-3"
+              :disabled="isLoadingMore"
+            >
+              <span v-if="isLoadingMore" class="animate-spin h-4 w-4 border-2 text-brand-500 border-brand-500 border-t-transparent rounded-full" />
+              {{ isLoadingMore ? 'Loading...' : 'Show More' }}
+              <svg v-if="!isLoadingMore" class="w-4 h-4 transition-transform group-hover/more:translate-y-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+          </div>
         </div>
+
 
         
         <div v-else class="text-center py-32 card-glass rounded-3xl border border-dashed border-stage-800/60">
