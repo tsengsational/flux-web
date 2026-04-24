@@ -65,8 +65,8 @@ const fetchDocuments = async (page: number) => {
         tags: { tags_id: { id: { _in: ids } } }
       },
       fields: ['*', { tags: [{ tags_id: ['name'] }] }] as any,
-      limit: pageSize,
-      offset
+      limit: 24,
+      offset: (page - 1) * 24
     })).catch(() => [])
   ]);
 
@@ -76,8 +76,9 @@ const fetchDocuments = async (page: number) => {
     ...(people as any[]).map(p => ({ type: 'person', data: p }))
   ];
 
-  // If any collection returned the full pageSize, there might be more items
-  hasMore.value = events.length === pageSize || posts.length === pageSize || people.length === pageSize;
+  // If any collection returned its full set, there might be more items
+  hasMore.value = events.length === pageSize || posts.length === pageSize || people.length === 24;
+
 
   return newItems;
 };
