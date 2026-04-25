@@ -117,7 +117,7 @@ const categoryFilters: { label: string; value: CategoryFilter }[] = [
   { label: 'Community', value: 'community' },
 ];
 
-const viewMode = ref<'grid' | 'calendar'>('grid');
+const viewMode = ref<'grid' | 'calendar'>('calendar');
 </script>
 
 <template>

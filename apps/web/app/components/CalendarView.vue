@@ -42,6 +42,8 @@ const monthYearLabel = computed(() => format(currentDate.value, 'MMMM yyyy'));
 
 const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
+const { getAssetUrl } = useDirectus();
+
 const getEventTimes = (startDatetime: string) => {
   const date = new Date(startDatetime);
   const nyTime = formatInTimeZone(date, 'America/New_York', 'h:mm a');
@@ -105,22 +107,27 @@ const getEventTimes = (startDatetime: string) => {
             v-for="day in calendarDays"
             :key="day.toString()"
             @click="selectedDate = day"
-            class="calendar-view__day aspect-square rounded-xl flex flex-col items-center justify-center relative transition-all duration-200 group"
+            class="calendar-view__day min-h-[80px] lg:min-h-[110px] rounded-xl flex flex-col items-start p-2 relative transition-all duration-200 group"
             :class="[
               !isSameMonth(day, monthStart) ? 'opacity-10 pointer-events-none' : 'hover:bg-stage-800',
               isSameDay(day, selectedDate) ? 'bg-brand-500/20 ring-2 ring-brand-500/80 text-white' : 'text-stage-100',
               isToday(day) && !isSameDay(day, selectedDate) ? 'text-brand-400 font-black ring-1 ring-brand-500/30' : ''
             ]"
           >
-            <span class="text-sm z-10 relative font-medium">{{ format(day, 'd') }}</span>
+            <span class="text-xs z-10 relative font-bold mb-1.5 opacity-60 group-hover:opacity-100">{{ format(day, 'd') }}</span>
             
-            <!-- Event Dots -->
-            <div v-if="getEventsForDay(day).length > 0" class="flex gap-1 mt-1">
+            <!-- Event Info -->
+            <div v-if="getEventsForDay(day).length > 0" class="w-full flex flex-col gap-1 overflow-hidden pointer-events-none">
               <div 
-                v-for="(ev, idx) in getEventsForDay(day).slice(0, 3)" 
-                :key="idx"
-                class="w-1.5 h-1.5 rounded-full bg-brand-500 shadow-[0_0_8px_rgba(255,85,51,0.8)]"
-              ></div>
+                v-for="ev in getEventsForDay(day).slice(0, 2)" 
+                :key="ev.id"
+                class="text-[9px] lg:text-[10px] leading-tight px-1 py-0.5 rounded bg-brand-500/10 text-brand-400 border-l-2 border-brand-500 truncate w-full text-left"
+              >
+                {{ ev.title }}
+              </div>
+              <div v-if="getEventsForDay(day).length > 2" class="text-[8px] lg:text-[9px] text-stage-500 font-bold px-1 mt-0.5">
+                +{{ getEventsForDay(day).length - 2 }} more
+              </div>
             </div>
           </button>
         </div>
@@ -145,24 +152,37 @@ const getEventTimes = (startDatetime: string) => {
             :to="`/events/${event.slug}`"
             class="calendar-view__event-card block p-4 rounded-2xl bg-stage-800/40 border border-stage-700/30 hover:border-brand-500/50 hover:bg-stage-800/60 transition-all group"
           >
-            <div class="flex items-start justify-between gap-3">
-              <div>
-                <span class="inline-block px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-brand-500/10 text-brand-400 mb-2">
-                  {{ event.category }}
-                </span>
-                <h4 class="text-sm font-bold text-stage-100 group-hover:text-brand-400 transition-colors leading-snug">
-                  {{ event.title }}
-                </h4>
-                <div class="flex items-start gap-2 mt-2 text-[10px] text-stage-500">
-                  <svg class="w-3 h-3 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                  <div class="flex flex-col">
-                    <span class="font-bold">{{ getEventTimes(event.start_datetime).nyTime }}</span>
-                    <span v-if="getEventTimes(event.start_datetime).showLocal" class="opacity-60 italic text-[9px] mt-0.5">{{ getEventTimes(event.start_datetime).localTime }}</span>
+            <div class="flex items-start gap-4">
+              <!-- Event Image -->
+              <div v-if="event.cover_image" class="w-16 h-16 rounded-xl overflow-hidden flex-shrink-0 bg-stage-800 border border-stage-700/50 shadow-lg">
+                <img 
+                  :src="getAssetUrl(event.cover_image, { width: 100, height: 100, fit: 'cover' })!" 
+                  :alt="event.title"
+                  class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                />
+              </div>
+
+              <div class="flex-1 min-w-0">
+                <div class="flex items-start justify-between gap-3">
+                  <div>
+                    <span class="inline-block px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-brand-500/10 text-brand-400 mb-2">
+                      {{ event.category }}
+                    </span>
+                    <h4 class="text-sm font-bold text-stage-100 group-hover:text-brand-400 transition-colors leading-snug">
+                      {{ event.title }}
+                    </h4>
+                    <div class="flex items-start gap-2 mt-2 text-[10px] text-stage-500">
+                      <svg class="w-3 h-3 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                      <div class="flex flex-col">
+                        <span class="font-bold">{{ getEventTimes(event.start_datetime).nyTime }}</span>
+                        <span v-if="getEventTimes(event.start_datetime).showLocal" class="opacity-60 italic text-[9px] mt-0.5">{{ getEventTimes(event.start_datetime).localTime }}</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="flex-shrink-0 w-8 h-8 rounded-full bg-stage-700/30 flex items-center justify-center text-stage-500 group-hover:text-brand-400 transition-colors">
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
                   </div>
                 </div>
-              </div>
-              <div class="flex-shrink-0 w-8 h-8 rounded-full bg-stage-700/30 flex items-center justify-center text-stage-500 group-hover:text-brand-400 transition-colors">
-                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
               </div>
             </div>
           </NuxtLink>

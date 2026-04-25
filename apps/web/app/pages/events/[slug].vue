@@ -118,73 +118,94 @@ const funders = computed(() => {
 <template>
   <article v-if="event" class="event-detail pb-24">
     <!-- Hero / Header -->
-    <section class="event-detail__hero relative pt-8 pb-16 bg-stage-900" id="event-detail-hero">
+    <section class="event-detail__hero relative pt-8 pb-16 bg-stage-900 overflow-hidden" id="event-detail-hero">
+      <!-- Background Ambient Glow -->
+      <div v-if="event.cover_image" class="absolute inset-0 opacity-20 blur-3xl pointer-events-none">
+        <img :src="getAssetUrl(event.cover_image, { width: 100, quality: 10 })!" class="w-full h-full object-cover scale-150" alt="" />
+      </div>
+
       <div class="event-detail__hero-container relative max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="event-detail__meta flex flex-wrap items-center gap-3 mb-6">
-          <NuxtLink to="/events" class="event-detail__back-link text-xs text-stage-400 hover:text-brand-400 transition-colors">
-            &larr; All Events
-          </NuxtLink>
-          <span class="event-detail__divider w-px h-3 bg-stage-700" />
-          <span class="event-detail__category px-2.5 py-0.5 rounded-full text-xs font-semibold bg-brand-500/90 text-stage-950">
-            {{ categoryLabel }}
-          </span>
-        </div>
-
-        <h1 class="event-detail__title text-3xl sm:text-5xl lg:text-6xl font-serif font-bold text-stage-50 tracking-tight leading-tight">
-          {{ event.title }}
-        </h1>
-
-        <div class="event-detail__info-bar mt-8 flex flex-col sm:flex-row sm:items-center gap-6 text-stage-300">
-          <!-- Date -->
-          <div class="event-detail__info-item flex items-center gap-3">
-            <div class="event-detail__info-icon w-10 h-10 rounded-lg bg-stage-800 flex items-center justify-center text-brand-400">
-              <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
-              </svg>
+        <div class="flex flex-col lg:flex-row gap-12 lg:items-center">
+          <div class="flex-1">
+            <div class="event-detail__meta flex flex-wrap items-center gap-3 mb-6">
+              <NuxtLink to="/events" class="event-detail__back-link text-xs text-stage-400 hover:text-brand-400 transition-colors">
+                &larr; All Events
+              </NuxtLink>
+              <span class="event-detail__divider w-px h-3 bg-stage-700" />
+              <span class="event-detail__category px-2.5 py-0.5 rounded-full text-xs font-semibold bg-brand-500/90 text-stage-950">
+                {{ categoryLabel }}
+              </span>
             </div>
-            <div class="event-detail__info-text">
-              <p class="event-detail__info-label text-xs text-stage-500 uppercase font-bold tracking-wider">Date & Time</p>
-              <p v-if="event.is_recurring" class="event-detail__info-value text-sm font-medium text-brand-400">{{ recurrenceText }}</p>
-              <p v-else class="event-detail__info-value text-sm font-medium">{{ nyDateLabel }}</p>
-              <div class="event-detail__info-subtext text-xs text-stage-300 mt-0.5 flex flex-col">
-                <span class="font-bold">{{ eventTimes?.nyFull }}</span>
-                <ClientOnly>
-                  <span v-if="eventTimes?.showLocal" class="opacity-60 italic mt-0.5">{{ eventTimes?.localFull }}</span>
-                </ClientOnly>
+
+            <h1 class="event-detail__title text-3xl sm:text-5xl lg:text-6xl font-serif font-bold text-stage-50 tracking-tight leading-tight">
+              {{ event.title }}
+            </h1>
+
+            <div class="event-detail__info-bar mt-8 flex flex-col sm:flex-row sm:items-center gap-6 text-stage-300">
+              <!-- Date -->
+              <div class="event-detail__info-item flex items-center gap-3">
+                <div class="event-detail__info-icon w-10 h-10 rounded-lg bg-stage-800 flex items-center justify-center text-brand-400">
+                  <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
+                  </svg>
+                </div>
+                <div class="event-detail__info-text">
+                  <p class="event-detail__info-label text-xs text-stage-500 uppercase font-bold tracking-wider">Date & Time</p>
+                  <p v-if="event.is_recurring" class="event-detail__info-value text-sm font-medium text-brand-400">{{ recurrenceText }}</p>
+                  <p v-else class="event-detail__info-value text-sm font-medium">{{ nyDateLabel }}</p>
+                  <div class="event-detail__info-subtext text-xs text-stage-300 mt-0.5 flex flex-col">
+                    <span class="font-bold">{{ eventTimes?.nyFull }}</span>
+                    <ClientOnly>
+                      <span v-if="eventTimes?.showLocal" class="opacity-60 italic mt-0.5">{{ eventTimes?.localFull }}</span>
+                    </ClientOnly>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Location -->
+              <div class="event-detail__info-item flex items-center gap-3">
+                <div class="event-detail__info-icon w-10 h-10 rounded-lg bg-stage-800 flex items-center justify-center text-brand-400">
+                  <svg v-if="event.format === 'digital'" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 17.25v1.007a3 3 0 01-.879 2.122L7.5 21h9l-.621-.621A3 3 0 0115 18.257V17.25m6-12V15a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 15V5.25A2.25 2.25 0 015.25 3h13.5A2.25 2.25 0 0121 5.25z" />
+                  </svg>
+                  <svg v-else class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" />
+                  </svg>
+                </div>
+                <div class="event-detail__info-text">
+                  <p class="event-detail__info-label text-xs text-stage-500 uppercase font-bold tracking-wider">Location</p>
+                  <p class="event-detail__info-value text-sm font-medium">
+                    {{ (event.venue && typeof event.venue !== 'string') ? event.venue.name : (event.venue || 'Online') }}
+                  </p>
+                  <p v-if="event.format === 'hybrid'" class="event-detail__info-subtext text-xs text-stage-400">In person & digital</p>
+                </div>
+              </div>
+
+              <!-- Admission -->
+              <div class="event-detail__info-item flex items-center gap-3">
+                <div class="event-detail__info-icon w-10 h-10 rounded-lg bg-stage-800 flex items-center justify-center text-brand-400">
+                  <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 6v.75m0 3v.75m0 3v.75m0 3V18m-9-5.25h5.25M7.5 15h3M3.375 5.25c-.621 0-1.125.504-1.125 1.125v3.026a2.999 2.999 0 010 5.198v3.026c0 .621.504 1.125 1.125 1.125h17.25c.621 0 1.125-.504 1.125-1.125v-3.026a2.999 2.999 0 010-5.198V6.375c0-.621-.504-1.125-1.125-1.125H3.375z" />
+                  </svg>
+                </div>
+                <div class="event-detail__info-text">
+                  <p class="event-detail__info-label text-xs text-stage-500 uppercase font-bold tracking-wider">Admission</p>
+                  <p class="event-detail__info-value text-sm font-medium">{{ event.is_free ? 'Free' : (event.price || 'Ticketed') }}</p>
+                </div>
               </div>
             </div>
           </div>
 
-          <!-- Location -->
-          <div class="event-detail__info-item flex items-center gap-3">
-            <div class="event-detail__info-icon w-10 h-10 rounded-lg bg-stage-800 flex items-center justify-center text-brand-400">
-              <svg v-if="event.format === 'digital'" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M9 17.25v1.007a3 3 0 01-.879 2.122L7.5 21h9l-.621-.621A3 3 0 0115 18.257V17.25m6-12V15a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 15V5.25A2.25 2.25 0 015.25 3h13.5A2.25 2.25 0 0121 5.25z" />
-              </svg>
-              <svg v-else class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" />
-                <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" />
-              </svg>
-            </div>
-            <div class="event-detail__info-text">
-              <p class="event-detail__info-label text-xs text-stage-500 uppercase font-bold tracking-wider">Location</p>
-              <p class="event-detail__info-value text-sm font-medium">
-                {{ (event.venue && typeof event.venue !== 'string') ? event.venue.name : (event.venue || 'Online') }}
-              </p>
-              <p v-if="event.format === 'hybrid'" class="event-detail__info-subtext text-xs text-stage-400">In person & digital</p>
-            </div>
-          </div>
-
-          <!-- Admission -->
-          <div class="event-detail__info-item flex items-center gap-3">
-            <div class="event-detail__info-icon w-10 h-10 rounded-lg bg-stage-800 flex items-center justify-center text-brand-400">
-              <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 6v.75m0 3v.75m0 3v.75m0 3V18m-9-5.25h5.25M7.5 15h3M3.375 5.25c-.621 0-1.125.504-1.125 1.125v3.026a2.999 2.999 0 010 5.198v3.026c0 .621.504 1.125 1.125 1.125h17.25c.621 0 1.125-.504 1.125-1.125v-3.026a2.999 2.999 0 010-5.198V6.375c0-.621-.504-1.125-1.125-1.125H3.375z" />
-              </svg>
-            </div>
-            <div class="event-detail__info-text">
-              <p class="event-detail__info-label text-xs text-stage-500 uppercase font-bold tracking-wider">Admission</p>
-              <p class="event-detail__info-value text-sm font-medium">{{ event.is_free ? 'Free' : (event.price || 'Ticketed') }}</p>
+          <!-- Hero Image -->
+          <div v-if="event.cover_image" class="lg:w-[400px] flex-shrink-0">
+            <div class="event-detail__hero-image-wrapper relative group aspect-video lg:aspect-[4/5] rounded-3xl overflow-hidden shadow-2xl border border-stage-800/60">
+              <img 
+                :src="getAssetUrl(event.cover_image, { width: 800, quality: 90 })!" 
+                :alt="event.title"
+                class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+              />
+              <div class="absolute inset-0 bg-gradient-to-t from-stage-950/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
             </div>
           </div>
         </div>
