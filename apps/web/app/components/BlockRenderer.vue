@@ -20,6 +20,30 @@ const props = defineProps<{
   content: string | EditorData | null | undefined;
 }>();
 
+// ── Custom Scroll Reveal Directive ──
+const vReveal = {
+  mounted(el: HTMLElement) {
+    // Initial state: hidden
+    el.classList.add('reveal-init');
+    
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          // Trigger animation
+          el.classList.add('reveal-active');
+          // Once revealed, we can stop observing
+          observer.unobserve(el);
+        }
+      });
+    }, { 
+      threshold: 0.15,
+      rootMargin: '0px 0px -50px 0px' // Trigger slightly before it hits the viewport
+    });
+
+    observer.observe(el);
+  }
+};
+
 /**
  * Detect if content is EditorJS JSON or raw HTML
  */
@@ -121,7 +145,8 @@ const { getAssetUrl } = useDirectus();
         <!-- Image (with Aggressive Breakout support on Desktop) -->
         <figure 
           v-else-if="block.type === 'image'" 
-          class="my-10 overflow-visible"
+          v-reveal
+          class="my-10 overflow-visible reveal-init"
           :class="{
             'md:float-left md:mr-10 md:mb-6 md:max-w-[44%] lg:max-w-[60%] lg:-ml-24 xl:-ml-32': (block.data.alignment === 'left' || (block.data.caption && block.data.caption.startsWith('[left]'))),
             'md:float-right md:ml-10 md:mb-6 md:max-w-[44%] lg:max-w-[60%] lg:-mr-24 xl:-mr-32': (block.data.alignment === 'right' || (block.data.caption && block.data.caption.startsWith('[right]'))),
@@ -180,3 +205,37 @@ const { getAssetUrl } = useDirectus();
     </div>
   </div>
 </template>
+
+<style lang="scss" scoped>
+.block-renderer {
+  /* --- Fly-in Animations --- */
+  .reveal-init {
+    opacity: 0;
+    filter: blur(10px);
+    transition: all 1.2s cubic-bezier(0.16, 1, 0.3, 1);
+    will-change: transform, opacity, filter;
+  }
+
+  /* Left-aligned fly-in */
+  :deep(.md\:float-left.reveal-init) {
+    transform: translateX(-60px) rotate(-1deg);
+  }
+
+  /* Right-aligned fly-in */
+  :deep(.md\:float-right.reveal-init) {
+    transform: translateX(60px) rotate(1deg);
+  }
+
+  /* Centered / Full-width fly-in */
+  :deep(.w-full.reveal-init) {
+    transform: translateY(30px);
+  }
+
+  /* Active State */
+  :deep(.reveal-active) {
+    opacity: 1 !important;
+    filter: blur(0) !important;
+    transform: translate(0, 0) rotate(0) !important;
+  }
+}
+</style>
