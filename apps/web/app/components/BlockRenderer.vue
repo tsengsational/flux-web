@@ -62,7 +62,7 @@ const { getAssetUrl } = useDirectus();
 </script>
 
 <template>
-  <div class="block-renderer">
+  <div class="block-renderer flow-root">
     <!-- Case 1: Simple HTML (WYSIWYG) -->
     <div 
       v-if="!isEditorJS" 
@@ -118,15 +118,34 @@ const { getAssetUrl } = useDirectus();
           <cite v-if="block.data.caption" class="text-sm not-italic opacity-60">— {{ block.data.caption }}</cite>
         </blockquote>
 
-        <!-- Image -->
-        <figure v-else-if="block.type === 'image'" class="my-10 rounded-2xl overflow-hidden border border-stage-800/50">
-          <img 
-            :src="block.data.file?.url || getAssetUrl(block.data.file?.id)" 
-            :alt="block.data.caption || ''"
-            class="w-full h-auto object-cover"
-          />
-          <figcaption v-if="block.data.caption" class="p-4 text-center text-sm opacity-60 bg-stage-900/20">
+        <!-- Image (with Aggressive Breakout support on Desktop) -->
+        <figure 
+          v-else-if="block.type === 'image'" 
+          class="my-10 overflow-visible"
+          :class="{
+            'md:float-left md:mr-10 md:mb-6 md:max-w-[44%] lg:max-w-[60%] lg:-ml-24 xl:-ml-32': (block.data.alignment === 'left' || (block.data.caption && block.data.caption.startsWith('[left]'))),
+            'md:float-right md:ml-10 md:mb-6 md:max-w-[44%] lg:max-w-[60%] lg:-mr-24 xl:-mr-32': (block.data.alignment === 'right' || (block.data.caption && block.data.caption.startsWith('[right]'))),
+            'w-full': !block.data.alignment && !(block.data.caption && (block.data.caption.startsWith('[left]') || block.data.caption.startsWith('[right]')))
+          }"
+        >
+          <div class="rounded-2xl overflow-hidden border border-stage-800/50">
+            <img 
+              :src="getAssetUrl(block.data.file?.id || (typeof block.data.file === 'string' ? block.data.file : null) || (block.data.file?.url?.split('/assets/')?.[1]), { width: 1200 })!" 
+              :alt="block.data.caption || ''"
+              class="w-full h-auto object-cover"
+            />
+          </div>
+          <figcaption 
+            v-if="block.data.caption && !block.data.caption.startsWith('[left]') && !block.data.caption.startsWith('[right]')" 
+            class="p-4 text-center text-sm opacity-60"
+          >
             {{ block.data.caption }}
+          </figcaption>
+          <figcaption 
+            v-else-if="block.data.caption" 
+            class="p-4 text-center text-sm opacity-60"
+          >
+            {{ block.data.caption.replace('[left]', '').replace('[right]', '').trim() }}
           </figcaption>
         </figure>
 
