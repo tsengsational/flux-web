@@ -152,11 +152,6 @@ const categoryFilters: { label: string; value: CategoryFilter }[] = [
     <!-- Events Grid -->
     <section class="events-page__grid-section pb-24" id="events-grid">
       <div class="events-page__grid-container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="text-[10px] text-stage-600 mb-2 whitespace-pre-wrap">
-          DEBUG: {{ Array.isArray(cmsEvents) ? cmsEvents.length : 'Not an array' }} items. 
-          Raw: {{ JSON.stringify(cmsEvents)?.substring(0, 100) }}
-          Error: {{ error }}
-        </div>
         <TransitionGroup
           tag="div"
           class="events-page__grid grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"

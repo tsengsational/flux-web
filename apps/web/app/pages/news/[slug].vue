@@ -63,10 +63,13 @@ const postTags = computed(() => {
 });
 
 const galleryIds = computed(() => {
-  if (!post.value?.gallery) return [];
-  return post.value.gallery.map((item: any) => 
-    item.directus_files_id?.id || item.directus_files_id
-  ).filter(Boolean);
+  const rawGallery = post.value?.gallery;
+  if (!rawGallery || !Array.isArray(rawGallery)) return [];
+  
+  return rawGallery.map((item: any) => {
+    const id = item.directus_files_id?.id || item.directus_files_id;
+    return typeof id === 'string' ? id : null;
+  }).filter(Boolean) as string[];
 });
 </script>
 

@@ -11,7 +11,7 @@ const slug = Array.isArray(slugParam) ? slugParam.join('/') : slugParam;
 const { data: pages, error } = await useAsyncData<Page[]>(`page-${slug}`, async () => {
   const result = await client.request(readItems('pages', {
     filter: { slug: { _eq: slug }, status: { _eq: 'published' } },
-    fields: ['*', 'content', { funders: ['*', { funder_id: ['name', 'slug', 'image', 'url'] }] }] as any,
+    fields: ['*', 'content', { funders: ['*', { funder_id: ['name', 'slug', 'image', 'url'] }], gallery: [{ directus_files_id: ['id'] }] }] as any,
     limit: 1
   })) as any;
   
@@ -40,6 +40,16 @@ const funders = computed(() => {
     .filter(Boolean);
 });
 
+const galleryIds = computed(() => {
+  const rawGallery = page.value?.gallery;
+  if (!rawGallery || !Array.isArray(rawGallery)) return [];
+  
+  return rawGallery.map((item: any) => {
+    const id = item.directus_files_id?.id || item.directus_files_id;
+    return typeof id === 'string' ? id : null;
+  }).filter(Boolean) as string[];
+});
+
 useHead({
   title: page.value?.meta_title || page.value?.title || 'Page',
   meta: [
@@ -58,6 +68,11 @@ useHead({
       <div class="page-detail__content">
         <!-- Renders Block Editor content if present, fallback to HTML 'body' -->
         <BlockRenderer :content="page.content || page.body" />
+      </div>
+
+      <!-- Media Gallery -->
+      <div v-if="galleryIds.length > 0" class="page-detail__gallery mt-24">
+        <MediaGallery :images="galleryIds" title="Gallery" viewtype="light" />
       </div>
       
       <!-- Funders -->
