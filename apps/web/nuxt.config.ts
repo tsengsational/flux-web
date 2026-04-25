@@ -68,9 +68,16 @@ export default defineNuxtConfig({
     strict: true,
   },
 
+  // ── Nitro ──
+  nitro: {
+    externals: {
+      inline: ['tslib'],
+    },
+  },
+
   // ── Build ──
   build: {
-    transpile: ['rrule'],
+    transpile: ['rrule', 'tslib'],
   },
 
   // ── Vite ──
