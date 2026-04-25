@@ -142,14 +142,52 @@ const { getAssetUrl } = useDirectus();
           <cite v-if="block.data.caption" class="text-sm not-italic opacity-60">— {{ block.data.caption }}</cite>
         </blockquote>
 
+        <!-- Video / Embed (with Alignment and Breakout support) -->
+        <figure 
+          v-else-if="block.type === 'video' || block.type === 'embed'" 
+          v-reveal
+          class="my-10 overflow-visible reveal-init"
+          :class="{
+            'md:float-left md:mr-10 md:mb-6 w-full md:max-w-[55%] lg:max-w-[70%] lg:-ml-24 xl:-ml-32': (block.data.alignment === 'left' || (block.data.caption && block.data.caption.startsWith('[left]'))),
+            'md:float-right md:ml-10 md:mb-6 w-full md:max-w-[55%] lg:max-w-[70%] lg:-mr-24 xl:-mr-32': (block.data.alignment === 'right' || (block.data.caption && block.data.caption.startsWith('[right]'))),
+            'w-full': !block.data.alignment && !(block.data.caption && (block.data.caption.startsWith('[left]') || block.data.caption.startsWith('[right]')))
+          }"
+        >
+          <div class="rounded-2xl overflow-hidden border border-stage-800/50 bg-black aspect-video flex items-center justify-center">
+            <!-- Native Video -->
+            <video 
+              v-if="block.type === 'video'"
+              controls
+              class="w-full h-full object-cover"
+              :src="getAssetUrl(block.data.file?.id || block.data.file)"
+            ></video>
+            
+            <!-- Embed (YouTube/Vimeo) -->
+            <iframe 
+              v-else
+              :src="block.data.embed"
+              class="w-full h-full"
+              frameborder="0"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowfullscreen
+            ></iframe>
+          </div>
+          <figcaption 
+            v-if="block.data.caption" 
+            class="p-4 text-center text-sm opacity-60"
+          >
+             {{ block.data.caption.replace('[left]', '').replace('[right]', '').trim() }}
+          </figcaption>
+        </figure>
+
         <!-- Image (with Aggressive Breakout support on Desktop) -->
         <figure 
           v-else-if="block.type === 'image'" 
           v-reveal
           class="my-10 overflow-visible reveal-init"
           :class="{
-            'md:float-left md:mr-10 md:mb-6 md:max-w-[44%] lg:max-w-[60%] lg:-ml-24 xl:-ml-32': (block.data.alignment === 'left' || (block.data.caption && block.data.caption.startsWith('[left]'))),
-            'md:float-right md:ml-10 md:mb-6 md:max-w-[44%] lg:max-w-[60%] lg:-mr-24 xl:-mr-32': (block.data.alignment === 'right' || (block.data.caption && block.data.caption.startsWith('[right]'))),
+            'md:float-left md:mr-10 md:mb-6 w-full md:max-w-[55%] lg:max-w-[70%] lg:-ml-24 xl:-ml-32': (block.data.alignment === 'left' || (block.data.caption && block.data.caption.startsWith('[left]'))),
+            'md:float-right md:ml-10 md:mb-6 w-full md:max-w-[55%] lg:max-w-[70%] lg:-mr-24 xl:-mr-32': (block.data.alignment === 'right' || (block.data.caption && block.data.caption.startsWith('[right]'))),
             'w-full': !block.data.alignment && !(block.data.caption && (block.data.caption.startsWith('[left]') || block.data.caption.startsWith('[right]')))
           }"
         >
