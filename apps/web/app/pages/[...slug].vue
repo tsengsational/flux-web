@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { Page } from '@flux-theatre/shared';
+import type { Page, Person } from '@flux-theatre/shared';
 
 const route = useRoute();
 const { client, readItems } = useDirectus();
@@ -11,7 +11,15 @@ const slug = Array.isArray(slugParam) ? slugParam.join('/') : slugParam;
 const { data: pages, error } = await useAsyncData<Page[]>(`page-${slug}`, async () => {
   const result = await client.request(readItems('pages', {
     filter: { slug: { _eq: slug }, status: { _eq: 'published' } },
-    fields: ['*', 'content', { funders: ['*', { funder_id: ['name', 'slug', 'image', 'url'] }], gallery: [{ directus_files_id: ['id'] }] }] as any,
+    fields: [
+      '*', 
+      'content', 
+      { 
+        funders: ['*', { funder_id: ['name', 'slug', 'image', 'url'] }], 
+        gallery: [{ directus_files_id: ['id'] }],
+        people: ['sort', { people_id: ['first_name', 'last_name', 'slug', 'headshot', 'bio', 'pronouns'] }]
+      }
+    ] as any,
     limit: 1
   })) as any;
   
@@ -30,6 +38,14 @@ if (!page.value && !error.value) {
 }
 
 const { getAssetUrl } = useDirectus();
+
+const people = computed(() => {
+  return (page.value?.people || [])
+    .filter(p => p && typeof (p.people_id as any) !== 'string')
+    .sort((a, b) => (a.sort || 0) - (b.sort || 0))
+    .map(p => p.people_id as unknown as Person);
+});
+
 const funders = computed(() => {
   return (page.value?.funders || [])
     .map((f: any) => f.funder_id)
@@ -65,6 +81,21 @@ useHead({
         <!-- Renders Block Editor content if present, fallback to HTML 'body' -->
         <BlockRenderer :content="page.content || page.body" />
       </div>
+
+      <!-- People Section -->
+      <section v-if="people.length" class="page-detail__people mt-24 pt-12 border-t border-stage-200">
+        <h2 class="text-xl font-serif font-bold text-stage-950 mb-8 text-center uppercase tracking-widest">
+          {{ page.people_label || 'People' }}
+        </h2>
+        <div class="grid grid-cols-2 sm:grid-cols-3 gap-6">
+          <PersonCard
+            v-for="person in people"
+            :key="person.slug"
+            :person="person"
+            compact
+          />
+        </div>
+      </section>
 
       <!-- Media Gallery -->
       <div v-if="galleryIds.length > 0" class="page-detail__gallery mt-24">

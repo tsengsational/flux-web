@@ -153,6 +153,14 @@ export interface PageFunder {
     funder_id: string | Funder;
 }
 
+export interface PagePerson {
+    id: string;
+    pages_id: string | Page;
+    people_id: string | Person;
+    sort: number | null;
+}
+
+
 // ─── Events (non-production) ───
 
 export type EventFormat = 'in_person' | 'digital' | 'hybrid';
@@ -323,6 +331,8 @@ export interface Page extends DirectusBaseFields {
     body: string;                 // Rich-text / HTML fallback
     content: any | null;          // Structured JSON for Block Editor
     funders: PageFunder[];
+    people_label: string | null;
+    people: PagePerson[];
     meta_title: string | null;
     meta_description: string | null;
 }
