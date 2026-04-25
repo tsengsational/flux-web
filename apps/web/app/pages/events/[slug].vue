@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { RRule } from 'rrule';
-import type { Event, EventFormat, EventCategory } from '@flux-theatre/shared';
+import { toZonedTime, fromZonedTime, formatInTimeZone } from 'date-fns-tz';
+
+const timeZone = 'America/New_York';
 
 const route = useRoute();
 const slug = route.params.slug as string;
@@ -10,7 +11,7 @@ const { client, readItems } = useDirectus();
 const { data: events, error } = await useAsyncData<Event[]>(`event-${slug}`, () => 
   client.request(readItems('events' as any, {
     filter: { slug: { _eq: slug }, status: { _eq: 'published' } },
-    fields: ['*', 'is_recurring', 'recurrence_rule', { venue: ['*'] }, { funders: ['*', { funder_id: ['name', 'slug', 'image', 'url'] }] }] as any,
+    fields: ['*', 'is_recurring', 'recurrence_rule', { venue: ['*'] }, { related_production: ['title', 'slug', 'poster_image'] }, { funders: ['*', { funder_id: ['name', 'slug', 'image', 'url'] }] }] as any,
     limit: 1
   } as any)) as any
 );
@@ -27,10 +28,9 @@ useSeoMeta({
   description: () => event.value?.excerpt || '',
 });
 
-const formattedDate = computed(() => {
+const nyDateLabel = computed(() => {
   if (!event.value) return '';
-  const d = new Date(event.value.start_datetime);
-  return d.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
+  return formatInTimeZone(new Date(event.value.start_datetime), timeZone, 'EEEE, MMMM d, yyyy');
 });
 
 const recurrenceText = computed(() => {
@@ -46,26 +46,49 @@ const recurrenceText = computed(() => {
 const upcomingDates = computed(() => {
   if (!event.value?.is_recurring || !event.value?.recurrence_rule) return [];
   try {
-    const dtstart = new Date(event.value.start_datetime);
-    const rule = RRule.fromString(`DTSTART:${dtstart.toISOString().replace(/[-:]/g, '').split('.')[0]}Z\nRRULE:${event.value.recurrence_rule}`);
-    return rule.after(new Date(), true) ? rule.all((date, i) => i < 5) : [];
+    const dtstart = toZonedTime(new Date(event.value.start_datetime), timeZone);
+    const year = dtstart.getFullYear();
+    const month = dtstart.getMonth() + 1;
+    const day = dtstart.getDate();
+    const hour = dtstart.getHours();
+    const min = dtstart.getMinutes();
+    const sec = dtstart.getSeconds();
+    
+    const pad = (n: number) => n.toString().padStart(2, '0');
+    const dtstartStr = `${year}${pad(month)}${pad(day)}T${pad(hour)}${pad(min)}${pad(sec)}`;
+    
+    const rule = RRule.fromString(`DTSTART:${dtstartStr}\nRRULE:${event.value.recurrence_rule}`);
+    
+    const occurrences = rule.after(new Date(), true) ? rule.all((date, i) => i < 5) : [];
+    return occurrences.map(d => fromZonedTime(d, timeZone));
   } catch (e) {
     return [];
   }
 });
 
-const formattedTime = computed(() => {
-  if (!event.value) return '';
+const eventTimes = computed(() => {
+  if (!event.value) return null;
   const start = new Date(event.value.start_datetime);
-  const startStr = start.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+  const end = event.value.end_datetime ? new Date(event.value.end_datetime) : null;
   
-  if (event.value.end_datetime) {
-    const end = new Date(event.value.end_datetime);
-    const endStr = end.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
-    return `${startStr} – ${endStr}`;
+  const nyStart = formatInTimeZone(start, timeZone, 'h:mm a');
+  const nyEnd = end ? formatInTimeZone(end, timeZone, 'h:mm a') : null;
+  
+  let localStart = null;
+  let localEnd = null;
+  let localTz = '';
+  
+  if (import.meta.client) {
+    localStart = start.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+    localEnd = end ? end.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }) : null;
+    localTz = start.toLocaleTimeString('en-US', { timeZoneName: 'short' }).split(' ').pop();
   }
   
-  return startStr;
+  const showLocal = localStart && localStart !== nyStart;
+  const nyFull = nyEnd ? `${nyStart} – ${nyEnd} ET` : `${nyStart} ET`;
+  const localFull = localEnd ? `${localStart} – ${localEnd} ${localTz}` : `${localStart} ${localTz}`;
+  
+  return { nyFull, localFull, showLocal };
 });
 
 const categoryLabel = computed(() => {
@@ -122,8 +145,13 @@ const funders = computed(() => {
             <div class="event-detail__info-text">
               <p class="event-detail__info-label text-xs text-stage-500 uppercase font-bold tracking-wider">Date & Time</p>
               <p v-if="event.is_recurring" class="event-detail__info-value text-sm font-medium text-brand-400">{{ recurrenceText }}</p>
-              <p v-else class="event-detail__info-value text-sm font-medium">{{ formattedDate }}</p>
-              <p class="event-detail__info-subtext text-xs text-stage-400">{{ formattedTime }}</p>
+              <p v-else class="event-detail__info-value text-sm font-medium">{{ nyDateLabel }}</p>
+              <div class="event-detail__info-subtext text-xs text-stage-300 mt-0.5 flex flex-col">
+                <span class="font-bold">{{ eventTimes?.nyFull }}</span>
+                <ClientOnly>
+                  <span v-if="eventTimes?.showLocal" class="opacity-60 italic mt-0.5">{{ eventTimes?.localFull }}</span>
+                </ClientOnly>
+              </div>
             </div>
           </div>
 
@@ -170,9 +198,9 @@ const funders = computed(() => {
               :key="date.toISOString()"
               class="px-3 py-2 rounded-lg bg-stage-900 border border-stage-700/50 flex flex-col items-center min-w-[100px]"
             >
-              <span class="text-[10px] font-bold text-brand-400 uppercase">{{ date.toLocaleDateString('en-US', { month: 'short' }) }}</span>
-              <span class="text-lg font-serif font-bold text-stage-50">{{ date.getDate() }}</span>
-              <span class="text-[10px] text-stage-500 uppercase">{{ date.toLocaleDateString('en-US', { weekday: 'short' }) }}</span>
+              <span class="text-[10px] font-bold text-brand-400 uppercase">{{ formatInTimeZone(date, timeZone, 'MMM') }}</span>
+              <span class="text-lg font-serif font-bold text-stage-50">{{ formatInTimeZone(date, timeZone, 'd') }}</span>
+              <span class="text-[10px] text-stage-500 uppercase">{{ formatInTimeZone(date, timeZone, 'EEE') }}</span>
             </div>
           </div>
         </div>
@@ -202,7 +230,31 @@ const funders = computed(() => {
         </div>
 
         <!-- Sidebar / Info Card -->
-        <aside class="event-detail__sidebar lg:w-80">
+        <aside class="event-detail__sidebar lg:w-80 space-y-6">
+          <!-- Production Link -->
+          <div v-if="event.related_production" class="event-detail__production-card card-glass p-4 border-l-4 border-brand-500">
+            <h3 class="text-xs font-bold text-stage-500 uppercase tracking-widest mb-3">Part Of</h3>
+            <NuxtLink :to="`/productions/${event.related_production.slug}`" class="group flex items-center gap-3">
+              <div class="w-12 h-16 bg-stage-800 rounded overflow-hidden flex-shrink-0 shadow-md flex items-center justify-center">
+                <img 
+                  v-if="event.related_production.poster_image"
+                  :src="getAssetUrl(event.related_production.poster_image, { width: 100, quality: 70 })!" 
+                  :alt="event.related_production.title"
+                  class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                />
+                <div v-else class="text-stage-600">
+                  <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 002-2H4a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                </div>
+              </div>
+              <div class="flex-1 min-w-0">
+                <h4 class="text-sm font-bold text-stage-100 group-hover:text-brand-400 transition-colors line-clamp-2 leading-snug">
+                  {{ event.related_production.title }}
+                </h4>
+                <span class="text-[10px] text-brand-500 font-bold uppercase mt-1 inline-block">View Production &rarr;</span>
+              </div>
+            </NuxtLink>
+          </div>
+
           <div class="event-detail__venue-card card-glass p-6 sticky top-24">
             <h3 class="event-detail__venue-title font-serif font-bold text-lg text-stage-100 mb-4">Venue Info</h3>
             

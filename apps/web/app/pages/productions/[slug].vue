@@ -216,6 +216,20 @@ const galleryIds = computed(() => {
     return typeof id === 'string' ? id : null;
   }).filter(Boolean) as string[];
 });
+
+// ── Pagination ──
+const currentPage = ref(1);
+const pageSize = 8;
+const totalPages = computed(() => Math.ceil(performances.value.length / pageSize));
+const paginatedPerformances = computed(() => {
+  const start = (currentPage.value - 1) * pageSize;
+  return performances.value.slice(start, start + pageSize);
+});
+
+// Reset pagination when view mode changes
+watch(viewMode, () => {
+  currentPage.value = 1;
+});
 </script>
 
 <template>
@@ -332,50 +346,76 @@ const galleryIds = computed(() => {
           </div>
 
           <!-- ═══ List View ═══ -->
-          <div v-if="viewMode === 'list'" class="production-showtimes__grid grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div
-              v-for="show in performances"
-              :key="show.id"
-              class="production-showtimes__card card-glass p-5 border-l-4 transition-all hover:translate-y-[-2px]"
-              :class="show.ticket_url ? 'border-brand-500/50' : 'border-stage-700/50'"
-            >
-              <div class="production-showtimes__card-header flex items-center justify-between mb-3">
-                <div class="flex flex-col">
-                  <span class="production-showtimes__date text-stage-950 font-bold text-base leading-tight">{{ formatShowtime(show.start_datetime).date }}</span>
-                  <span class="production-showtimes__time text-brand-700 text-sm font-bold">{{ formatShowtime(show.start_datetime).time }}</span>
+          <div v-if="viewMode === 'list'" class="production-showtimes__list flex flex-col gap-3">
+            <div class="production-showtimes__grid grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+              <NuxtLink
+                v-for="show in paginatedPerformances"
+                :key="show.id"
+                :to="`/events/${show.slug}`"
+                class="production-showtimes__card card-glass p-3 border-l-4 transition-all hover:translate-y-[-2px] hover:border-brand-500 group"
+                :class="show.ticket_url ? 'border-brand-500/30' : 'border-stage-700/30'"
+              >
+                <div class="flex items-center justify-between gap-4">
+                  <div class="flex flex-col">
+                    <span class="text-stage-950 font-bold text-sm leading-tight">{{ formatShowtime(show.start_datetime).date }}</span>
+                    <span class="text-brand-700 text-[11px] font-bold">{{ formatShowtime(show.start_datetime).time }}</span>
+                  </div>
+                  
+                  <div class="flex-shrink-0">
+                    <span v-if="show.is_sold_out" class="text-[9px] font-bold uppercase text-red-600 bg-red-50 px-2 py-1 rounded border border-red-100">
+                      Sold Out
+                    </span>
+                    <span v-else-if="show.ticket_url" class="text-[9px] font-bold uppercase text-brand-600 bg-brand-50 px-2 py-1 rounded border border-brand-100 group-hover:bg-brand-500 group-hover:text-white transition-colors">
+                      Tickets
+                    </span>
+                    <span v-else class="text-[9px] font-bold uppercase text-stage-400 italic">
+                      Soon
+                    </span>
+                  </div>
                 </div>
-                <span v-if="show.is_sold_out" class="production-showtimes__status-badge px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-red-100 text-red-700 border border-red-200">
-                  Sold Out
-                </span>
+
+                <!-- Mini Tags if space allowed -->
+                <div v-if="show.tags?.length" class="flex flex-wrap gap-1 mt-2">
+                  <span 
+                    v-for="tag in show.tags.slice(0, 2)" 
+                    :key="tag.id"
+                    class="text-[9px] px-1.5 py-0.5 rounded bg-stage-50/50 text-stage-600 border border-stage-200/50"
+                  >
+                    {{ tag.tags_id?.name || tag.tags_id }}
+                  </span>
+                </div>
+              </NuxtLink>
+            </div>
+
+            <!-- Pagination Controls -->
+            <div v-if="totalPages > 1" class="production-showtimes__pagination flex items-center justify-center gap-4 mt-8 pt-6 border-t border-stage-100/10">
+              <button 
+                @click="currentPage--" 
+                :disabled="currentPage === 1"
+                class="p-2 rounded-full bg-stage-900/50 text-stage-400 disabled:opacity-20 hover:text-brand-400 transition-colors"
+              >
+                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg>
+              </button>
+              
+              <div class="flex gap-2">
+                <button 
+                  v-for="p in totalPages" 
+                  :key="p"
+                  @click="currentPage = p"
+                  class="w-8 h-8 rounded-lg text-xs font-bold transition-all"
+                  :class="currentPage === p ? 'bg-brand-500 text-white shadow-lg' : 'bg-stage-900/30 text-stage-400 hover:bg-stage-800'"
+                >
+                  {{ p }}
+                </button>
               </div>
 
-              <!-- Tags -->
-              <div v-if="show.tags?.length" class="production-showtimes__tags flex flex-wrap gap-1.5 mb-4">
-                <span 
-                  v-for="tag in show.tags" 
-                  :key="tag.id"
-                  class="text-[11px] px-2 py-0.5 rounded bg-stage-50 text-stage-700 border border-stage-200 font-bold"
-                >
-                  {{ tag.tags_id?.name || tag.tags_id }}
-                </span>
-              </div>
-
-              <div class="production-showtimes__card-footer mt-auto pt-2">
-                <a
-                  v-if="show.ticket_url && !show.is_sold_out"
-                  :href="show.ticket_url"
-                  target="_blank"
-                  class="production-showtimes__ticket-btn btn-primary w-full text-center text-xs py-2 block"
-                >
-                  Get Tickets
-                </a>
-                <div v-else-if="show.is_sold_out" class="production-showtimes__sold-out block text-center text-xs py-2 px-4 rounded-lg bg-stage-50 text-stage-500 font-bold border border-stage-200">
-                  Sold Out
-                </div>
-                <div v-else class="production-showtimes__pending block text-center text-xs py-2 px-4 rounded-lg bg-stage-50 text-stage-500 font-bold border border-stage-200 italic">
-                  Tickets Coming Soon
-                </div>
-              </div>
+              <button 
+                @click="currentPage++" 
+                :disabled="currentPage === totalPages"
+                class="p-2 rounded-full bg-stage-900/50 text-stage-400 disabled:opacity-20 hover:text-brand-400 transition-colors"
+              >
+                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
+              </button>
             </div>
           </div>
 

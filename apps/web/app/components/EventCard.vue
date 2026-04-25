@@ -19,17 +19,35 @@ interface EventSummary {
   view_type: 'light' | 'dark';
 }
 
+import { formatInTimeZone } from 'date-fns-tz';
+
 const props = defineProps<{ event: EventSummary }>();
 const { getAssetUrl } = useDirectus();
 
-const formattedDate = computed(() => {
-  const d = new Date(props.event.start_datetime);
-  return d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+const nyDate = computed(() => {
+  return formatInTimeZone(new Date(props.event.start_datetime), 'America/New_York', 'EEE, MMM d');
 });
 
-const formattedTime = computed(() => {
+const nyTime = computed(() => {
+  return formatInTimeZone(new Date(props.event.start_datetime), 'America/New_York', 'h:mm a');
+});
+
+const localTime = computed(() => {
+  // Return null if we're on the server to avoid hydration mismatch
+  if (import.meta.server) return null;
   const d = new Date(props.event.start_datetime);
-  return d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+  const timeStr = d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+  const tzStr = d.toLocaleTimeString('en-US', { timeZoneName: 'short' }).split(' ').pop();
+  return `${timeStr} ${tzStr}`;
+});
+
+const showLocalTime = computed(() => {
+  if (!localTime.value) return false;
+  // Check if current local time is different from NY time
+  // nyTime is formatted as 'h:mm a', while localTime includes the TZ abbreviation
+  const nyTimeOnly = nyTime.value.toLowerCase().replace(/\s/g, '');
+  const localTimeOnly = localTime.value.toLowerCase().split(' ').slice(0, 2).join('').replace(/\s/g, '');
+  return nyTimeOnly !== localTimeOnly;
 });
 
 const formatLabel = computed(() => {
@@ -122,11 +140,14 @@ const eventTags = computed(() => {
 
     <!-- Info -->
     <div class="event-card__info p-5">
-      <div class="event-card__date-time flex items-center gap-2 text-xs text-brand-700 font-bold mb-2">
-        <svg class="event-card__time-icon w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+      <div class="event-card__date-time flex items-start gap-2 text-xs text-brand-700 font-bold mb-2">
+        <svg class="event-card__time-icon w-3.5 h-3.5 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
           <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
         </svg>
-        {{ formattedDate }} · {{ formattedTime }}
+        <div class="flex flex-col">
+          <span>{{ nyDate }} · {{ nyTime }} ET</span>
+          <span v-if="showLocalTime" class="opacity-60 font-medium text-[10px] mt-0.5">{{ localTime }}</span>
+        </div>
       </div>
 
       <h3 class="event-card__title text-lg font-serif font-bold text-stage-950 group-hover:text-brand-400 transition-colors line-clamp-2">

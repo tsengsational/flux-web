@@ -11,6 +11,9 @@ export default defineNuxtConfig({
   // ── Server-Side Routing Rules ──
   routeRules: {
     '/fear-wonder': { redirect: '/productions/fear-wonder' },
+    '/cms/**': { proxy: `${process.env.NUXT_PUBLIC_DIRECTUS_URL || 'https://flux-theatrecms-production.up.railway.app'}/cms/**` },
+    // Specific items and assets proxying to handle both types
+    '/items/**': { proxy: `${process.env.NUXT_PUBLIC_DIRECTUS_URL || 'https://flux-theatrecms-production.up.railway.app'}/items/**` },
     '/assets/**': { proxy: `${process.env.NUXT_PUBLIC_DIRECTUS_URL || 'https://flux-theatrecms-production.up.railway.app'}/assets/**` },
   },
 

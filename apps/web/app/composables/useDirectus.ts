@@ -23,18 +23,23 @@ export interface Schema {
 
 export const useDirectus = () => {
   const config = useRuntimeConfig();
-  const rawUrl = config.public.directusUrl;
+  const rawUrl = (config.public.directusUrl as string) || '';
   const directusUrl = rawUrl.startsWith('http') ? rawUrl : `https://${rawUrl}`;
 
+  // Use the local proxy on the client to avoid CORS, but use the direct URL on the server for speed
+  const requestUrl = useRequestURL();
+  const clientUrl = import.meta.client ? requestUrl.origin : directusUrl;
+
   // Initialize the Directus client with the REST support
-  const client = createDirectus<Schema>(directusUrl).with(rest());
+  const client = createDirectus<Schema>(clientUrl).with(rest());
 
   /**
    * Helper to get the full URL for a Directus asset with optional transformations
    */
   const getAssetUrl = (id: string | null | undefined, options?: { width?: number; height?: number; quality?: number; format?: string }) => {
     if (!id) return null;
-    let url = `${directusUrl}/assets/${id}`;
+    // Use relative path for assets to ensure consistency between SSR and CSR and use the local proxy
+    let url = `/assets/${id}`;
     
     if (options) {
       const params = new URLSearchParams();
