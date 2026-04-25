@@ -20,9 +20,14 @@ const { data: allNavItems } = await useAsyncData('navigation', () =>
 
 // Transform flat list into a tree structure
 const navTree = computed(() => {
-  if (!allNavItems.value) return [];
+  const rawData = allNavItems.value;
+  if (!rawData) return [];
   
-  const items = (allNavItems.value as any[]).map(item => {
+  // Directus SDK can return the array directly or wrapped in a data property
+  const rawItems = Array.isArray(rawData) ? rawData : (rawData as any).data;
+  if (!Array.isArray(rawItems)) return [];
+  
+  const items = rawItems.map(item => {
     // Resolve URL: Page slug takes priority over manual URL
     let resolvedUrl = item.url;
     if (item.page?.slug) {
@@ -38,13 +43,28 @@ const navTree = computed(() => {
   
   const rootItems: any[] = [];
   const itemMap = new Map();
-  items.forEach(item => itemMap.set(item.id, item));
   
+  // First pass: populate the map
   items.forEach(item => {
-    if (item.parent) {
-      const parentId = typeof item.parent === 'string' ? item.parent : item.parent.id;
-      const parent = itemMap.get(parentId);
-      if (parent) parent.children.push(item);
+    if (item.id) {
+      itemMap.set(item.id.toString(), item);
+    }
+  });
+  
+  // Second pass: build the tree
+  items.forEach(item => {
+    const parentField = item.parent;
+    if (parentField) {
+      // Handle both UUID string and object { id: UUID }
+      const parentId = (typeof parentField === 'string' ? parentField : parentField.id)?.toString();
+      const parentItem = parentId ? itemMap.get(parentId) : null;
+      
+      if (parentItem) {
+        parentItem.children.push(item);
+      } else {
+        // Fallback: if parent is defined but not found in the set, treat as root to avoid losing the item
+        rootItems.push(item);
+      }
     } else {
       rootItems.push(item);
     }
