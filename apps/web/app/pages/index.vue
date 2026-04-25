@@ -154,7 +154,7 @@ onUnmounted(() => { if (autoTimer) clearInterval(autoTimer); });
           <!-- Background image -->
           <img
             v-if="slide.background_image"
-            :src="getAssetUrl(slide.background_image)!"
+            :src="getAssetUrl(slide.background_image, { width: 1920, quality: 85 })!"
             class="absolute inset-0 w-full h-full object-cover"
             alt=""
           />
@@ -240,7 +240,7 @@ onUnmounted(() => { if (autoTimer) clearInterval(autoTimer); });
         <div class="home-hero__bg absolute inset-0">
           <img
             v-if="(homeData as any)?.hero_image"
-            :src="getAssetUrl((homeData as any).hero_image)!"
+            :src="getAssetUrl((homeData as any).hero_image, { width: 1920, quality: 85 })!"
             class="absolute inset-0 w-full h-full object-cover"
             alt="Hero background"
           />
@@ -312,7 +312,7 @@ onUnmounted(() => { if (autoTimer) clearInterval(autoTimer); });
     <section class="mission py-24 relative overflow-hidden" id="mission-section">
       <img
         v-if="(homeData as any)?.mission_background_image"
-        :src="getAssetUrl((homeData as any).mission_background_image)!"
+        :src="getAssetUrl((homeData as any).mission_background_image, { width: 1920, quality: 70 })!"
         class="absolute inset-0 w-full h-full object-cover"
         alt="Mission background"
       />

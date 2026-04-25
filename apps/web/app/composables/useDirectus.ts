@@ -30,11 +30,25 @@ export const useDirectus = () => {
   const client = createDirectus<Schema>(directusUrl).with(rest());
 
   /**
-   * Helper to get the full URL for a Directus asset
+   * Helper to get the full URL for a Directus asset with optional transformations
    */
-  const getAssetUrl = (id: string | null | undefined) => {
+  const getAssetUrl = (id: string | null | undefined, options?: { width?: number; height?: number; quality?: number; format?: string }) => {
     if (!id) return null;
-    return `${directusUrl}/assets/${id}`;
+    let url = `${directusUrl}/assets/${id}`;
+    
+    if (options) {
+      const params = new URLSearchParams();
+      if (options.width) params.append('width', options.width.toString());
+      if (options.height) params.append('height', options.height.toString());
+      if (options.quality) params.append('quality', options.quality.toString());
+      
+      // Default to webp for better compression unless specified
+      params.append('format', options.format || 'webp');
+      
+      url += `?${params.toString()}`;
+    }
+    
+    return url;
   };
 
   return {

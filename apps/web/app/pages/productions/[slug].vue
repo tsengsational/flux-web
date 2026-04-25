@@ -236,7 +236,7 @@ const galleryIds = computed(() => {
                 <div class="production-detail__poster-card card-glass aspect-[3/4] overflow-hidden transition-transform duration-300 group-hover:scale-[1.02]">
                   <img
                     v-if="production.poster_image"
-                    :src="getAssetUrl(production.poster_image)!"
+                    :src="getAssetUrl(production.poster_image, { width: 1200, quality: 90 })!"
                     :alt="`${production.title} poster`"
                     class="production-detail__poster-image w-full h-full object-contain"
                   />
@@ -554,7 +554,7 @@ const galleryIds = computed(() => {
             <div class="relative max-w-full max-h-full flex items-center justify-center z-[205]">
               <img 
                 v-if="production.poster_image"
-                :src="getAssetUrl(production.poster_image)!" 
+                :src="getAssetUrl(production.poster_image, { width: 1920, quality: 90 })!" 
                 :alt="production.title"
                 class="max-w-full max-h-[90vh] object-contain shadow-2xl animate-scale-in"
                 @click.stop

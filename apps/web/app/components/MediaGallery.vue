@@ -79,7 +79,7 @@ function handleKeydown(e: KeyboardEvent) {
         @click="openLightbox(index)"
       >
         <img 
-          :src="getAssetUrl(fileId)!" 
+          :src="getAssetUrl(fileId, { width: 800, quality: 80 })!" 
           class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" 
           alt="Gallery image"
           loading="lazy"
@@ -145,7 +145,7 @@ function handleKeydown(e: KeyboardEvent) {
           <div class="relative flex flex-col items-center justify-center p-4">
             <img 
               :key="currentIndex"
-              :src="getAssetUrl(images[currentIndex])!" 
+              :src="getAssetUrl(images[currentIndex], { width: 1920, quality: 90 })!" 
               class="max-w-[90vw] max-h-[80vh] object-contain shadow-2xl rounded-sm animate-in zoom-in-95 duration-300"
               alt="Full size image"
             />
