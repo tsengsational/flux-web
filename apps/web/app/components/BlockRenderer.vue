@@ -133,6 +133,13 @@ const { getAssetUrl } = useDirectus();
           <li v-for="(item, i) in block.data.items" :key="i" v-html="item" />
         </ol>
 
+        <!-- Nested List -->
+        <NestedList
+          v-else-if="block.type === 'nestedlist'"
+          :items="block.data.items"
+          :list-style="block.data.style"
+        />
+
         <!-- Quote -->
         <blockquote 
           v-else-if="block.type === 'quote'"
