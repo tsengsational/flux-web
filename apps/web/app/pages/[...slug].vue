@@ -15,10 +15,6 @@ const { data: pages, error } = await useAsyncData<Page[]>(`page-${slug}`, async 
     limit: 1
   })) as any;
   
-  if (process.server) {
-    console.log(`[SSR Fetch] Slug: ${slug} | Found: ${Array.isArray(result) && result.length > 0}`);
-  }
-  
   return result;
 });
 
