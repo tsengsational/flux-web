@@ -53,16 +53,16 @@ const currentYear = new Date().getFullYear();
           <div class="site-footer__social-links flex gap-3">
             <a
               v-for="social in [
-                { label: 'Instagram', icon: 'M7.5 2h9A5.5 5.5 0 0122 7.5v9a5.5 5.5 0 01-5.5 5.5h-9A5.5 5.5 0 012 16.5v-9A5.5 5.5 0 017.5 2zm4.5 5a5 5 0 100 10 5 5 0 000-10zm0 2a3 3 0 110 6 3 3 0 010-6zm5.25-2.5a1.25 1.25 0 110 2.5 1.25 1.25 0 010-2.5z' },
-                { label: 'Facebook', icon: 'M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z' },
-                { label: 'YouTube', icon: 'M22.54 6.42a2.78 2.78 0 00-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 00-1.94 2A29 29 0 001 11.75a29 29 0 00.46 5.33A2.78 2.78 0 003.4 19.1c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 001.94-2 29 29 0 00.46-5.25 29 29 0 00-.46-5.43zM9.75 15.02V8.48l5.75 3.27-5.75 3.27z' },
+                { label: 'Instagram', icon: 'M7.5 2h9A5.5 5.5 0 0122 7.5v9a5.5 5.5 0 01-5.5 5.5h-9A5.5 5.5 0 012 16.5v-9A5.5 5.5 0 017.5 2zm4.5 5a5 5 0 100 10 5 5 0 000-10zm0 2a3 3 0 110 6 3 3 0 010-6zm5.25-2.5a1.25 1.25 0 110 2.5 1.25 1.25 0 010-2.5z', href: 'https://instagram.com/flux.theatre' },
+                { label: 'Facebook', icon: 'M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z', href: 'https://facebook.com/fluxtheatre' },
+                { label: 'BlueSky', viewBox: '0 0 600 530', icon: 'm135.72 44.03c164.28 116.1 164.28 205.15 164.28 205.15s0-89.05 164.28-205.15c66.52-46.7 138.85-23.75 135.29 81.33-4.32 138.65-81.82 170.82-132.89 181.76-118.8 25.43-166.68 152.05-166.68 152.05s-47.88-126.62-166.68-152.05c-51.07-10.94-128.57-43.11-132.89-181.76-3.56-105.08 68.77-128.03 135.29-81.33z', href: 'https://bsky.app/profile/fluxtheatre.bsky.social' },
               ]"
               :key="social.label"
-              href="#"
+              :href="social.href"
               :aria-label="social.label"
               class="site-footer__social-link w-10 h-10 rounded-lg bg-stage-800/60 flex items-center justify-center text-stage-400 hover:text-brand-400 hover:bg-stage-800 transition-all"
             >
-              <svg class="site-footer__social-icon w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+              <svg class="site-footer__social-icon w-5 h-5" fill="currentColor" :viewBox="social.viewBox || '0 0 24 24'">
                 <path :d="social.icon" />
               </svg>
             </a>
