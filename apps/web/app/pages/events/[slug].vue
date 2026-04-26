@@ -195,6 +195,23 @@ const funders = computed(() => {
                 </div>
               </div>
             </div>
+
+            <div class="event-detail__actions mt-10 flex flex-wrap gap-4">
+              <a 
+                :href="event.rsvp_url || event.ticket_url || '#'" 
+                target="_blank"
+                class="event-detail__rsvp-btn btn-primary group flex items-center bg-brand-500 gap-3 px-8 py-4 text-base text-stage-100 shadow-2xl shadow-brand-500/40 hover:text-stage-50 hover:scale-[1.02] active:scale-[0.98] transition-all duration-300"
+              >
+                <span class="font-bold tracking-widest">{{ event.ticket_url ? 'GET TICKETS' : 'RSVP NOW' }}</span>
+                <svg class="w-5 h-5 transition-transform duration-300 group-hover:translate-x-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
+                </svg>
+              </a>
+              <NuxtLink v-if="event.format === 'digital' || event.format === 'hybrid'" to="#" class="event-detail__digital-btn btn-secondary flex items-center px-6 py-4">
+                Digital Access Info
+              </NuxtLink>
+            </div>
+
           </div>
 
           <!-- Hero Image -->
@@ -240,14 +257,7 @@ const funders = computed(() => {
             <BlockRenderer :content="event.content || event.description" />
           </div>
           
-          <div class="event-detail__actions mt-12 flex flex-wrap gap-4">
-            <a :href="event.rsvp_url || event.ticket_url || '#'" class="event-detail__rsvp-btn btn-primary">
-              {{ event.ticket_url ? 'Get Tickets' : 'RSVP' }}
-            </a>
-            <NuxtLink v-if="event.format === 'digital' || event.format === 'hybrid'" to="#" class="event-detail__digital-btn btn-secondary">
-              Digital Access Info
-            </NuxtLink>
-          </div>
+
         </div>
 
         <!-- Sidebar / Info Card -->
