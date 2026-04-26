@@ -50,7 +50,7 @@ export default defineNuxtConfig({
         { name: 'viewport', content: 'width=device-width, initial-scale=1' },
         {
           name: 'description',
-          content: 'Flux Theatre Ensemble — Adventurous theatre in New York City.',
+          content: 'Flux Theatre Ensemble — Collective care, long-term artistic collaboration, and shared power.',
         },
       ],
       link: [
