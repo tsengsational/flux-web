@@ -44,6 +44,7 @@ export interface Production extends DirectusBaseFields {
     // SEO
     meta_title: string | null;
     meta_description: string | null;
+    featured: boolean;
 }
 
 export interface Showtime {
@@ -212,6 +213,7 @@ export interface Event extends DirectusBaseFields {
     // SEO
     meta_title: string | null;
     meta_description: string | null;
+    featured: boolean;
 }
 
 export interface EventTag {
