@@ -40,7 +40,7 @@ const authorName = computed(() => {
     <div class="blog-post-card__image-container relative aspect-video lg:aspect-auto lg:min-h-[320px] bg-stage-800 overflow-hidden">
       <img
         v-if="post.cover_image"
-        :src="getAssetUrl(post.cover_image)!"
+        :src="getAssetUrl(post.cover_image, { width: 1200, quality: 80 })!"
         :alt="post.title"
         class="blog-post-card__image w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
         loading="lazy"
@@ -121,7 +121,7 @@ const authorName = computed(() => {
     <div class="blog-post-card__image-container relative aspect-video bg-stage-800 overflow-hidden">
       <img
         v-if="post.cover_image"
-        :src="getAssetUrl(post.cover_image)!"
+        :src="getAssetUrl(post.cover_image, { width: 800, quality: 80 })!"
         :alt="post.title"
         class="blog-post-card__image w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
         loading="lazy"

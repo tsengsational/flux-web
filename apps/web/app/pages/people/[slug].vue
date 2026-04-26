@@ -75,7 +75,7 @@ const hasAnyCredits = computed(() => {
             <div class="person-page__image-wrapper aspect-[3/4] rounded-2xl overflow-hidden border border-stage-700/50 shadow-2xl bg-stage-800">
               <img
                 v-if="personRecord.headshot"
-                :src="getAssetUrl(personRecord.headshot)!"
+                :src="getAssetUrl(personRecord.headshot, { width: 800, quality: 85 })!"
                 :alt="fullName"
                 class="person-page__image w-full h-full object-cover"
               />
@@ -206,7 +206,7 @@ const hasAnyCredits = computed(() => {
             <div class="aspect-video relative overflow-hidden bg-stage-800">
               <img
                 v-if="post.cover_image"
-                :src="getAssetUrl(post.cover_image)!"
+                :src="getAssetUrl(post.cover_image, { width: 600, quality: 80 })!"
                 class="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
               />
             </div>

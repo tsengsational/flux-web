@@ -554,7 +554,7 @@ watch(viewMode, () => {
               <div class="production-funders__logo-wrapper w-32 h-32 bg-white rounded-xl shadow-lg border border-stage-800/20 p-5 flex items-center justify-center overflow-hidden group-hover:border-brand-500/50 transition-colors">
                 <img
                   v-if="funder.image"
-                  :src="getAssetUrl(funder.image)!"
+                  :src="getAssetUrl(funder.image, { width: 240, quality: 80 })!"
                   :alt="funder.name"
                   class="production-funders__logo w-full h-full object-contain grayscale group-hover:grayscale-0 transition-all duration-500"
                 />

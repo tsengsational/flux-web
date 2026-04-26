@@ -138,7 +138,7 @@ useSeoMeta({
       <!-- Background Image -->
       <img
         v-if="group.hero_image"
-        :src="getAssetUrl(group.hero_image)!"
+        :src="getAssetUrl(group.hero_image, { width: 1600, quality: 85 })!"
         class="absolute inset-0 w-full h-full object-cover"
         alt=""
       />

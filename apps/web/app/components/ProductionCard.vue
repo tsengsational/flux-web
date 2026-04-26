@@ -30,7 +30,7 @@ const dateRange = computed(() => {
     <div class="production-card__image-container relative aspect-[3/4] overflow-hidden bg-stage-800">
       <img
         v-if="production.poster_image"
-        :src="getAssetUrl(production.poster_image)!"
+        :src="getAssetUrl(production.poster_image, { width: 600, quality: 80 })!"
         :alt="`${production.title} poster`"
         class="production-card__poster w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
         loading="lazy"

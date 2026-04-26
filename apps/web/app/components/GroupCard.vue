@@ -23,7 +23,7 @@ const { getAssetUrl } = useDirectus();
     <div class="group-card__image-container relative aspect-[16/9] bg-stage-800 overflow-hidden">
       <img
         v-if="group.hero_image"
-        :src="getAssetUrl(group.hero_image)!"
+        :src="getAssetUrl(group.hero_image, { width: 600, quality: 80 })!"
         :alt="group.title"
         class="group-card__image w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
         loading="lazy"
