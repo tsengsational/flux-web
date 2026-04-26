@@ -18,12 +18,13 @@ const { data: homeData } = await useAsyncData<HomePage>('home-data', async () =>
   return raw as HomePage;
 });
 
-// Fetch on-stage items (productions first, then events)
+// Fetch on-stage items (prioritize featured, then by date)
 const { data: onStageItems } = await useAsyncData<{_type: 'production' | 'event', data: any}[]>('home-on-stage', async () => {
   const nowStr = new Date().toISOString();
   
   // 1. Fetch upcoming/running productions
   const prodRaw = await client.request(readItems('productions', {
+    fields: ['*', 'featured'],
     filter: { 
       status: { _eq: 'published' },
       _or: [
@@ -31,34 +32,46 @@ const { data: onStageItems } = await useAsyncData<{_type: 'production' | 'event'
         { closing_date: { _null: true } }
       ]
     },
-    sort: ['opening_date'],
-    limit: 3
+    limit: 6
   }));
 
-  // 2. Fetch recent/upcoming events
+  // 2. Fetch upcoming events
   const eventsRaw = await client.request(readItems('events', {
     fields: [
       '*', 
+      'featured',
       'venue.*',
       { tags: ['*', { tags_id: ['*'] }] }
     ],
-    filter: { status: { _eq: 'published' } },
-    sort: ['-start_datetime'],
-    limit: 3
+    filter: { 
+      status: { _eq: 'published' },
+      start_datetime: { _gte: nowStr }
+    },
+    limit: 6
   }));
 
-  // Merge them (Productions first, then events) up to 3 total
-  const items: {_type: 'production' | 'event', data: any}[] = [];
-  
-  for (const p of prodRaw) {
-    if (items.length < 3) items.push({ _type: 'production', data: p });
-  }
-  
-  for (const e of eventsRaw) {
-    if (items.length < 3) items.push({ _type: 'event', data: e });
-  }
+  // Merge and sort by featured priority, then by date
+  const merged = [
+    ...prodRaw.map(p => ({ _type: 'production' as const, data: p })),
+    ...eventsRaw.map(e => ({ _type: 'event' as const, data: e }))
+  ];
 
-  return items;
+  merged.sort((a, b) => {
+    // 1. Featured priority
+    const featA = a.data.featured ? 1 : 0;
+    const featB = b.data.featured ? 1 : 0;
+    if (featA !== featB) return featB - featA;
+
+    // 2. Date priority (ascending for upcoming items)
+    const dateA = new Date(a.data.opening_date || a.data.start_datetime).getTime();
+    const dateB = new Date(b.data.opening_date || b.data.start_datetime).getTime();
+    if (dateA !== dateB) return dateA - dateB;
+
+    // 3. Fallback to production priority
+    return a._type === 'production' ? -1 : 1;
+  });
+
+  return merged.slice(0, 3);
 });
 
 // Fetch latest news highlights
