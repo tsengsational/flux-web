@@ -258,6 +258,7 @@ export interface BlogPost extends DirectusBaseFields {
     body: string;                 // Rich-text / HTML fallback
     content: any | null;          // Structured JSON for Block Editor
     cover_image: string | null;
+    cover_image_override: string | null;
     gallery: string[] | null;     // Array of file UUIDs
     author: string | Person;
     tags: PostTag[];

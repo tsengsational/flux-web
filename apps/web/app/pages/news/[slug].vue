@@ -79,8 +79,8 @@ const galleryIds = computed(() => {
     <!-- Cover Image Hero -->
     <div v-if="post" class="news-post__hero relative h-64 sm:h-80 lg:h-96 bg-stage-900 overflow-hidden" id="post-hero">
       <img
-        v-if="post.cover_image"
-        :src="getAssetUrl(post.cover_image, { width: 1600, quality: 85 })!"
+        v-if="post.cover_image_override || post.cover_image"
+        :src="getAssetUrl(post.cover_image_override || post.cover_image, { width: 1600, quality: 85 })!"
         :alt="post.title"
         class="news-post__hero-image w-full h-full object-cover object-center"
       />

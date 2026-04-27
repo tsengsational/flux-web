@@ -205,8 +205,8 @@ const hasAnyCredits = computed(() => {
           >
             <div class="aspect-video relative overflow-hidden bg-stage-800">
               <img
-                v-if="post.cover_image"
-                :src="getAssetUrl(post.cover_image, { width: 600, quality: 80 })!"
+                v-if="post.cover_image_override || post.cover_image"
+                :src="getAssetUrl(post.cover_image_override || post.cover_image, { width: 600, quality: 80 })!"
                 class="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
               />
             </div>
