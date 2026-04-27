@@ -82,7 +82,7 @@ const parsedData = computed<EditorData | null>(() => {
   return null;
 });
 
-const { getAssetUrl } = useDirectus();
+const { getAssetUrl, getImageProps } = useDirectus();
 </script>
 
 <template>
@@ -200,7 +200,7 @@ const { getAssetUrl } = useDirectus();
         >
           <div class="rounded-2xl overflow-hidden border border-stage-800/50">
             <img 
-              :src="getAssetUrl(block.data.file?.id || (typeof block.data.file === 'string' ? block.data.file : null) || (block.data.file?.url?.split('/assets/')?.[1]), { width: 1200 })!" 
+              v-bind="getImageProps(block.data.file?.id || (typeof block.data.file === 'string' ? block.data.file : null) || (block.data.file?.url?.split('/assets/')?.[1]), { sm: 800, lg: 1200 })" 
               :alt="block.data.caption || ''"
               class="w-full h-auto object-cover"
             />

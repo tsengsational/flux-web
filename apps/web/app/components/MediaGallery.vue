@@ -12,7 +12,7 @@ const props = withDefaults(defineProps<{
   viewtype: 'light'
 });
 
-const { getAssetUrl } = useDirectus();
+const { getAssetUrl, getImageProps } = useDirectus();
 
 const isLightboxOpen = ref(false);
 const currentIndex = ref(0);
@@ -79,7 +79,7 @@ function handleKeydown(e: KeyboardEvent) {
         @click="openLightbox(index)"
       >
         <img 
-          :src="getAssetUrl(fileId, { width: 800, quality: 80 })!" 
+          v-bind="getImageProps(fileId, { sm: 400, md: 600, lg: 800 })" 
           class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" 
           alt="Gallery image"
           loading="lazy"
@@ -145,7 +145,7 @@ function handleKeydown(e: KeyboardEvent) {
           <div class="relative flex flex-col items-center justify-center p-4">
             <img 
               :key="currentIndex"
-              :src="getAssetUrl(images[currentIndex], { width: 1920, quality: 90 })!" 
+              v-bind="getImageProps(images[currentIndex], { sm: 800, md: 1200, lg: 1920 }, { quality: 90 })" 
               class="max-w-[90vw] max-h-[80vh] object-contain shadow-2xl rounded-sm animate-in zoom-in-95 duration-300"
               alt="Full size image"
             />

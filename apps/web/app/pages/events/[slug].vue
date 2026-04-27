@@ -107,7 +107,7 @@ const categoryLabel = computed(() => {
   };
   return labels[event.value.category];
 });
-const { getAssetUrl } = useDirectus();
+const { getAssetUrl, getImageProps } = useDirectus();
 const funders = computed(() => {
   return (event.value?.funders || [])
     .map((f: any) => f.funder_id)
@@ -121,7 +121,7 @@ const funders = computed(() => {
     <section class="event-detail__hero relative pt-8 pb-16 bg-stage-900 overflow-hidden" id="event-detail-hero">
       <!-- Background Ambient Glow -->
       <div v-if="event.cover_image" class="absolute inset-0 opacity-20 blur-3xl pointer-events-none">
-        <img :src="getAssetUrl(event.cover_image, { width: 100, quality: 10 })!" class="w-full h-full object-cover scale-150" alt="" />
+        <img v-bind="getImageProps(event.cover_image, { sm: 100 }, { quality: 10 })" class="w-full h-full object-cover scale-150" alt="" />
       </div>
 
       <div class="event-detail__hero-container relative max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -218,7 +218,7 @@ const funders = computed(() => {
           <div v-if="event.cover_image" class="lg:w-[400px] flex-shrink-0">
             <div class="event-detail__hero-image-wrapper relative group aspect-video lg:aspect-[4/5] rounded-3xl overflow-hidden shadow-2xl border border-stage-800/60">
               <img 
-                :src="getAssetUrl(event.cover_image, { width: 800, quality: 90 })!" 
+                v-bind="getImageProps(event.cover_image, { sm: 600, md: 800, lg: 1200 }, { quality: 90 })" 
                 :alt="event.title"
                 class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
               />
@@ -269,7 +269,7 @@ const funders = computed(() => {
               <div class="w-12 h-16 bg-stage-800 rounded overflow-hidden flex-shrink-0 shadow-md flex items-center justify-center">
                 <img 
                   v-if="event.related_production.poster_image"
-                  :src="getAssetUrl(event.related_production.poster_image, { width: 100, quality: 70 })!" 
+                  v-bind="getImageProps(event.related_production.poster_image, { sm: 100 }, { quality: 70 })" 
                   :alt="event.related_production.title"
                   class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                 />
@@ -333,7 +333,7 @@ const funders = computed(() => {
             <div class="w-24 h-24 bg-white rounded-lg shadow-md p-4 flex items-center justify-center overflow-hidden border border-stage-800/10 group-hover:border-brand-500/30 transition-colors">
               <img
                 v-if="funder.image"
-                :src="getAssetUrl(funder.image, { width: 240, quality: 80 })!"
+                v-bind="getImageProps(funder.image, { sm: 240 }, { quality: 80 })"
                 :alt="funder.name"
                 class="w-full h-full object-contain grayscale group-hover:grayscale-0 transition-all duration-500"
               />
