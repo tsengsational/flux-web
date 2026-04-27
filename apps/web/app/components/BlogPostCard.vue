@@ -11,7 +11,7 @@ const props = withDefaults(defineProps<Props>(), {
   featured: false,
   view_type: 'light'
 });
-const { getAssetUrl } = useDirectus();
+const { getAssetUrl, getImageProps } = useDirectus();
 
 const formattedDate = computed(() => {
   return new Date(props.post.publish_date).toLocaleDateString('en-US', {
@@ -40,7 +40,7 @@ const authorName = computed(() => {
     <div class="blog-post-card__image-container relative aspect-video lg:aspect-auto lg:min-h-[320px] bg-stage-800 overflow-hidden">
       <img
         v-if="post.cover_image_override || post.cover_image"
-        :src="getAssetUrl(post.cover_image_override || post.cover_image, { width: 1200, quality: 80 })!"
+        v-bind="getImageProps(post.cover_image_override || post.cover_image, { sm: 800, md: 1000, lg: 1200 })"
         :alt="post.title"
         class="blog-post-card__image w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
         loading="lazy"
@@ -121,7 +121,7 @@ const authorName = computed(() => {
     <div class="blog-post-card__image-container relative aspect-video bg-stage-800 overflow-hidden">
       <img
         v-if="post.cover_image_override || post.cover_image"
-        :src="getAssetUrl(post.cover_image_override || post.cover_image, { width: 800, quality: 80 })!"
+        v-bind="getImageProps(post.cover_image_override || post.cover_image, { sm: 600, md: 800 })"
         :alt="post.title"
         class="blog-post-card__image w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
         loading="lazy"

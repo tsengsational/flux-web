@@ -3,7 +3,7 @@ import type { Funder } from '@flux-theatre/shared';
 
 const route = useRoute();
 const slug = route.params.slug as string;
-const { client, readItems, getAssetUrl } = useDirectus();
+const { client, readItems, getAssetUrl, getImageProps } = useDirectus();
 
 // Fetch the funder and their associated items
 const { data: funderRecord, error } = await useAsyncData(`funder-${slug}`, async () => {
@@ -65,7 +65,7 @@ const hasAnyConnections = computed(() => {
             <div class="funder-page__image-wrapper aspect-square rounded-2xl overflow-hidden border border-stage-700/50 shadow-2xl bg-white p-6 flex items-center justify-center">
               <img
                 v-if="funderRecord.image"
-                :src="getAssetUrl(funderRecord.image, { width: 400, quality: 85 })!"
+                v-bind="getImageProps(funderRecord.image, { sm: 400 }, { quality: 85 })"
                 :alt="funderRecord.name"
                 class="funder-page__image w-full h-full object-contain"
               />
@@ -120,7 +120,7 @@ const hasAnyConnections = computed(() => {
               <li v-for="prod in funderRecord.productionsData" :key="prod.slug">
                 <NuxtLink :to="`/productions/${prod.slug}`" class="flex items-center gap-4 group">
                   <div class="w-12 h-16 bg-stage-800 rounded overflow-hidden flex-shrink-0">
-                    <img v-if="prod.poster_image" :src="getAssetUrl(prod.poster_image, { width: 100, quality: 70 })!" class="w-full h-full object-cover" />
+                    <img v-if="prod.poster_image" v-bind="getImageProps(prod.poster_image, { sm: 100 }, { quality: 70 })" class="w-full h-full object-cover" />
                   </div>
                   <div>
                     <p class="text-sm font-bold text-stage-100 group-hover:text-brand-400 transition-colors">{{ prod.title }}</p>
@@ -140,7 +140,7 @@ const hasAnyConnections = computed(() => {
               <li v-for="event in funderRecord.eventsData" :key="event.slug">
                 <NuxtLink :to="`/events/${event.slug}`" class="flex items-center gap-4 group">
                   <div class="w-12 h-12 bg-stage-800 rounded overflow-hidden flex-shrink-0">
-                    <img v-if="event.cover_image" :src="getAssetUrl(event.cover_image, { width: 100, quality: 70 })!" class="w-full h-full object-cover" />
+                    <img v-if="event.cover_image" v-bind="getImageProps(event.cover_image, { sm: 100 }, { quality: 70 })" class="w-full h-full object-cover" />
                   </div>
                   <div>
                     <p class="text-sm font-bold text-stage-100 group-hover:text-brand-400 transition-colors">{{ event.title }}</p>

@@ -22,7 +22,7 @@ interface EventSummary {
 import { formatInTimeZone } from 'date-fns-tz';
 
 const props = defineProps<{ event: EventSummary }>();
-const { getAssetUrl } = useDirectus();
+const { getAssetUrl, getImageProps } = useDirectus();
 
 const nyDate = computed(() => {
   return formatInTimeZone(new Date(props.event.start_datetime), 'America/New_York', 'EEE, MMM d');
@@ -99,7 +99,7 @@ const eventTags = computed(() => {
     <div class="event-card__image-container relative aspect-video bg-stage-800 overflow-hidden">
       <img
         v-if="event.cover_image"
-        :src="getAssetUrl(event.cover_image, { width: 600, quality: 80 })!"
+        v-bind="getImageProps(event.cover_image, { sm: 400, md: 600 })"
         :alt="event.title"
         class="event-card__image w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
         loading="lazy"
