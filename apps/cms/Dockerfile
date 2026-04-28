@@ -1,4 +1,4 @@
-FROM directus/directus:11.5
+FROM directus/directus:11.17.3
 
 RUN corepack enable \
     && corepack prepare pnpm@9.15.0 --activate \

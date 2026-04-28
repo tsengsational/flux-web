@@ -13,7 +13,7 @@
     "clean": "rimraf .nuxt .output dist node_modules"
   },
   "dependencies": {
-    "@directus/sdk": "^21.2.0",
+    "@directus/sdk": "^21.2.2",
     "@flux-theatre/shared": "workspace:*",
     "date-fns": "^4.1.0",
     "date-fns-tz": "^3.2.0",
