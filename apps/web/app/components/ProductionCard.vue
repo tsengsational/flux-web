@@ -9,7 +9,7 @@ interface Props {
 const props = withDefaults(defineProps<Props>(), {
   view_type: 'light'
 });
-const { getAssetUrl } = useDirectus();
+const { getAssetUrl, getImageProps } = useDirectus();
 
 const dateRange = computed(() => {
   if (!props.production.opening_date) return null;
@@ -30,7 +30,7 @@ const dateRange = computed(() => {
     <div class="production-card__image-container relative aspect-[3/4] overflow-hidden bg-stage-800">
       <img
         v-if="production.poster_image"
-        :src="getAssetUrl(production.poster_image, { width: 600, quality: 80 })!"
+        v-bind="getImageProps(production.poster_image, { sm: 400, md: 600 })"
         :alt="`${production.title} poster`"
         class="production-card__poster w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
         loading="lazy"

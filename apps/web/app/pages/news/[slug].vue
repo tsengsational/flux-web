@@ -3,7 +3,7 @@ import type { BlogPost } from '@flux-theatre/shared';
 
 const route = useRoute();
 const slug = route.params.slug as string;
-const { client, readItems, getAssetUrl } = useDirectus();
+const { client, readItems, getAssetUrl, getImageProps } = useDirectus();
 
 // Fetch the post from Directus based on slug
 const { data: posts, error } = await useAsyncData<BlogPost[]>(`post-${slug}`, () => 
@@ -80,7 +80,7 @@ const galleryIds = computed(() => {
     <div v-if="post" class="news-post__hero relative h-64 sm:h-80 lg:h-96 bg-stage-900 overflow-hidden" id="post-hero">
       <img
         v-if="post.cover_image_override || post.cover_image"
-        :src="getAssetUrl(post.cover_image_override || post.cover_image, { width: 1600, quality: 85 })!"
+        v-bind="getImageProps(post.cover_image_override || post.cover_image, { sm: 800, md: 1200, lg: 1600 }, { quality: 85 })"
         :alt="post.title"
         class="news-post__hero-image w-full h-full object-cover object-center"
       />

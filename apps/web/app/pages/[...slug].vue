@@ -37,7 +37,7 @@ if (!page.value && !error.value) {
   }
 }
 
-const { getAssetUrl } = useDirectus();
+const { getAssetUrl, getImageProps } = useDirectus();
 
 const people = computed(() => {
   return (page.value?.people || [])
@@ -115,7 +115,7 @@ useHead({
             <div class="w-24 h-24 bg-white rounded-lg shadow-md p-4 flex items-center justify-center overflow-hidden border border-stage-200 group-hover:border-brand-500/30 transition-colors">
               <img
                 v-if="funder.image"
-                :src="getAssetUrl(funder.image, { width: 240, quality: 80 })!"
+                v-bind="getImageProps(funder.image, { sm: 240 }, { quality: 80 })"
                 :alt="funder.name"
                 class="w-full h-full object-contain grayscale group-hover:grayscale-0 transition-all duration-500"
               />

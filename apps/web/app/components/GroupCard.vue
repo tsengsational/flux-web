@@ -10,7 +10,7 @@ const props = withDefaults(defineProps<Props>(), {
   view_type: 'light'
 });
 
-const { getAssetUrl } = useDirectus();
+const { getAssetUrl, getImageProps } = useDirectus();
 </script>
 
 <template>
@@ -23,7 +23,7 @@ const { getAssetUrl } = useDirectus();
     <div class="group-card__image-container relative aspect-[16/9] bg-stage-800 overflow-hidden">
       <img
         v-if="group.hero_image"
-        :src="getAssetUrl(group.hero_image, { width: 600, quality: 80 })!"
+        v-bind="getImageProps(group.hero_image, { sm: 400, md: 600 })"
         :alt="group.title"
         class="group-card__image w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
         loading="lazy"

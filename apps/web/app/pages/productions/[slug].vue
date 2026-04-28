@@ -4,7 +4,7 @@ import type { Production } from '@flux-theatre/shared';
 const route = useRoute();
 const slugParam = route.params.slug;
 const slug = Array.isArray(slugParam) ? slugParam[0] : slugParam;
-const { client, readItems, getAssetUrl } = useDirectus();
+const { client, readItems, getAssetUrl, getImageProps } = useDirectus();
 
 const isLightboxOpen = ref(false);
 
@@ -250,7 +250,7 @@ watch(viewMode, () => {
                 <div class="production-detail__poster-card card-glass aspect-[3/4] overflow-hidden transition-transform duration-300 group-hover:scale-[1.02]">
                   <img
                     v-if="production.poster_image"
-                    :src="getAssetUrl(production.poster_image, { width: 1200, quality: 90 })!"
+                    v-bind="getImageProps(production.poster_image, { sm: 600, md: 800, lg: 1200 }, { quality: 90 })"
                     :alt="`${production.title} poster`"
                     class="production-detail__poster-image w-full h-full object-contain"
                   />
@@ -554,7 +554,7 @@ watch(viewMode, () => {
               <div class="production-funders__logo-wrapper w-32 h-32 bg-white rounded-xl shadow-lg border border-stage-800/20 p-5 flex items-center justify-center overflow-hidden group-hover:border-brand-500/50 transition-colors">
                 <img
                   v-if="funder.image"
-                  :src="getAssetUrl(funder.image, { width: 240, quality: 80 })!"
+                  v-bind="getImageProps(funder.image, { sm: 240 }, { quality: 80 })"
                   :alt="funder.name"
                   class="production-funders__logo w-full h-full object-contain grayscale group-hover:grayscale-0 transition-all duration-500"
                 />
@@ -594,7 +594,7 @@ watch(viewMode, () => {
             <div class="relative max-w-full max-h-full flex items-center justify-center z-[205]">
               <img 
                 v-if="production.poster_image"
-                :src="getAssetUrl(production.poster_image, { width: 1920, quality: 90 })!" 
+                v-bind="getImageProps(production.poster_image, { sm: 800, md: 1200, lg: 1920 }, { quality: 90 })" 
                 :alt="production.title"
                 class="max-w-full max-h-[90vh] object-contain shadow-2xl animate-scale-in"
                 @click.stop

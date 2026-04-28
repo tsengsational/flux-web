@@ -3,7 +3,7 @@ import type { Group } from '@flux-theatre/shared';
 
 const route = useRoute();
 const slug = route.params.slug as string;
-const { client, readItems, getAssetUrl } = useDirectus();
+const { client, readItems, getAssetUrl, getImageProps } = useDirectus();
 
 // Fetch the group details
 const { data: groupData, error } = await useAsyncData(`group-${slug}`, () => 
@@ -138,7 +138,7 @@ useSeoMeta({
       <!-- Background Image -->
       <img
         v-if="group.hero_image"
-        :src="getAssetUrl(group.hero_image, { width: 1600, quality: 85 })!"
+        v-bind="getImageProps(group.hero_image, { sm: 800, md: 1200, lg: 1600 }, { quality: 85 })"
         class="absolute inset-0 w-full h-full object-cover"
         alt=""
       />

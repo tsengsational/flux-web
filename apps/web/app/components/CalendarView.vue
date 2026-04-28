@@ -42,7 +42,7 @@ const monthYearLabel = computed(() => format(currentDate.value, 'MMMM yyyy'));
 
 const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
-const { getAssetUrl } = useDirectus();
+const { getAssetUrl, getImageProps } = useDirectus();
 
 const getEventTimes = (startDatetime: string) => {
   const date = new Date(startDatetime);
@@ -156,7 +156,7 @@ const getEventTimes = (startDatetime: string) => {
               <!-- Event Image -->
               <div v-if="event.cover_image" class="w-16 h-16 rounded-xl overflow-hidden flex-shrink-0 bg-stage-800 border border-stage-700/50 shadow-lg">
                 <img 
-                  :src="getAssetUrl(event.cover_image, { width: 100, height: 100, fit: 'cover' })!" 
+                  v-bind="getImageProps(event.cover_image, { sm: 100 }, { height: 100, fit: 'cover' })" 
                   :alt="event.title"
                   class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                 />

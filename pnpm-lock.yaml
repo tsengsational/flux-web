@@ -17,8 +17,8 @@ importers:
   apps/web:
     dependencies:
       '@directus/sdk':
-        specifier: ^21.2.0
-        version: 21.2.0
+        specifier: ^21.2.2
+        version: 21.2.2
       '@flux-theatre/shared':
         specifier: workspace:*
         version: link:../../packages/shared
@@ -232,8 +232,8 @@ packages:
     peerDependencies:
       postcss-selector-parser: ^7.0.0
 
-  '@directus/sdk@21.2.0':
-    resolution: {integrity: sha512-IrP6vpXqW0WYuwMcKa19odYZDVdTtBL4+0TaZeUGoNWgvncPcuTYVEtX4z93TEPfbFoSD0IwPx0gbhQ7YNbTGg==}
+  '@directus/sdk@21.2.2':
+    resolution: {integrity: sha512-T8UhDG+GY534AqvLpRmycLYZmIYIaUYzu25X3WeUjWuxCvqAiKqXbYUrTRb0A5Mw93vUeVuyqabzvLbBY9AXxQ==}
     engines: {node: '>=22'}
 
   '@dxup/nuxt@0.3.2':
@@ -4103,7 +4103,7 @@ snapshots:
     dependencies:
       postcss-selector-parser: 7.1.1
 
-  '@directus/sdk@21.2.0': {}
+  '@directus/sdk@21.2.2': {}
 
   '@dxup/nuxt@0.3.2(magicast@0.5.2)':
     dependencies:
