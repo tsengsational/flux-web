@@ -83,6 +83,28 @@ const parsedData = computed<EditorData | null>(() => {
 });
 
 const { getAssetUrl, getImageProps } = useDirectus();
+
+// ── Handle Instagram Embeds ──
+// Load the Instagram embed script globally for this component
+useHead({
+  script: [
+    { src: 'https://www.instagram.com/embed.js', async: true, defer: true }
+  ]
+});
+
+// Re-process embeds when component mounts or updates 
+// (needed for client-side routing and dynamic v-html)
+const processEmbeds = () => {
+  if (typeof window !== 'undefined' && (window as any).instgrm?.Embeds) {
+    // Small timeout ensures the DOM has finished updating from v-html
+    setTimeout(() => {
+      (window as any).instgrm.Embeds.process();
+    }, 100);
+  }
+};
+
+onMounted(() => processEmbeds());
+onUpdated(() => processEmbeds());
 </script>
 
 <template>
