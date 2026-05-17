@@ -12,6 +12,7 @@ interface CarouselItemData {
   cta_text?: string;
   cta_url?: string;
   youtube_url?: string;
+  video_title?: string;
 }
 
 interface CarouselJunctionItem {
@@ -182,6 +183,16 @@ const handleVideoClick = (item: any) => {
               </div>
             </div>
             
+            <!-- Optional Video Title Overlay -->
+            <div 
+              v-if="item.carousel_items_id.video_title" 
+              class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent p-4 pt-12 flex flex-col items-start text-left z-10 pointer-events-none"
+            >
+              <h3 class="text-white font-sans font-bold text-sm sm:text-base line-clamp-2 leading-tight tracking-wide drop-shadow">
+                {{ item.carousel_items_id.video_title }}
+              </h3>
+            </div>
+
             <!-- Play Button Overlay -->
             <div class="absolute inset-0 bg-black/30 flex items-center justify-center transition-colors group-hover/play:bg-black/40">
               <div class="w-14 h-14 rounded-full bg-brand-500/90 text-white flex items-center justify-center shadow-2xl transform group-hover/play:scale-110 transition-transform duration-300">

@@ -22,7 +22,7 @@ const { data: productions, error } = await useAsyncData(`production-${slug}`, as
           Crew: ['title', 'content', 'sort', { person: ['first_name', 'last_name', 'slug', 'headshot', 'bio', 'pronouns'] }],
           funders: ['*', { funder_id: ['name', 'slug', 'image', 'url'] }],
           gallery: [{ directus_files_id: ['id'] }],
-          carousel_items: ['*', { carousel_items_id: ['id', 'type', 'image', 'cta_text', 'cta_url', 'youtube_url'] }]
+          carousel_items: ['*', { carousel_items_id: ['id', 'type', 'image', 'cta_text', 'cta_url', 'youtube_url', 'video_title'] }]
         }
       ] as any,
       deep: {
