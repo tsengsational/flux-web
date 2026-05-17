@@ -1,10 +1,17 @@
 <script setup lang="ts">
 import type { NavigationItem } from '@flux-theatre/shared';
 
-const { client, readItems } = useDirectus();
+const { client, readItems, readSingleton } = useDirectus();
 const isMenuOpen = ref(false);
 const activeDropdown = ref<string | null>(null);
 const activeAccordion = ref<string | null>(null);
+
+// Fetch site settings for header CTA
+const { data: siteSettings, error: siteSettingsError } = await useAsyncData('siteSettings-header', () => 
+  client.request(readSingleton('site_settings' as any, {
+    fields: ['header_cta', 'header_cta_url']
+  } as any))
+);
 
 // Fetch all navigation items
 const { data: allNavItems } = await useAsyncData('navigation', () => 
@@ -174,8 +181,14 @@ if (import.meta.client) {
 
         <!-- CTA + Mobile Toggle -->
         <div class="site-header__actions flex items-center gap-3">
-          <NuxtLink to="/productions" class="site-header__cta btn-primary text-brand-400 hover:text-brand-200 transition-colors hidden sm:inline-flex" id="header-cta">
-            Get Tickets
+          <NuxtLink 
+            v-if="siteSettings?.header_cta" 
+            :to="siteSettings.header_cta_url || '/'" 
+            :target="siteSettings.header_cta_url?.startsWith('http') ? '_blank' : undefined"
+            class="site-header__cta btn-primary text-brand-400 hover:text-brand-200 transition-colors hidden sm:inline-flex" 
+            id="header-cta"
+          >
+            {{ siteSettings.header_cta }}
           </NuxtLink>
           <button
             class="site-header__mobile-toggle lg:hidden p-2 rounded-lg text-stage-300 hover:text-stage-100 hover:bg-stage-800/50 transition-colors"
@@ -242,8 +255,14 @@ if (import.meta.client) {
             </template>
           </div>
           
-          <NuxtLink to="/productions" class="site-header__mobile-cta btn-primary w-full mt-4" @click="isMenuOpen = false">
-            Get Tickets
+          <NuxtLink 
+            v-if="siteSettings?.header_cta" 
+            :to="siteSettings.header_cta_url || '/'" 
+            :target="siteSettings.header_cta_url?.startsWith('http') ? '_blank' : undefined"
+            class="site-header__mobile-cta btn-primary w-full mt-4" 
+            @click="isMenuOpen = false"
+          >
+            {{ siteSettings.header_cta }}
           </NuxtLink>
         </div>
       </Transition>
