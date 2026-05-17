@@ -232,6 +232,11 @@ const paginatedPerformances = computed(() => {
 watch(viewMode, () => {
   currentPage.value = 1;
 });
+
+// ── Expandable Cast/Crew ──
+const showAllCast = ref(false);
+const showAllCrew = ref(false);
+
 </script>
 
 <template>
@@ -504,7 +509,7 @@ watch(viewMode, () => {
       <section v-if="cast.length" class="production-cast  production-section py-16" id="cast-section">
         <div class="production-cast__container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <h2 class="production-cast__title section-heading mb-8 md:text-xl">Cast</h2>
-          <div class="production-cast__grid grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+          <div :class="['production-cast__grid grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4', { 'is-collapsed': !showAllCast }]">
             <PersonCard
               v-for="credit in cast"
               :key="credit.person.slug"
@@ -514,6 +519,11 @@ watch(viewMode, () => {
               compact
             />
           </div>
+          <div v-if="cast.length > 3" :class="['mt-8 flex justify-center see-more-container', `count-${cast.length}`]">
+             <button @click="showAllCast = !showAllCast" class="text-brand-400 hover:text-brand-300 font-medium text-sm transition-colors border-b border-brand-400/30 hover:border-brand-300 pb-0.5">
+               {{ showAllCast ? 'See Less' : 'See More' }}
+             </button>
+          </div>
         </div>
       </section>
 
@@ -521,7 +531,7 @@ watch(viewMode, () => {
       <section v-if="crew.length" class="production-crew py-16 production-section" id="crew-section">
         <div class="production-crew__container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <h2 class="production-crew__title section-heading mb-8 md:text-xl">Creative Team</h2>
-          <div class="production-crew__grid grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+          <div :class="['production-crew__grid grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4', { 'is-collapsed': !showAllCrew }]">
             <PersonCard
               v-for="credit in crew"
               :key="credit.person.slug"
@@ -530,6 +540,11 @@ watch(viewMode, () => {
               class="production-crew__person-card"
               compact
             />
+          </div>
+          <div v-if="crew.length > 3" :class="['mt-8 flex justify-center see-more-container', `count-${crew.length}`]">
+             <button @click="showAllCrew = !showAllCrew" class="text-brand-400 hover:text-brand-300 font-medium text-sm transition-colors border-b border-brand-400/30 hover:border-brand-300 pb-0.5">
+               {{ showAllCrew ? 'See Less' : 'See More' }}
+             </button>
           </div>
         </div>
       </section>
@@ -640,5 +655,39 @@ watch(viewMode, () => {
   /* Remove the divider from the very last section to keep the footer clean */
   .production-section:last-of-type::after {
     content: none;
+  }
+
+  .is-collapsed {
+    & > :nth-child(n+5) {
+      display: none;
+    }
+    @media (min-width: 640px) {
+      & > :nth-child(4) {
+        display: none;
+      }
+    }
+    @media (min-width: 1024px) {
+      & > :nth-child(4) {
+        display: block;
+      }
+    }
+    @media (min-width: 1280px) {
+      & > :nth-child(5) {
+        display: block;
+      }
+    }
+  }
+
+  .see-more-container {
+    &.count-4 { display: none !important; }
+    @media (min-width: 640px) {
+      &.count-4 { display: flex !important; }
+    }
+    @media (min-width: 1024px) {
+      &.count-4 { display: none !important; }
+    }
+    @media (min-width: 1280px) {
+      &.count-5 { display: none !important; }
+    }
   }
 </style>
