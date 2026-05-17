@@ -21,12 +21,14 @@ const { data: productions, error } = await useAsyncData(`production-${slug}`, as
           Cast: ['role_name', 'content', 'sort', { person: ['first_name', 'last_name', 'slug', 'headshot', 'bio', 'pronouns'] }],
           Crew: ['title', 'content', 'sort', { person: ['first_name', 'last_name', 'slug', 'headshot', 'bio', 'pronouns'] }],
           funders: ['*', { funder_id: ['name', 'slug', 'image', 'url'] }],
-          gallery: [{ directus_files_id: ['id'] }]
+          gallery: [{ directus_files_id: ['id'] }],
+          carousel_items: ['*', { carousel_items_id: ['id', 'type', 'image', 'cta_text', 'cta_url', 'youtube_url'] }]
         }
       ] as any,
       deep: {
         Cast: { _sort: ['sort'] },
-        Crew: { _sort: ['sort'] }
+        Crew: { _sort: ['sort'] },
+        carousel_items: { _sort: ['sort'] }
       } as any,
       limit: 1
     } as any)) as any;
@@ -536,6 +538,13 @@ watch(viewMode, () => {
       <section v-if="galleryIds.length" class="production-gallery py-16 bg-stage-950" id="gallery-section">
         <div class="production-gallery__container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <MediaGallery :images="galleryIds" title="Production Photos" viewtype="dark" />
+        </div>
+      </section>
+
+      <!-- ═══ Carousel ═══ -->
+      <section v-if="production.carousel_items?.length" class="production-carousel-section py-16 production-section" id="carousel-section">
+        <div class="production-carousel__container max-w-7xl mx-auto">
+          <MediaCarousel :items="production.carousel_items" :title="production.carousel_title" />
         </div>
       </section>
       
