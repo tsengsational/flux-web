@@ -60,6 +60,16 @@ const getYoutubeId = (url: string) => {
 const isShorts = (url: string) => {
   return url ? url.includes('/shorts/') : false;
 };
+
+const activeVideoItem = ref<CarouselItemData | null>(null);
+
+const handleVideoClick = (item: any) => {
+  const data = item.carousel_items_id;
+  const videoId = getYoutubeId(data.youtube_url || '');
+  if (!videoId) return;
+
+  activeVideoItem.value = data;
+};
 </script>
 
 <template>
@@ -109,13 +119,29 @@ const isShorts = (url: string) => {
 
         <!-- Type: YouTube -->
         <template v-else-if="item.carousel_items_id?.type === 'youtube'">
-          <iframe 
+          <!-- YouTube Preview Thumbnail (Triggers Modal Playback) -->
+          <button 
             v-if="getYoutubeId(item.carousel_items_id.youtube_url)"
-            :src="`https://www.youtube.com/embed/${getYoutubeId(item.carousel_items_id.youtube_url)}?rel=0`"
-            class="w-full h-full border-0"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-            allowfullscreen
-          ></iframe>
+            @click="handleVideoClick(item)"
+            class="relative w-full h-full flex items-center justify-center group/play cursor-pointer focus:outline-none focus:ring-2 focus:ring-brand-500 rounded-2xl overflow-hidden"
+            aria-label="Play video"
+          >
+            <img 
+              :src="`https://i3.ytimg.com/vi/${getYoutubeId(item.carousel_items_id.youtube_url)}/hqdefault.jpg`" 
+              class="w-full h-full object-cover transition-transform duration-500 group-hover/play:scale-105" 
+              alt="Video Thumbnail"
+              loading="lazy"
+            />
+            <!-- Play Button Overlay -->
+            <div class="absolute inset-0 bg-black/30 flex items-center justify-center transition-colors group-hover/play:bg-black/40">
+              <div class="w-14 h-14 rounded-full bg-brand-500/90 text-white flex items-center justify-center shadow-2xl transform group-hover/play:scale-110 transition-transform duration-300">
+                <svg class="w-7 h-7 fill-current ml-1" viewBox="0 0 24 24">
+                  <path d="M8 5v14l11-7z" />
+                </svg>
+              </div>
+            </div>
+          </button>
+          
           <div v-else class="w-full h-full flex items-center justify-center text-stage-500">
             Invalid YouTube URL
           </div>
@@ -144,6 +170,26 @@ const isShorts = (url: string) => {
         </svg>
       </button>
     </div>
+
+    <!-- Video Player Modal for Mobile -->
+    <BaseModal 
+      :is-open="!!activeVideoItem" 
+      :max-width="activeVideoItem && isShorts(activeVideoItem.youtube_url) ? 'max-w-md' : 'max-w-4xl'" 
+      @close="activeVideoItem = null"
+    >
+      <div 
+        v-if="activeVideoItem"
+        class="bg-black flex items-center justify-center w-full mx-auto"
+        :class="isShorts(activeVideoItem.youtube_url) ? 'aspect-[9/16] h-[75vh]' : 'aspect-video w-full'"
+      >
+        <iframe 
+          :src="`https://www.youtube.com/embed/${getYoutubeId(activeVideoItem.youtube_url)}?autoplay=1&rel=0`"
+          class="w-full h-full border-0"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allowfullscreen
+        ></iframe>
+      </div>
+    </BaseModal>
   </div>
 </template>
 
