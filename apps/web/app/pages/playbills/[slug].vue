@@ -246,14 +246,6 @@ function closeBioModal() {
   isModalOpen.value = false;
   selectedPerson.value = null;
 }
-
-if (import.meta.dev) {
-  console.log('Playbill Data & Credits:', {
-    playbill: playbill.value,
-    cast: cast.value,
-    crew: crew.value
-  });
-}
 </script>
 
 <template>
