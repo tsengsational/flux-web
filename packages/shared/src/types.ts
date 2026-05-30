@@ -80,7 +80,8 @@ export interface PersonTag {
 export interface CastCredit {
     id: string;
     person: string | Person;      // UUID or populated
-    production: string | Production;
+    production: string | Production | null;
+    event: string | Event | null; // Event relation support
     role_name: string;            // e.g. Hamlet
     sort: number;
     is_understudy: boolean;
@@ -90,7 +91,8 @@ export interface CastCredit {
 export interface CrewCredit {
     id: string;
     person: string | Person;
-    production: string | Production;
+    production: string | Production | null;
+    event: string | Event | null; // Event relation support
     department: CrewDepartment;
     title: string;                // e.g. "Stage Manager", "Lighting Designer"
     sort: number;
@@ -109,6 +111,47 @@ export type CrewDepartment =
     | 'dramaturgy'
     | 'marketing'
     | 'other';
+
+// ─── Playbills ───
+
+export interface Playbill extends DirectusBaseFields {
+    title: string;
+    slug: string;
+    supertitle: string | null;
+    subtitle: string | null;
+    byline: string | null;
+    director: string | null;
+    hero_image: string | null;     // Directus file UUID
+    content: any | null;           // Structured JSON for Block Editor
+    
+    // Relationships
+    production: string | Production | null;
+    event: string | Event | null;
+    cast_credits: PlaybillCastCredit[];
+    crew_credits: PlaybillCrewCredit[];
+    funders: PlaybillFunder[];
+}
+
+export interface PlaybillCastCredit {
+    id: string;
+    playbills_id: string | Playbill;
+    productions_cast_id: string | CastCredit;
+    sort: number | null;
+}
+
+export interface PlaybillCrewCredit {
+    id: string;
+    playbills_id: string | Playbill;
+    productions_crew_id: string | CrewCredit;
+    sort: number | null;
+}
+
+export interface PlaybillFunder {
+    id: string;
+    playbills_id: string | Playbill;
+    funders_id: string | Funder;
+    sort: number | null;
+}
 
 // ─── Venues ───
 

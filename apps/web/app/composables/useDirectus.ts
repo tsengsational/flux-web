@@ -1,5 +1,5 @@
 import { createDirectus, rest, readItems, readSingleton } from '@directus/sdk';
-import type { Production, BlogPost, Event, Venue, HomePage, HeroSlide, SiteSettings, Page, Person, CastCredit, CrewCredit, Group } from '@flux-theatre/shared';
+import type { Production, BlogPost, Event, Venue, HomePage, HeroSlide, SiteSettings, Page, Person, CastCredit, CrewCredit, Group, Playbill, PlaybillCastCredit, PlaybillCrewCredit, PlaybillFunder } from '@flux-theatre/shared';
 
 /**
  * Interface for the Directus schema
@@ -18,6 +18,10 @@ export interface Schema {
   productions_cast: CastCredit[];
   productions_crew: CrewCredit[];
   groups: Group[];
+  playbills: Playbill[];
+  playbills_cast: PlaybillCastCredit[];
+  playbills_crew: PlaybillCrewCredit[];
+  playbills_funders: PlaybillFunder[];
 }
 
 

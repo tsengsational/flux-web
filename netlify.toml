@@ -8,4 +8,20 @@
   PNPM_VERSION = "9"
   NUXT_PUBLIC_DIRECTUS_URL = "https://flux-theatrecms-production.up.railway.app"
 
+[[redirects]]
+  from = "/cms/*"
+  to = "https://flux-theatrecms-production.up.railway.app/cms/:splat"
+  status = 200
+  force = true
 
+[[redirects]]
+  from = "/items/*"
+  to = "https://flux-theatrecms-production.up.railway.app/items/:splat"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/assets/*"
+  to = "https://flux-theatrecms-production.up.railway.app/assets/:splat"
+  status = 200
+  force = true

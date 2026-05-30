@@ -15,12 +15,18 @@ export default defineNuxtConfig({
     // Specific items and assets proxying to handle both types
     '/items/**': { proxy: `${process.env.NUXT_PUBLIC_DIRECTUS_URL || 'https://flux-theatrecms-production.up.railway.app'}/items/**` },
     '/assets/**': { proxy: `${process.env.NUXT_PUBLIC_DIRECTUS_URL || 'https://flux-theatrecms-production.up.railway.app'}/assets/**` },
+    
+    // Enable ISR (Incremental Static Regeneration) to cache pages at the Netlify CDN edge for 1 hour
+    '/**': { isr: 3600 },
   },
 
-  // ── Server-Side Rendering (SSR) via Netlify Functions ──
+    // ── Server-Side Rendering (SSR) via Netlify Functions ──
   ssr: true,
   nitro: {
     preset: 'netlify',
+    externals: {
+      inline: ['tslib'],
+    },
   },
 
   // ── Tailwind CSS ──
@@ -69,13 +75,6 @@ export default defineNuxtConfig({
   // ── TypeScript ──
   typescript: {
     strict: true,
-  },
-
-  // ── Nitro ──
-  nitro: {
-    externals: {
-      inline: ['tslib'],
-    },
   },
 
   // ── Build ──
