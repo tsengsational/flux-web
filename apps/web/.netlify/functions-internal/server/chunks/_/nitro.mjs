@@ -4017,7 +4017,7 @@ function _expandFromEnv(value) {
 const _inlineRuntimeConfig = {
   "app": {
     "baseURL": "/",
-    "buildId": "7887ceed-ca69-4fb8-84e9-ce1a689cd7c2",
+    "buildId": "64811a83-16a0-4b65-b88e-7f4d45d29da7",
     "buildAssetsDir": "/_nuxt/",
     "cdnURL": ""
   },
@@ -4050,6 +4050,9 @@ const _inlineRuntimeConfig = {
           "to": "https://flux-theatrecms-production.up.railway.app/assets/**",
           "_proxyStripBase": "/assets"
         }
+      },
+      "/**": {
+        "isr": 3600
       },
       "/_nuxt/builds/meta/**": {
         "headers": {

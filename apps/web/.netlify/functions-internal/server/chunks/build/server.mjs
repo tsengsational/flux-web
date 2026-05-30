@@ -391,7 +391,7 @@ function toArray(value) {
   return Array.isArray(value) ? value : [value];
 }
 const matcher = /* @__PURE__ */ (() => {
-  const $0 = { redirect: "/productions/fear-wonder" }, $1 = {};
+  const $0 = { redirect: "/productions/fear-wonder" }, $1 = {}, $2 = { payload: true };
   return (m, p) => {
     let r = [];
     if (p.charCodeAt(p.length - 1) === 47) p = p.slice(0, -1) || "/";
@@ -409,6 +409,7 @@ const matcher = /* @__PURE__ */ (() => {
     if (s[1] === "assets") {
       r.unshift({ data: $1, params: { "_": s.slice(2).join("/") } });
     }
+    r.unshift({ data: $2, params: { "_": s.slice(1).join("/") } });
     return r;
   };
 })();
@@ -509,7 +510,7 @@ const _routes = [
   {
     name: "playbills-slug",
     path: "/playbills/:slug()",
-    component: () => import('./_slug_-COVgqki9.mjs')
+    component: () => import('./_slug_-CyrT0QjG.mjs')
   },
   {
     name: "productions",

@@ -135,21 +135,21 @@ export interface Playbill extends DirectusBaseFields {
 export interface PlaybillCastCredit {
     id: string;
     playbills_id: string | Playbill;
-    productions_cast_id: string | CastCredit;
+    cast_credits_id: string | CastCredit;
     sort: number | null;
 }
 
 export interface PlaybillCrewCredit {
     id: string;
     playbills_id: string | Playbill;
-    productions_crew_id: string | CrewCredit;
+    crew_credits_id: string | CrewCredit;
     sort: number | null;
 }
 
 export interface PlaybillFunder {
     id: string;
     playbills_id: string | Playbill;
-    funders_id: string | Funder;
+    funder_id: string | Funder;
     sort: number | null;
 }
 

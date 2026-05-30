@@ -19,7 +19,7 @@ const { data: playbills, error } = await useAsyncData(`playbill-${slug}`, async 
           cast_credits: [
             'sort',
             {
-              productions_cast_id: [
+              cast_credits_id: [
                 'role_name',
                 'content',
                 'is_understudy',
@@ -32,7 +32,7 @@ const { data: playbills, error } = await useAsyncData(`playbill-${slug}`, async 
           crew_credits: [
             'sort',
             {
-              productions_crew_id: [
+              crew_credits_id: [
                 'title',
                 'content',
                 'department',
@@ -45,7 +45,7 @@ const { data: playbills, error } = await useAsyncData(`playbill-${slug}`, async 
           funders: [
             'sort',
             {
-              funders_id: ['name', 'slug', 'image', 'url']
+              funder_id: ['name', 'slug', 'image', 'url']
             }
           ]
         }
@@ -60,7 +60,7 @@ const { data: playbills, error } = await useAsyncData(`playbill-${slug}`, async 
 
     return result;
   } catch (err) {
-    if (process.server) {
+    if (import.meta.server) {
       console.error(`[SSR Playbill Error] Slug: "${slug}"`, err);
     }
     throw err;
@@ -82,12 +82,45 @@ useSeoMeta({
 // ── Tab Management ──
 type Tab = 'about' | 'credits' | 'support';
 const activeTab = ref<Tab>('about');
+const displayedTab = ref<Tab>('about');
+const isFlipping = ref(false);
+
+// Synchronize tab selection with the URL hash so it persists through refreshes & HMR
+onMounted(() => {
+  const hash = window.location.hash.replace('#', '');
+  if (hash === 'credits' || hash === 'support' || hash === 'about') {
+    activeTab.value = hash as Tab;
+    displayedTab.value = hash as Tab;
+  }
+});
+
+watch(activeTab, async (newTab, oldTab) => {
+  if (newTab === oldTab) return;
+  
+  // Trigger physical 3D page flip
+  isFlipping.value = true;
+  // Wait for page to curl/rotate to perpendicular (90deg) at the midpoint (300ms)
+  await new Promise(resolve => setTimeout(resolve, 300));
+  displayedTab.value = newTab;
+  
+  // Wait for next tick so that the target tab element is fully rendered on the DOM
+  await nextTick();
+  
+  // Now that the element exists (e.g. #credits), update the URL hash smoothly without triggering blank page router jumps!
+  if (import.meta.client) {
+    window.location.hash = newTab;
+  }
+  
+  // Wait for page to settle flat (another 300ms)
+  await new Promise(resolve => setTimeout(resolve, 300));
+  isFlipping.value = false;
+});
 
 // ── Credits Processing ──
 const cast = computed(() => {
   if (!playbill.value?.cast_credits) return [];
   return playbill.value.cast_credits
-    .map((c: any) => c.productions_cast_id)
+    .map((c: any) => c.cast_credits_id)
     .filter(Boolean)
     .map((credit: any) => ({
       ...credit,
@@ -101,7 +134,7 @@ const cast = computed(() => {
 const crew = computed(() => {
   if (!playbill.value?.crew_credits) return [];
   return playbill.value.crew_credits
-    .map((c: any) => c.productions_crew_id)
+    .map((c: any) => c.crew_credits_id)
     .filter(Boolean)
     .map((credit: any) => ({
       ...credit,
@@ -167,7 +200,7 @@ function formatDepartmentName(key: string): string {
 const funders = computed(() => {
   if (!playbill.value?.funders) return [];
   return playbill.value.funders
-    .map((f: any) => f.funders_id)
+    .map((f: any) => f.funder_id)
     .filter(Boolean);
 });
 
@@ -213,329 +246,385 @@ function closeBioModal() {
   isModalOpen.value = false;
   selectedPerson.value = null;
 }
+
+if (import.meta.dev) {
+  console.log('Playbill Data & Credits:', {
+    playbill: playbill.value,
+    cast: cast.value,
+    crew: crew.value
+  });
+}
 </script>
 
 <template>
-  <div v-if="playbill" class="playbill-view min-h-screen bg-stage-950 text-stage-50 pb-24 font-sans">
+  <div v-if="playbill" class="playbill-view min-h-screen pb-24 font-sans flex flex-col items-center">
     
-    <!-- Top Decorative Line & Back Link -->
-    <div class="playbill-view__top-bar border-b border-stage-800/60 bg-stage-950/80 sticky top-0 z-40 backdrop-blur-md">
-      <div class="playbill-view__top-bar-container max-w-3xl mx-auto px-4 py-3 flex items-center justify-between">
-        <NuxtLink :to="parentLink.url" class="playbill-view__back-link group flex items-center gap-2 text-xs font-semibold text-stage-400 hover:text-brand-400 transition-colors uppercase tracking-widest">
+    <!-- Top Back Link Navigation Bar -->
+    <div class="playbill-view__top-bar w-full border-b border-stage-900 bg-[#0e0c0a]/90 sticky top-0 z-40 backdrop-blur-md">
+      <div class="playbill-view__top-bar-container max-w-5xl mx-auto px-6 py-3.5 flex items-center justify-between">
+        <NuxtLink :to="parentLink.url" class="playbill-view__back-link group flex items-center gap-2 text-xs font-bold text-stage-400 hover:text-brand-400 transition-colors uppercase tracking-widest">
           <svg class="playbill-view__back-link-icon w-4 h-4 transition-transform group-hover:-translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
             <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
           </svg>
           {{ parentLink.label }}
         </NuxtLink>
         
-        <span class="playbill-view__official-badge text-[10px] uppercase font-bold tracking-widest text-brand-500/80 border border-brand-500/30 px-2 py-0.5 rounded">
-          Official Playbill
+        <span class="playbill-view__official-badge text-[10px] uppercase font-black tracking-[0.2em] text-brand-500 border border-brand-500/40 px-3 py-1 rounded">
+          Official Digital Playbill
         </span>
       </div>
     </div>
 
-    <!-- Header Section -->
-    <header class="playbill-view__header text-center pt-12 pb-8 max-w-3xl mx-auto px-4">
-      <div class="playbill-view__header-decor flex flex-col items-center justify-center gap-2 mb-6">
-        <div class="playbill-view__decor-line playbill-view__decor-line--short w-20 h-0.5 bg-brand-500/80" />
-        <p v-if="playbill.supertitle" class="playbill-view__header-supertitle text-xs uppercase tracking-[0.25em] font-extrabold text-brand-400 leading-none">
-          {{ playbill.supertitle }}
-        </p>
-        <div class="playbill-view__decor-divider w-full h-px bg-gradient-to-r from-transparent via-stage-800 to-transparent mt-2" />
-      </div>
+    <!-- Immersive Skeuomorphic Booklet Table Container -->
+    <div class="playbill-table w-full max-w-5xl px-4 md:px-8 mt-8 flex justify-center">
+      <div class="playbill-book relative w-full flex flex-col md:flex-row items-stretch rounded-2xl shadow-[0_50px_100px_-20px_rgba(0,0,0,0.85)]">
+        
+        <!-- Interactive 3D Central Booklet Spine (Desktop Only) -->
+        <div class="playbill-book__spine hidden md:block"></div>
 
-      <h1 class="playbill-view__header-title text-4xl sm:text-5xl lg:text-6xl font-serif font-black tracking-tight leading-tight text-stage-50 mb-4">
-        {{ playbill.title }}
-      </h1>
-
-      <p v-if="playbill.subtitle" class="playbill-view__header-subtitle text-lg sm:text-xl font-serif italic text-stage-300 leading-relaxed max-w-2xl mx-auto">
-        {{ playbill.subtitle }}
-      </p>
-
-      <!-- Byline & Director details -->
-      <div class="playbill-view__header-meta mt-6 flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-6 text-sm text-stage-400 font-serif italic border-t border-b border-stage-900/60 py-3 mt-8">
-        <span v-if="playbill.byline" class="playbill-view__meta-byline">{{ playbill.byline }}</span>
-        <span v-if="playbill.byline && playbill.director" class="playbill-view__meta-dot hidden sm:inline text-stage-700">•</span>
-        <span v-if="playbill.director" class="playbill-view__meta-director">{{ playbill.director }}</span>
-      </div>
-    </header>
-
-    <!-- Hero Image Area -->
-    <section v-if="playbill.hero_image" class="playbill-view__hero max-w-2xl mx-auto px-4 mb-10">
-      <div class="playbill-view__hero-wrapper relative rounded-2xl overflow-hidden aspect-[16/10] border border-stage-800 shadow-2xl bg-stage-900">
-        <img
-          v-bind="getImageProps(playbill.hero_image, { sm: 600, md: 800, lg: 1200 }, { quality: 85 })"
-          :alt="playbill.title"
-          class="playbill-view__hero-image w-full h-full object-cover"
-        />
-        <div class="playbill-view__hero-overlay absolute inset-0 bg-gradient-to-t from-stage-950/60 via-transparent to-transparent pointer-events-none" />
-      </div>
-    </section>
-
-    <!-- Premium Mobile Tabs Navigation -->
-    <nav class="playbill-view__tabs max-w-md mx-auto px-4 mb-8 sticky top-[49px] z-30 bg-stage-950/95 py-2">
-      <div class="playbill-view__tabs-container grid grid-cols-3 bg-stage-900/80 backdrop-blur border border-stage-800/80 rounded-xl p-1 shadow-xl">
-        <button
-          @click="activeTab = 'about'"
-          class="playbill-view__tab-button py-2.5 rounded-lg text-xs font-bold uppercase tracking-wider transition-all duration-300 flex items-center justify-center gap-1.5"
-          :class="[
-            activeTab === 'about'
-              ? 'playbill-view__tab-button--active bg-brand-500 text-stage-950 font-black shadow-md'
-              : 'text-stage-400 hover:text-stage-200'
-          ]"
-        >
-          About
-        </button>
-        <button
-          @click="activeTab = 'credits'"
-          class="playbill-view__tab-button py-2.5 rounded-lg text-xs font-bold uppercase tracking-wider transition-all duration-300 flex items-center justify-center gap-1.5"
-          :class="[
-            activeTab === 'credits'
-              ? 'playbill-view__tab-button--active bg-brand-500 text-stage-950 font-black shadow-md'
-              : 'text-stage-400 hover:text-stage-200'
-          ]"
-        >
-          Credits
-        </button>
-        <button
-          @click="activeTab = 'support'"
-          class="playbill-view__tab-button py-2.5 rounded-lg text-xs font-bold uppercase tracking-wider transition-all duration-300 flex items-center justify-center gap-1.5"
-          :class="[
-            activeTab === 'support'
-              ? 'playbill-view__tab-button--active bg-brand-500 text-stage-950 font-black shadow-md'
-              : 'text-stage-400 hover:text-stage-200'
-          ]"
-        >
-          Sponsors
-        </button>
-      </div>
-    </nav>
-
-    <!-- Main Content Container -->
-    <main class="playbill-view__main max-w-2xl mx-auto px-4">
-      <Transition
-        mode="out-in"
-        enter-active-class="transition duration-200 ease-out"
-        enter-from-class="opacity-0 translate-y-2"
-        enter-to-class="opacity-100 translate-y-0"
-        leave-active-class="transition duration-150 ease-in"
-        leave-from-class="opacity-100 translate-y-0"
-        leave-to-class="opacity-0 -translate-y-2"
-      >
-        <!-- ABOUT / CONTENT TAB -->
-        <div v-if="activeTab === 'about'" class="playbill-view__pane playbill-view__pane--about space-y-8">
-          <!-- Associated Production/Event Glass Card -->
-          <div v-if="playbill.production || playbill.event" class="playbill-view__promo-card p-6 rounded-2xl bg-stage-900/40 border border-stage-800/80 card-glass flex items-start gap-4">
-            <div class="playbill-view__promo-card-icon-wrapper w-10 h-10 rounded-lg bg-brand-500/10 border border-brand-500/30 flex items-center justify-center text-brand-400 flex-shrink-0">
-              <svg class="playbill-view__promo-card-icon w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 6v.75m0 3v.75m0 3v.75m0 3V18m-9-5.25h5.25M7.5 15h3M3.375 5.25c-.621 0-1.125.504-1.125 1.125v3.026a2.999 2.999 0 010 5.198v3.026c0 .621.504 1.125 1.125 1.125h17.25c.621 0 1.125-.504 1.125-1.125v-3.026a2.999 2.999 0 010-5.198V6.375c0-.621-.504-1.125-1.125-1.125H3.375z" />
-              </svg>
-            </div>
-            <div class="playbill-view__promo-card-body">
-              <h4 class="playbill-view__promo-card-title text-xs uppercase tracking-widest font-black text-brand-400">Flux Presentation</h4>
-              <p class="playbill-view__promo-card-text text-sm font-semibold text-stage-100 mt-1 leading-snug">
-                This digital playbill is curated for the ensemble presentation of 
-                <span class="playbill-view__promo-card-highlight font-serif italic font-bold">{{ playbill.production ? (playbill.production as any).title : (playbill.event as any).title }}</span>.
-              </p>
-              <div v-if="playbill.event && typeof playbill.event === 'object'" class="playbill-view__promo-card-meta mt-2 text-xs text-stage-400 flex items-center gap-1.5">
-                <svg class="playbill-view__promo-card-meta-icon w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" /></svg>
-                <span class="playbill-view__promo-card-meta-text">{{ (playbill.event as any).venue?.name || 'Online' }}</span>
+        <!-- 📖 LEFT PAGE: STATIC COVER & FRONT MATTERS (Desktop Only) -->
+        <div class="playbill-book__page playbill-book__page--left hidden md:flex flex-col paper-texture p-8 flex-1 border-r border-[#d4d0b8]">
+          <div class="playbill-book__inner flex flex-col h-full justify-between">
+            
+            <!-- Cover Header -->
+            <header class="playbill-book__header text-center pt-4">
+              <div class="playbill-book__header-decor flex flex-col items-center justify-center gap-2 mb-4">
+                <div class="playbill-book__decor-line w-12 h-[3px] bg-[#1c1c15] mb-1" />
+                <p v-if="playbill.supertitle" class="playbill-book__supertitle text-[10px] uppercase tracking-[0.25em] font-black text-[#6b664d] leading-none">
+                  {{ playbill.supertitle }}
+                </p>
+                <div class="playbill-book__decor-divider w-full h-[3px] border-t border-b border-[#1c1c15] mt-1.5" />
               </div>
-            </div>
-          </div>
 
-          <!-- Structured Content Block Renderer -->
-          <div v-if="playbill.content" class="playbill-view__rich-content prose prose-invert prose-lg max-w-none">
-            <BlockRenderer :content="playbill.content" class="playbill-view__block-renderer" />
-          </div>
-          <div v-else class="playbill-view__empty-state text-center py-12 border border-dashed border-stage-800 rounded-2xl bg-stage-900/20">
-            <p class="playbill-view__empty-text text-stage-500 italic font-serif">Welcome to our Digital Playbill. Tap on the Credits or Sponsors tabs above to explore.</p>
+              <h1 class="playbill-book__title text-3xl lg:text-4xl font-serif font-black tracking-tight leading-tight text-[#1c1c15] mt-3 mb-2">
+                {{ playbill.title }}
+              </h1>
+
+              <p v-if="playbill.subtitle" class="playbill-book__subtitle text-md font-serif italic text-[#4a4632] leading-relaxed max-w-md mx-auto mb-4">
+                {{ playbill.subtitle }}
+              </p>
+
+              <!-- Byline & Director details -->
+              <div class="playbill-book__meta flex flex-col gap-1 items-center justify-center text-xs font-serif text-[#6b664d] py-2.5 border-t border-b border-dashed border-[#c5c1a8] my-4">
+                <span v-if="playbill.byline" class="font-bold font-sans tracking-wide uppercase text-[10px] text-[#1c1c15]">{{ playbill.byline }}</span>
+                <span v-if="playbill.director" class="italic">{{ playbill.director }}</span>
+              </div>
+            </header>
+
+            <!-- Centered Hero Specimen Box -->
+            <div v-if="playbill.hero_image" class="playbill-book__hero-container relative border border-[#c5c1a8] bg-[#ebe8dd] my-4 flex items-center justify-center overflow-hidden">
+              <img
+                v-bind="getImageProps(playbill.hero_image, { sm: 600, md: 800 }, { quality: 85 })"
+                :alt="playbill.title"
+                class="playbill-book__hero-image w-full max-h-[280px] object-contain opacity-95 contrast-110"
+              />
+              <div class="playbill-book__hero-shading absolute inset-0 pointer-events-none" />
+            </div>
+
+            <!-- Page Number Footer -->
+            <footer class="playbill-book__footer flex items-center justify-between text-[10px] uppercase font-bold tracking-widest text-[#8c8872] pt-4 mt-auto border-t border-[#ebe8dd]">
+              <span>Flux Theatre Ensemble</span>
+              <span>Page I</span>
+            </footer>
           </div>
         </div>
 
-        <!-- CREDITS TAB -->
-        <div v-else-if="activeTab === 'credits'" class="playbill-view__pane playbill-view__pane--credits space-y-12">
+        <!-- 📖 RIGHT PAGE: DYNAMIC PAGES WITH 3D FLIP (Desktop & Mobile) -->
+        <div 
+          class="playbill-book__page playbill-book__page--right flex flex-col paper-texture p-6 md:p-8 flex-1 relative"
+          :class="{ 'playbill-book__page--flipping': isFlipping }"
+        >
           
-          <!-- CAST SECTION -->
-          <div v-if="cast.length" class="playbill-view__cast-section">
-            <div class="playbill-view__section-header flex items-center justify-between border-b border-stage-800/80 pb-3 mb-6">
-              <h2 class="playbill-view__section-title text-2xl font-serif font-black text-stage-50 tracking-wide flex items-center gap-2">
-                Cast
-              </h2>
-              <span class="playbill-view__section-badge text-xs uppercase tracking-widest font-semibold text-stage-500 bg-stage-900 px-3 py-1 rounded-full border border-stage-800/40">
-                In Order of Appearance
-              </span>
-            </div>
-            
-            <div class="playbill-view__cast-list space-y-3">
-              <button
-                v-for="credit in cast"
-                :key="credit.id"
-                @click="openBioModal(credit, true)"
-                class="playbill-view__cast-item-btn w-full text-left p-3 rounded-xl bg-stage-900/30 border border-stage-800/40 hover:bg-stage-800/40 hover:border-brand-500/30 transition-all duration-300 flex items-center gap-4 group"
-              >
-                <!-- Headshot Circle -->
-                <div class="playbill-view__cast-avatar-wrapper w-12 h-12 rounded-full overflow-hidden border border-stage-800 group-hover:border-brand-500/50 transition-colors bg-stage-950 flex-shrink-0">
-                  <img
-                    v-if="credit.person?.headshot"
-                    v-bind="getImageProps(credit.person.headshot, { sm: 100 }, { quality: 70 })"
-                    :alt="credit.person.first_name"
-                    class="playbill-view__cast-avatar w-full h-full object-cover"
-                  />
-                  <div v-else class="playbill-view__cast-avatar-placeholder w-full h-full flex items-center justify-center bg-stage-900 text-stage-600 font-serif font-bold text-lg">
-                    {{ credit.person?.first_name?.[0] || 'A' }}
-                  </div>
-                </div>
+          <!-- Physical Paper Tab Headers -->
+          <nav class="playbill-book__tabs-nav sticky top-[48px] flex items-center gap-1.5 -mx-6 md:-mx-8 -mt-6 md:-mt-8 px-6 md:px-8 pt-6 md:pt-8 pb-3 mb-6 bg-[#fcf9ee] z-30 border-b border-[#ebe8dd]/60">
+            <button
+              @click="activeTab = 'about'"
+              class="playbill-book__tab-card flex-1 pt-3.5 pb-2 rounded-b-xl text-center text-[10px] uppercase font-black tracking-widest transition-all duration-300 border-t-0"
+              :class="[
+                activeTab === 'about'
+                  ? 'playbill-book__tab-card--active shadow-md text-[#1c1c15] font-black'
+                  : 'playbill-book__tab-card--inactive text-[#6b664d] hover:text-[#1c1c15]'
+              ]"
+            >
+              Program
+            </button>
+            <button
+              @click="activeTab = 'credits'"
+              class="playbill-book__tab-card flex-1 pt-3.5 pb-2 rounded-b-xl text-center text-[10px] uppercase font-black tracking-widest transition-all duration-300 border-t-0"
+              :class="[
+                activeTab === 'credits'
+                  ? 'playbill-book__tab-card--active shadow-md text-[#1c1c15] font-black'
+                  : 'playbill-book__tab-card--inactive text-[#6b664d] hover:text-[#1c1c15]'
+              ]"
+            >
+              Credits
+            </button>
+            <button
+              @click="activeTab = 'support'"
+              class="playbill-book__tab-card flex-1 pt-3.5 pb-2 rounded-b-xl text-center text-[10px] uppercase font-black tracking-widest transition-all duration-300 border-t-0"
+              :class="[
+                activeTab === 'support'
+                  ? 'playbill-book__tab-card--active shadow-md text-[#1c1c15] font-black'
+                  : 'playbill-book__tab-card--inactive text-[#6b664d] hover:text-[#1c1c15]'
+              ]"
+            >
+              Sponsors
+            </button>
+          </nav>
 
-                <div class="playbill-view__cast-info flex-1 min-w-0">
-                  <p class="playbill-view__cast-name font-serif font-bold text-stage-100 group-hover:text-brand-400 transition-colors leading-tight">
-                    {{ credit.person?.first_name || '' }} {{ credit.person?.last_name || '' }}
-                  </p>
-                  <p v-if="credit.person?.pronouns" class="playbill-view__cast-pronouns text-[10px] text-stage-500 mt-0.5">({{ credit.person.pronouns }})</p>
-                </div>
-
-                <div class="playbill-view__cast-role-wrapper text-right min-w-[40%]">
-                  <p class="playbill-view__cast-role text-sm font-semibold text-stage-200 font-serif italic">{{ credit.role_name }}</p>
-                  <p v-if="credit.is_understudy" class="playbill-view__cast-understudy text-[9px] font-bold text-brand-500 uppercase tracking-widest mt-0.5">Understudy</p>
-                </div>
-
-                <!-- Open Bio indicator -->
-                <div class="playbill-view__cast-arrow-wrapper text-stage-600 group-hover:text-brand-400 transition-colors pl-2">
-                  <svg class="playbill-view__cast-arrow-icon w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
-                  </svg>
-                </div>
-              </button>
-            </div>
-          </div>
-
-          <!-- CREATIVE TEAM / DEPARTMENTS SECTION -->
-          <div v-if="crewByDepartment.length" class="playbill-view__crew-section space-y-10">
-            <div v-for="dept in crewByDepartment" :key="dept.key" class="playbill-view__crew-department space-y-4">
-              <h3 class="playbill-view__crew-department-title text-lg font-serif font-bold text-brand-400 tracking-wide border-b border-stage-900 pb-2">
-                {{ dept.name }}
-              </h3>
+          <div class="playbill-book__inner flex flex-col h-full justify-between">
+            <div class="playbill-book__page-content flex-1">
               
-              <div class="playbill-view__crew-grid grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <button
-                  v-for="credit in dept.credits"
-                  :key="credit.id"
-                  @click="openBioModal(credit, false)"
-                  class="playbill-view__crew-item-btn w-full text-left p-3 rounded-xl bg-stage-900/20 border border-stage-800/40 hover:bg-stage-800/40 hover:border-brand-500/30 transition-all duration-300 flex items-center justify-between group"
-                >
-                  <div class="playbill-view__crew-info min-w-0 pr-4">
-                    <p class="playbill-view__crew-role text-xs font-black text-stage-500 uppercase tracking-widest">{{ credit.title }}</p>
-                    <p class="playbill-view__crew-name font-serif font-bold text-stage-100 group-hover:text-brand-400 transition-colors mt-0.5 truncate">
-                      {{ credit.person?.first_name || '' }} {{ credit.person?.last_name || '' }}
-                    </p>
-                  </div>
-                  <div class="playbill-view__crew-arrow-wrapper text-stage-600 group-hover:text-brand-400 transition-colors flex-shrink-0">
-                    <svg class="playbill-view__crew-arrow-icon w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                      <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+              <!-- 📱 MOBILE ONLY FRONT MATTER HEADER -->
+              <header class="playbill-book__mobile-header block md:hidden text-center pb-6 border-b border-[#ebe8dd] mb-6" v-if="displayedTab === 'about'">
+                <h1 class="playbill-book__title text-3xl font-serif font-black tracking-tight leading-tight text-[#1c1c15] mb-2">
+                  {{ playbill.title }}
+                </h1>
+                <p v-if="playbill.subtitle" class="playbill-book__subtitle text-sm font-serif italic text-[#4a4632] leading-relaxed mb-3">
+                  {{ playbill.subtitle }}
+                </p>
+                <div v-if="playbill.hero_image" class="playbill-book__hero-container relative border border-[#c5c1a8] bg-[#ebe8dd] mb-4 flex items-center justify-center overflow-hidden">
+                  <img
+                    v-bind="getImageProps(playbill.hero_image, { sm: 600 }, { quality: 80 })"
+                    :alt="playbill.title"
+                    class="playbill-book__hero-image w-full max-h-[220px] object-contain opacity-95 contrast-110"
+                  />
+                  <div class="playbill-book__hero-shading absolute inset-0 pointer-events-none" />
+                </div>
+                <div class="text-[10px] font-sans font-bold tracking-widest text-[#1c1c15] uppercase">
+                  {{ playbill.byline }} • {{ playbill.director }}
+                </div>
+              </header>
+
+              <!-- ABOUT / CONTENT PAGE -->
+              <div v-if="displayedTab === 'about'" id="about" class="playbill-book__pane space-y-6">
+                <!-- Associated Production/Event Glass Card -->
+                <div v-if="playbill.production || playbill.event" class="playbill-book__promo p-5 rounded-xl border border-[#c5c1a8]/60 bg-[#ffffff]/60 flex items-start gap-4 shadow-sm">
+                  <div class="playbill-book__promo-icon w-9 h-9 rounded-lg bg-[#1c1c15]/5 border border-[#1c1c15]/20 flex items-center justify-center text-[#1c1c15] flex-shrink-0">
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 6v.75m0 3v.75m0 3v.75m0 3V18m-9-5.25h5.25M7.5 15h3M3.375 5.25c-.621 0-1.125.504-1.125 1.125v3.026a2.999 2.999 0 010 5.198v3.026c0 .621.504 1.125 1.125 1.125h17.25c.621 0 1.125-.504 1.125-1.125v-3.026a2.999 2.999 0 010-5.198V6.375c0-.621-.504-1.125-1.125-1.125H3.375z" />
                     </svg>
                   </div>
-                </button>
+                  <div class="playbill-book__promo-body">
+                    <h4 class="text-[9px] uppercase tracking-[0.2em] font-black text-[#6b664d]">Flux Presentation</h4>
+                    <p class="text-xs font-semibold text-[#1c1c15] mt-1 leading-normal">
+                      This digital playbill is for the presentation of 
+                      <span class="font-serif italic font-bold text-[#1c1c15]">{{ playbill.production ? (playbill.production as any).title : (playbill.event as any).title }}</span>.
+                    </p>
+                  </div>
+                </div>
+
+                <!-- Structured Content Block Renderer -->
+                <div v-if="playbill.content" class="playbill-book__rich-content prose prose-stone prose-sm max-w-none text-[#1c1c15]">
+                  <BlockRenderer :content="playbill.content" />
+                </div>
+                <div v-else class="text-center py-12 border border-dashed border-[#c5c1a8] rounded-xl bg-[#ffffff]/30">
+                  <p class="text-xs text-[#8c8872] italic font-serif">Welcome to our Digital Playbill. Tap on the Credits or Sponsors tabs above to explore.</p>
+                </div>
+              </div>
+
+              <!-- CREDITS PAGE -->
+              <div v-else-if="displayedTab === 'credits'" id="credits" class="playbill-book__pane space-y-8">
+                
+                <!-- CAST SECTION -->
+                <div v-if="cast.length" class="playbill-book__section">
+                  <div class="playbill-book__section-header flex items-center justify-between border-b-2 border-[#1c1c15] pb-2 mb-4">
+                    <h2 class="text-xl font-serif font-black text-[#1c1c15] tracking-wide">
+                      Cast
+                    </h2>
+                    <span class="text-[9px] uppercase tracking-widest font-black text-[#6b664d]">
+                      Company
+                    </span>
+                  </div>
+                  
+                  <div class="playbill-book__credits-list space-y-2">
+                    <button
+                      v-for="credit in cast"
+                      :key="credit.id"
+                      @click="openBioModal(credit, true)"
+                      class="playbill-book__credit-card relative w-full text-left p-3.5 rounded-xl border border-[#c5c1a8] hover:border-[#1c1c15] hover:bg-[#ffffff] hover:shadow-md transition-all duration-300 flex items-center gap-4 group"
+                    >
+                      <!-- Preload large headshot in background when card scrolls near viewport -->
+                      <img
+                        v-if="credit.person?.headshot"
+                        v-bind="getImageProps(credit.person.headshot, { sm: 400, md: 800 }, { quality: 85 })"
+                        class="absolute w-px h-px opacity-0 pointer-events-none"
+                        loading="lazy"
+                        alt=""
+                      />
+                      <!-- Headshot Circle -->
+                      <div class="w-10 h-10 rounded-full overflow-hidden border border-[#c5c1a8] group-hover:border-[#1c1c15] transition-colors bg-[#ebe8dd] flex-shrink-0 shadow-inner">
+                        <img
+                          v-if="credit.person?.headshot"
+                          v-bind="getImageProps(credit.person.headshot, { sm: 100 }, { quality: 70 })"
+                          :alt="credit.person.first_name"
+                          class="w-full h-full object-cover brightness-95 transition-all duration-300"
+                          loading="lazy"
+                        />
+                        <div v-else class="w-full h-full flex items-center justify-center bg-[#c5c1a8]/40 text-[#6b664d] font-serif font-bold text-sm">
+                          {{ credit.person?.first_name?.[0] || 'A' }}
+                        </div>
+                      </div>
+
+                      <div class="flex-1 min-w-0">
+                        <p class="font-serif font-bold text-sm text-[#1c1c15] group-hover:text-[#682805] transition-colors leading-tight">
+                          {{ credit.person?.first_name || '' }} {{ credit.person?.last_name || '' }}
+                        </p>
+                        <p v-if="credit.person?.pronouns" class="text-[9px] text-[#6b664d] font-medium mt-0.5">({{ credit.person.pronouns }})</p>
+                      </div>
+
+                      <div class="text-right min-w-[35%]">
+                        <p class="text-xs font-bold font-serif italic text-[#1c1c15]">{{ credit.role_name }}</p>
+                        <p v-if="credit.is_understudy" class="text-[8px] font-black text-[#682805] uppercase tracking-widest mt-0.5">Understudy</p>
+                      </div>
+                    </button>
+                  </div>
+                </div>
+
+                <!-- CREATIVE TEAM / DEPARTMENTS SECTION -->
+                <div v-if="crewByDepartment.length" class="playbill-book__section space-y-8 pt-4">
+                  <div v-for="dept in crewByDepartment" :key="dept.key" class="space-y-3">
+                    <h3 class="text-sm font-bold text-[#682805] uppercase tracking-widest border-b border-[#c5c1a8] pb-1.5">
+                      {{ dept.name }}
+                    </h3>
+                    
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                      <button
+                        v-for="credit in dept.credits"
+                        :key="credit.id"
+                        @click="openBioModal(credit, false)"
+                        class="playbill-book__credit-card relative w-full text-left p-3 rounded-lg border border-[#c5c1a8] hover:border-[#1c1c15] hover:bg-[#ffffff] hover:shadow-md transition-all duration-300 flex items-center justify-between group"
+                      >
+                        <!-- Preload large headshot in background when card scrolls near viewport -->
+                        <img
+                          v-if="credit.person?.headshot"
+                          v-bind="getImageProps(credit.person.headshot, { sm: 400, md: 800 }, { quality: 85 })"
+                          class="absolute w-px h-px opacity-0 pointer-events-none"
+                          loading="lazy"
+                          alt=""
+                        />
+                        <div class="min-w-0 pr-4">
+                          <p class="text-[8px] font-black text-[#8c8872] uppercase tracking-widest leading-none">{{ credit.title }}</p>
+                          <p class="font-serif font-bold text-sm text-[#1c1c15] group-hover:text-[#682805] transition-colors mt-1.5 truncate">
+                            {{ credit.person?.first_name || '' }} {{ credit.person?.last_name || '' }}
+                          </p>
+                        </div>
+                        <svg class="w-3.5 h-3.5 text-[#8c8872] group-hover:text-[#1c1c15] transition-colors flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                          <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+
+              <!-- SUPPORT PAGE -->
+              <div v-else-if="displayedTab === 'support'" id="support" class="playbill-book__pane space-y-6 text-center">
+                
+                <div class="py-4 border-b border-[#ebe8dd] max-w-md mx-auto">
+                  <h2 class="text-xl font-serif font-black text-[#1c1c15]">Ensemble Funders</h2>
+                  <p class="text-xs text-[#6b664d] mt-1.5 font-serif italic">
+                    Made possible through the generous support of our sponsors.
+                  </p>
+                </div>
+
+                <!-- Funders grid -->
+                <div v-if="funders.length" class="grid grid-cols-2 gap-4 max-w-md mx-auto pt-2">
+                  <a
+                    v-for="funder in funders"
+                    :key="funder.slug"
+                    :href="funder.url || '#'"
+                    target="_blank"
+                    class="group flex flex-col items-center justify-center p-4 rounded-xl border border-[#c5c1a8] hover:border-[#1c1c15] hover:bg-[#ffffff] hover:shadow-md transition-all duration-300"
+                  >
+                    <div class="w-full aspect-square max-h-[80px] bg-[#ffffff] rounded-lg shadow-inner p-3 flex items-center justify-center overflow-hidden border border-[#ebe8dd]">
+                      <img
+                        v-if="funder.image"
+                        v-bind="getImageProps(funder.image, { sm: 200 }, { quality: 80 })"
+                        :alt="funder.name"
+                        class="w-full h-full object-contain opacity-90 group-hover:opacity-100 transition-all duration-500"
+                        loading="lazy"
+                      />
+                      <span v-else class="text-[#1c1c15] font-serif font-bold text-center text-xs leading-tight">{{ funder.name }}</span>
+                    </div>
+                    
+                    <span class="text-[10px] font-bold text-[#6b664d] mt-2.5 group-hover:text-[#682805] transition-colors uppercase tracking-wider truncate max-w-full">
+                      {{ funder.name }}
+                    </span>
+                  </a>
+                </div>
+
+                <div v-else class="py-12 text-[#8c8872] italic font-serif text-sm">
+                  Thank you to all who make our works possible.
+                </div>
+
+                <!-- Support & CTA card -->
+                <div class="playbill-book__cta max-w-md mx-auto p-5 rounded-xl border border-[#c5c1a8] bg-[#ffffff]/60 text-left shadow-sm mt-8">
+                  <h3 class="text-md font-serif font-black text-[#1c1c15]">Support the Ensemble</h3>
+                  <p class="text-[11px] text-[#6b664d] mt-1.5 leading-relaxed">
+                    Flux Theatre Ensemble operates as a collaborative, non-profit community. Your support directly funds local theater makers, playwrights, and accessibility tools.
+                  </p>
+                  <div class="mt-4 flex items-center gap-3">
+                    <a 
+                      href="https://fluxtheatre.org/donate" 
+                      target="_blank"
+                      class="px-4 py-2 rounded-lg bg-[#461600] text-[#ffffff] hover:bg-[#682805] text-[10px] font-black uppercase tracking-wider shadow hover:scale-[1.03] transition-all duration-300"
+                    >
+                      Donate Now
+                    </a>
+                    <NuxtLink to="/" class="text-[10px] font-black text-[#6b664d] hover:text-[#1c1c15] transition-colors uppercase tracking-widest">
+                      Learn More &rarr;
+                    </NuxtLink>
+                  </div>
+                </div>
+
               </div>
             </div>
-          </div>
 
+            <!-- Page Number Footer -->
+            <footer class="playbill-book__footer flex items-center justify-between text-[10px] uppercase font-bold tracking-widest text-[#8c8872] pt-4 mt-8 border-t border-[#ebe8dd]">
+              <span>Official Program</span>
+              <span>Page {{ displayedTab === 'about' ? 'II' : (displayedTab === 'credits' ? 'III' : 'IV') }}</span>
+            </footer>
+          </div>
         </div>
 
-        <!-- SUPPORT / SPONSORS TAB -->
-        <div v-else-if="activeTab === 'support'" class="playbill-view__pane playbill-view__pane--support space-y-8 text-center">
-          
-          <div class="playbill-view__support-header py-6 border-b border-stage-800/60 max-w-lg mx-auto">
-            <h2 class="playbill-view__support-title text-2xl font-serif font-black text-stage-100">Ensemble Funders</h2>
-            <p class="playbill-view__support-subtitle text-sm text-stage-400 mt-2 font-serif italic">
-              Our productions, workshops, and playbills are made possible through the generous support of our sponsors.
-            </p>
-          </div>
-
-          <!-- Funders grid -->
-          <div v-if="funders.length" class="playbill-view__funders-grid grid grid-cols-2 gap-6 max-w-lg mx-auto pt-4">
-            <a
-              v-for="funder in funders"
-              :key="funder.slug"
-              :href="funder.url || '#'"
-              target="_blank"
-              class="playbill-view__funder-card group flex flex-col items-center justify-center p-6 rounded-2xl bg-stage-900/30 border border-stage-800/50 hover:border-brand-500/40 hover:bg-stage-900/60 transition-all duration-300 shadow-lg"
-            >
-              <div class="playbill-view__funder-logo-wrapper w-full aspect-square max-h-[100px] bg-white rounded-xl shadow p-4 flex items-center justify-center overflow-hidden border border-stage-800/10 group-hover:border-brand-500/20 transition-colors">
-                <img
-                  v-if="funder.image"
-                  v-bind="getImageProps(funder.image, { sm: 200 }, { quality: 80 })"
-                  :alt="funder.name"
-                  class="playbill-view__funder-logo w-full h-full object-contain grayscale group-hover:grayscale-0 transition-all duration-500"
-                />
-                <span v-else class="playbill-view__funder-fallback-name text-stage-900 font-serif font-bold text-center text-sm leading-tight">{{ funder.name }}</span>
-              </div>
-              
-              <span class="playbill-view__funder-name text-xs font-semibold text-stage-400 mt-3 group-hover:text-brand-400 transition-colors">
-                {{ funder.name }}
-              </span>
-            </a>
-          </div>
-
-          <div v-else class="playbill-view__funders-empty py-12 text-stage-500 italic font-serif">
-            Thank you to all who make our works possible.
-          </div>
-
-          <!-- Support & CTA card -->
-          <div class="playbill-view__cta-card max-w-md mx-auto p-6 rounded-2xl bg-gradient-to-br from-stage-900 to-stage-950 border border-stage-800 shadow-xl mt-12 text-left">
-            <h3 class="playbill-view__cta-title text-lg font-serif font-black text-stage-50">Support the Ensemble</h3>
-            <p class="playbill-view__cta-text text-xs text-stage-400 mt-2 leading-relaxed">
-              Flux Theatre Ensemble operates as a collaborative, non-profit community. Your support directly funds local theater makers, playwrights, accessibility tools, and digital programs like this playbill.
-            </p>
-            <div class="playbill-view__cta-buttons mt-5 flex items-center gap-3">
-              <a 
-                href="https://fluxtheatre.org/donate" 
-                target="_blank"
-                class="playbill-view__cta-btn playbill-view__cta-btn--primary px-5 py-2.5 rounded-lg bg-brand-500 text-stage-950 text-xs font-bold uppercase tracking-wider shadow-lg hover:scale-105 hover:bg-brand-400 transition-all duration-300"
-              >
-                Donate Now
-              </a>
-              <NuxtLink to="/" class="playbill-view__cta-link text-xs font-semibold text-stage-400 hover:text-brand-400 transition-colors">
-                Learn More &rarr;
-              </NuxtLink>
-            </div>
-          </div>
-
-        </div>
-      </Transition>
-    </main>
+      </div>
+    </div>
 
     <!-- Bio Modal (Uses BaseModal) -->
-    <BaseModal :is-open="isModalOpen" max-width="max-w-xl" class="playbill-view__modal" @close="closeBioModal">
-      <div v-if="selectedPerson" class="playbill-view__modal-body p-6 md:p-8 flex flex-col sm:flex-row gap-6 sm:items-start text-left">
-        <!-- Headshot -->
+    <BaseModal :is-open="isModalOpen" max-width="max-w-xl" @close="closeBioModal">
+      <div v-if="selectedPerson" class="playbill-modal p-0 overflow-hidden text-left flex flex-col">
+        <!-- Full Bleed Headshot at the top of the modal -->
         <div 
           v-if="selectedPerson.headshot"
-          class="playbill-view__modal-avatar-wrapper w-28 h-28 sm:w-36 sm:h-44 rounded-xl overflow-hidden border border-stage-800/80 shadow-lg bg-stage-950 flex-shrink-0 mx-auto sm:mx-0"
+          class="w-full aspect-[4/5] max-h-[420px] overflow-hidden border-b border-[#c5c1a8] bg-[#ebe8dd]"
         >
           <img
-            v-bind="getImageProps(selectedPerson.headshot, { sm: 200 }, { quality: 85 })"
+            v-bind="getImageProps(selectedPerson.headshot, { sm: 400, md: 800 }, { quality: 85 })"
             :alt="selectedPerson.name"
-            class="playbill-view__modal-avatar w-full h-full object-cover animate-scale-in"
+            class="w-full h-full object-cover brightness-95 animate-scale-in"
           />
         </div>
         
-        <!-- Text details -->
-        <div class="playbill-view__modal-info flex-1 min-w-0">
-          <div class="playbill-view__modal-header flex flex-col sm:flex-row sm:items-baseline sm:justify-between gap-1">
-            <h3 class="playbill-view__modal-name text-2xl font-serif font-bold text-stage-50 tracking-wide">{{ selectedPerson.name }}</h3>
-            <span v-if="selectedPerson.pronouns" class="playbill-view__modal-pronouns text-[10px] uppercase font-black tracking-widest text-stage-500">
+        <!-- Padded text details and bio underneath -->
+        <div class="p-6 md:p-8 flex flex-col">
+          <div class="flex flex-col sm:flex-row sm:items-baseline sm:justify-between gap-1 border-b border-[#ebe8dd] pb-2">
+            <h3 class="text-2xl font-serif font-bold text-[#1c1c15] tracking-wide">{{ selectedPerson.name }}</h3>
+            <span v-if="selectedPerson.pronouns" class="text-[9px] uppercase font-black tracking-widest text-[#8c8872]">
               {{ selectedPerson.pronouns }}
             </span>
           </div>
           
-          <p class="playbill-view__modal-role text-xs font-black tracking-wider text-brand-400 uppercase mt-1">
+          <p class="text-[10px] font-black tracking-widest text-[#682805] uppercase mt-2">
             {{ selectedPerson.role }}
           </p>
           
           <!-- Bio contents -->
-          <div class="playbill-view__modal-bio mt-4 pt-4 border-t border-stage-800/40 prose prose-invert prose-sm text-stage-300 max-w-none leading-relaxed">
-            <BlockRenderer v-if="selectedPerson.bio" :content="selectedPerson.bio" class="playbill-view__modal-bio-renderer" />
-            <p v-else class="playbill-view__modal-bio-empty italic text-stage-500">No biography override or details added yet.</p>
+          <div class="mt-4 pt-2 prose prose-stone prose-sm text-[#4a4632] max-w-none leading-relaxed">
+            <BlockRenderer v-if="selectedPerson.bio" :content="selectedPerson.bio" />
+            <p v-else class="italic text-[#8c8872] text-xs">No biography details added yet.</p>
           </div>
         </div>
       </div>
@@ -545,8 +634,139 @@ function closeBioModal() {
 </template>
 
 <style scoped>
+/* Immersive Mahogany Tabletop Surface */
 .playbill-view {
-  background-color: #0c0a09; /* stone-950 / stage-950 base */
+  background-color: #0d0b09;
+  background-image: 
+    radial-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+    linear-gradient(to bottom, #110e0c, #0a0807);
+  background-size: 24px 24px, 100% 100%;
+}
+
+/* physical Booklet Design */
+.playbill-book {
+  background-color: #e5e2d8;
+  perspective: 2000px;
+  transform-style: preserve-3d;
+}
+
+/* Realistic Central Fold/Spine cylinder crease */
+.playbill-book__spine {
+  width: 28px;
+  height: 100%;
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  background: linear-gradient(
+    to right, 
+    rgba(0, 0, 0, 0.18) 0%, 
+    rgba(0, 0, 0, 0.06) 25%, 
+    rgba(255, 255, 255, 0.12) 50%, 
+    rgba(0, 0, 0, 0.06) 75%, 
+    rgba(0, 0, 0, 0.18) 100%
+  );
+  z-index: 10;
+  pointer-events: none;
+}
+
+/* Booklet Double Border Retro Frame */
+.playbill-book__inner {
+  border: 1px double #c5c1a8;
+  padding: 1.5rem;
+  height: 100%;
+  position: relative;
+}
+
+/* Warm, textured cream booklet paper base */
+.paper-texture {
+  background-color: #fcf9ee;
+  color: #1c1c15;
+  box-shadow: 
+    0 15px 35px rgba(0, 0, 0, 0.25), 
+    inset 0 0 35px rgba(220, 215, 195, 0.15);
+  position: relative;
+}
+
+/* Double page custom curvatures */
+.playbill-book__page--left {
+  border-radius: 6px 0 0 6px;
+  box-shadow: 
+    -10px 15px 35px rgba(0, 0, 0, 0.3), 
+    inset -15px 0 20px rgba(0, 0, 0, 0.05);
+}
+
+.playbill-book__page--right {
+  border-radius: 0 6px 6px 0;
+  transform-origin: left center;
+  transition: transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  backface-visibility: hidden;
+  box-shadow: 
+    10px 15px 35px rgba(0, 0, 0, 0.3), 
+    inset 15px 0 20px rgba(0, 0, 0, 0.05);
+}
+
+/* 🔄 3D Booklet Page Flip Turn Animation */
+@keyframes turn-page {
+  0% {
+    transform: rotateY(0deg);
+    box-shadow: 10px 15px 35px rgba(0, 0, 0, 0.3);
+  }
+  50% {
+    transform: rotateY(-90deg) scale(0.97);
+    box-shadow: 25px 25px 60px rgba(0, 0, 0, 0.45);
+  }
+  100% {
+    transform: rotateY(0deg);
+    box-shadow: 10px 15px 35px rgba(0, 0, 0, 0.3);
+  }
+}
+
+.playbill-book__page--flipping {
+  animation: turn-page 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+}
+
+/* Physical index folder paper tabs */
+.playbill-book__tab-card {
+  border: 1px solid #dcd7c3;
+  font-family: sans-serif;
+  cursor: pointer;
+}
+
+.playbill-book__tab-card--active {
+  background-color: #fcf9ee;
+  border-bottom-color: transparent;
+  color: #1c1c15;
+  height: calc(100% + 2px);
+  position: relative;
+  z-index: 20;
+}
+
+.playbill-book__tab-card--inactive {
+  background-color: #e5e2d8;
+  color: #6b664d;
+  opacity: 0.85;
+}
+
+/* Booklet Credit and Departmnet speciman items */
+.playbill-book__credit-card {
+  background-color: #ffffff/40;
+  border-color: #dcd7c3;
+}
+
+/* Physical paper modal box card */
+.playbill-modal {
+  background-color: #fcf9ee;
+  color: #1c1c15;
+  border: 1px double #c5c1a8;
+  border-radius: 8px;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+}
+
+/* Retro photos styles */
+
+/* Ambient inner picture shadows */
+.playbill-book__hero-shading {
+  box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.15);
 }
 
 /* Animations for modal popup scale */
@@ -565,3 +785,4 @@ function closeBioModal() {
   }
 }
 </style>
+

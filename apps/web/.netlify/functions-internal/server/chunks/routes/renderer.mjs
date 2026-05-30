@@ -84,8 +84,6 @@ function createHead(options = {}) {
   return head;
 }
 
-const NUXT_RUNTIME_PAYLOAD_EXTRACTION = false;
-
 const appHead = {"meta":[{"charset":"utf-8"},{"name":"viewport","content":"width=device-width, initial-scale=1"},{"name":"description","content":"Flux Theatre Ensemble — Collective care, long-term artistic collaboration, and shared power."}],"link":[{"rel":"icon","type":"image/svg+xml","href":"/favicon.svg"}],"style":[],"script":[],"noscript":[],"htmlAttrs":{"lang":"en"},"title":"Flux Theatre Ensemble"};
 
 const appRootTag = "div";
@@ -328,7 +326,7 @@ const renderer = defineRenderHandler(async (event) => {
 	// Get route options (for `ssr: false`, `isr`, `cache` and `noScripts`)
 	const routeOptions = getRouteRules(event);
 	// Whether we are prerendering route or using ISR/SWR caching
-	const _PAYLOAD_EXTRACTION = !ssrContext.noSSR && (NUXT_RUNTIME_PAYLOAD_EXTRACTION);
+	const _PAYLOAD_EXTRACTION = !ssrContext.noSSR && ((routeOptions.isr || routeOptions.cache));
 	const isRenderingPayload = (_PAYLOAD_EXTRACTION || false) && PAYLOAD_URL_RE.test(ssrContext.url);
 	if (isRenderingPayload) {
 		const url = ssrContext.url.substring(0, ssrContext.url.lastIndexOf("/")) || "/";
