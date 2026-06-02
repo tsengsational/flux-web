@@ -156,16 +156,16 @@ const crewByDepartment = computed(() => {
     departments[dept].push(credit);
   });
   
-  // Custom display ordering for departments
+  // Custom display ordering for departments: direction first, then designers, then production team
   const deptOrder = [
     'direction',
-    'production',
-    'stage_management',
     'scenic',
     'lighting',
     'sound',
     'costumes',
     'props',
+    'production',
+    'stage_management',
     'dramaturgy',
     'marketing',
     'other'
