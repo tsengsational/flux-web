@@ -77,7 +77,7 @@ const hasAnyCredits = computed(() => {
                 v-if="personRecord.headshot"
                 v-bind="getImageProps(personRecord.headshot, { sm: 400, md: 800 }, { quality: 85 })"
                 :alt="fullName"
-                class="person-page__image w-full h-full object-cover"
+                class="person-page__image w-full h-full object-contain"
               />
               <div v-else class="person-page__image-placeholder w-full h-full flex items-center justify-center text-stage-600">
                 <svg class="w-16 h-16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1">

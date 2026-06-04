@@ -444,13 +444,13 @@ function closeBioModal() {
                         loading="lazy"
                         alt=""
                       />
-                      <!-- Headshot Circle -->
-                      <div class="w-10 h-10 rounded-full overflow-hidden border border-[#c5c1a8] group-hover:border-[#1c1c15] transition-colors bg-[#ebe8dd] flex-shrink-0 shadow-inner">
+                      <!-- Headshot Container -->
+                      <div class="w-10 h-10 rounded-lg overflow-hidden border border-[#c5c1a8] group-hover:border-[#1c1c15] transition-colors bg-[#ebe8dd] flex-shrink-0 shadow-inner">
                         <img
                           v-if="credit.person?.headshot"
                           v-bind="getImageProps(credit.person.headshot, { sm: 100 }, { quality: 70 })"
                           :alt="credit.person.first_name"
-                          class="w-full h-full object-cover brightness-95 transition-all duration-300"
+                          class="w-full h-full object-contain brightness-95 transition-all duration-300"
                           loading="lazy"
                         />
                         <div v-else class="w-full h-full flex items-center justify-center bg-[#c5c1a8]/40 text-[#6b664d] font-serif font-bold text-sm">
@@ -596,7 +596,7 @@ function closeBioModal() {
           <img
             v-bind="getImageProps(selectedPerson.headshot, { sm: 400, md: 800 }, { quality: 85 })"
             :alt="selectedPerson.name"
-            class="w-full h-full object-cover brightness-95 animate-scale-in"
+            class="w-full h-full object-contain brightness-95 animate-scale-in"
           />
         </div>
         

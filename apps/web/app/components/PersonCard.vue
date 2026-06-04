@@ -29,7 +29,7 @@ const isModalOpen = ref(false);
           v-if="person.headshot"
           v-bind="getImageProps(person.headshot, { sm: 200, md: 400 })"
           :alt="`${fullName} headshot`"
-          class="person-card__image w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+          class="person-card__image w-full h-full object-contain transition-transform duration-500 group-hover:scale-105"
           loading="lazy"
         />
         <div v-else class="person-card__placeholder w-full h-full flex items-center justify-center bg-gradient-to-br from-stage-800 to-stage-900">
@@ -56,7 +56,7 @@ const isModalOpen = ref(false);
             v-if="person.headshot"
             v-bind="getImageProps(person.headshot, { sm: 400, md: 800 }, { quality: 90 })"
             :alt="fullName"
-            class="person-modal__image w-full h-full object-cover"
+            class="person-modal__image w-full h-full object-contain"
           />
           <div v-else class="person-modal__placeholder w-full h-full flex items-center justify-center min-h-[200px]">
             <span class="person-modal__initials text-stage-500 font-serif text-5xl">{{ person.first_name[0] }}{{ person.last_name[0] }}</span>
