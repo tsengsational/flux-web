@@ -36,6 +36,7 @@ const { data: playbills, error } = await useAsyncData(`playbill-${slug}`, async 
                 'title',
                 'content',
                 'department',
+                'sort',
                 {
                   person: ['first_name', 'last_name', 'slug', 'headshot', 'bio', 'pronouns']
                 }
@@ -81,8 +82,8 @@ useSeoMeta({
 
 // ── Tab Management ──
 type Tab = 'about' | 'credits' | 'support';
-const activeTab = ref<Tab>('about');
-const displayedTab = ref<Tab>('about');
+const activeTab = ref<Tab>('credits');
+const displayedTab = ref<Tab>('credits');
 const isFlipping = ref(false);
 
 // Synchronize tab selection with the URL hash so it persists through refreshes & HMR
@@ -131,71 +132,59 @@ const cast = computed(() => {
     }));
 });
 
-const crew = computed(() => {
+const sortedCrew = computed(() => {
   if (!playbill.value?.crew_credits) return [];
-  return playbill.value.crew_credits
-    .map((c: any) => c.crew_credits_id)
-    .filter(Boolean)
-    .map((credit: any) => ({
-      ...credit,
-      person: {
-        ...credit.person,
-        bio: credit.content || credit.person?.bio || null
-      }
-    }));
-});
-
-// Group crew by department for standard playbill style
-const crewByDepartment = computed(() => {
-  const departments: Record<string, any[]> = {};
-  crew.value.forEach((credit: any) => {
-    const dept = credit.department || 'other';
-    if (!departments[dept]) {
-      departments[dept] = [];
-    }
-    departments[dept].push(credit);
-  });
   
-  // Custom display ordering for departments: direction first, then designers, then production team
-  const deptOrder = [
-    'direction',
-    'scenic',
-    'lighting',
-    'sound',
-    'costumes',
-    'props',
-    'production',
-    'stage_management',
-    'dramaturgy',
-    'marketing',
-    'other'
-  ];
+  const mapped = playbill.value.crew_credits
+    .filter((c: any) => c && c.crew_credits_id)
+    .map((c: any) => {
+      const credit = c.crew_credits_id;
+      // Prioritize playbill-specific crew sort (c.sort), fallback to general crew sort (credit.sort)
+      const sortValue = c.sort !== null && c.sort !== undefined 
+        ? c.sort 
+        : (credit.sort !== null && credit.sort !== undefined ? credit.sort : null);
+      
+      return {
+        ...credit,
+        sortValue,
+        person: {
+          ...credit.person,
+          bio: credit.content || credit.person?.bio || null
+        }
+      };
+    });
 
-  return deptOrder
-    .map(key => ({
-      key,
-      name: formatDepartmentName(key),
-      credits: departments[key] || []
-    }))
-    .filter(d => d.credits.length > 0);
+  return mapped.sort((a: any, b: any) => {
+    const sortA = a.sortValue;
+    const sortB = b.sortValue;
+
+    const hasSortA = sortA !== null && sortA !== undefined;
+    const hasSortB = sortB !== null && sortB !== undefined;
+
+    if (hasSortA && hasSortB) {
+      if (sortA !== sortB) {
+        return sortA - sortB;
+      }
+    } else if (hasSortA) {
+      return -1;
+    } else if (hasSortB) {
+      return 1;
+    }
+
+    // Default to Alpha order by last name
+    const lastNameA = (a.person?.last_name || '').trim().toLowerCase();
+    const lastNameB = (b.person?.last_name || '').trim().toLowerCase();
+    
+    if (lastNameA !== lastNameB) {
+      return lastNameA.localeCompare(lastNameB);
+    }
+    
+    // Sort by first name if last name is same
+    const firstNameA = (a.person?.first_name || '').trim().toLowerCase();
+    const firstNameB = (b.person?.first_name || '').trim().toLowerCase();
+    return firstNameA.localeCompare(firstNameB);
+  });
 });
-
-function formatDepartmentName(key: string): string {
-  const names: Record<string, string> = {
-    direction: 'Direction & Playwriting',
-    production: 'Production Team',
-    stage_management: 'Stage Management',
-    scenic: 'Scenic Design',
-    lighting: 'Lighting Design',
-    sound: 'Sound Design',
-    costumes: 'Costume & Wardrobe',
-    props: 'Properties & Stage Dressing',
-    dramaturgy: 'Dramaturgy & Literary',
-    marketing: 'Marketing & Press',
-    other: 'Special Thanks & Staff'
-  };
-  return names[key] || 'Production Team';
-}
 
 const funders = computed(() => {
   if (!playbill.value?.funders) return [];
@@ -246,6 +235,15 @@ function closeBioModal() {
   isModalOpen.value = false;
   selectedPerson.value = null;
 }
+
+// ── Hero Image Lightbox ──
+const isHeroLightboxOpen = ref(false);
+const openHeroLightbox = () => {
+  isHeroLightboxOpen.value = true;
+};
+const closeHeroLightbox = () => {
+  isHeroLightboxOpen.value = false;
+};
 </script>
 
 <template>
@@ -304,12 +302,24 @@ function closeBioModal() {
             </header>
 
             <!-- Centered Hero Specimen Box -->
-            <div v-if="playbill.hero_image" class="playbill-book__hero-container relative border border-[#c5c1a8] bg-[#ebe8dd] my-4 flex items-center justify-center overflow-hidden">
+            <div 
+              v-if="playbill.hero_image" 
+              class="playbill-book__hero-container relative border border-[#c5c1a8] bg-[#ebe8dd] my-4 flex items-center justify-center overflow-hidden cursor-pointer group"
+              @click="openHeroLightbox"
+            >
               <img
                 v-bind="getImageProps(playbill.hero_image, { sm: 600, md: 800 }, { quality: 85 })"
                 :alt="playbill.title"
-                class="playbill-book__hero-image w-full max-h-[280px] object-contain opacity-95 contrast-110"
+                class="playbill-book__hero-image w-full max-h-[280px] object-contain opacity-95 contrast-110 transition-transform duration-750 group-hover:scale-[1.02]"
               />
+              <!-- Hover Expand Overlay -->
+              <div class="absolute inset-0 bg-[#1c1c15]/5 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                <div class="w-10 h-10 rounded-full bg-[#1c1c15]/90 backdrop-blur-md flex items-center justify-center text-[#fcf9ee] scale-75 group-hover:scale-100 transition-transform shadow-md">
+                  <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
+                  </svg>
+                </div>
+              </div>
               <div class="playbill-book__hero-shading absolute inset-0 pointer-events-none" />
             </div>
 
@@ -330,17 +340,6 @@ function closeBioModal() {
           <!-- Physical Paper Tab Headers -->
           <nav class="playbill-book__tabs-nav sticky top-[48px] flex items-center gap-1.5 -mx-6 md:-mx-8 -mt-6 md:-mt-8 px-6 md:px-8 pt-6 md:pt-8 pb-3 mb-6 bg-[#fcf9ee] z-30 border-b border-[#ebe8dd]/60">
             <button
-              @click="activeTab = 'about'"
-              class="playbill-book__tab-card flex-1 pt-3.5 pb-2 rounded-b-xl text-center text-[10px] uppercase font-black tracking-widest transition-all duration-300 border-t-0"
-              :class="[
-                activeTab === 'about'
-                  ? 'playbill-book__tab-card--active shadow-md text-[#1c1c15] font-black'
-                  : 'playbill-book__tab-card--inactive text-[#6b664d] hover:text-[#1c1c15]'
-              ]"
-            >
-              Program
-            </button>
-            <button
               @click="activeTab = 'credits'"
               class="playbill-book__tab-card flex-1 pt-3.5 pb-2 rounded-b-xl text-center text-[10px] uppercase font-black tracking-widest transition-all duration-300 border-t-0"
               :class="[
@@ -350,6 +349,17 @@ function closeBioModal() {
               ]"
             >
               Credits
+            </button>
+            <button
+              @click="activeTab = 'about'"
+              class="playbill-book__tab-card flex-1 pt-3.5 pb-2 rounded-b-xl text-center text-[10px] uppercase font-black tracking-widest transition-all duration-300 border-t-0"
+              :class="[
+                activeTab === 'about'
+                  ? 'playbill-book__tab-card--active shadow-md text-[#1c1c15] font-black'
+                  : 'playbill-book__tab-card--inactive text-[#6b664d] hover:text-[#1c1c15]'
+              ]"
+            >
+              Program
             </button>
             <button
               @click="activeTab = 'support'"
@@ -368,19 +378,31 @@ function closeBioModal() {
             <div class="playbill-book__page-content flex-1">
               
               <!-- 📱 MOBILE ONLY FRONT MATTER HEADER -->
-              <header class="playbill-book__mobile-header block md:hidden text-center pb-6 border-b border-[#ebe8dd] mb-6" v-if="displayedTab === 'about'">
+              <header class="playbill-book__mobile-header block md:hidden text-center pb-6 border-b border-[#ebe8dd] mb-6" v-if="displayedTab === 'credits'">
                 <h1 class="playbill-book__title text-3xl font-serif font-black tracking-tight leading-tight text-[#1c1c15] mb-2">
                   {{ playbill.title }}
                 </h1>
                 <p v-if="playbill.subtitle" class="playbill-book__subtitle text-sm font-serif italic text-[#4a4632] leading-relaxed mb-3">
                   {{ playbill.subtitle }}
                 </p>
-                <div v-if="playbill.hero_image" class="playbill-book__hero-container relative border border-[#c5c1a8] bg-[#ebe8dd] mb-4 flex items-center justify-center overflow-hidden">
+                <div 
+                  v-if="playbill.hero_image" 
+                  class="playbill-book__hero-container relative border border-[#c5c1a8] bg-[#ebe8dd] mb-4 flex items-center justify-center overflow-hidden cursor-pointer group"
+                  @click="openHeroLightbox"
+                >
                   <img
                     v-bind="getImageProps(playbill.hero_image, { sm: 600 }, { quality: 80 })"
                     :alt="playbill.title"
-                    class="playbill-book__hero-image w-full max-h-[220px] object-contain opacity-95 contrast-110"
+                    class="playbill-book__hero-image w-full max-h-[220px] object-contain opacity-95 contrast-110 transition-transform duration-750 group-hover:scale-[1.02]"
                   />
+                  <!-- Hover Expand Overlay -->
+                  <div class="absolute inset-0 bg-[#1c1c15]/5 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                    <div class="w-10 h-10 rounded-full bg-[#1c1c15]/90 backdrop-blur-md flex items-center justify-center text-[#fcf9ee] scale-75 group-hover:scale-100 transition-transform shadow-md">
+                      <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
+                      </svg>
+                    </div>
+                  </div>
                   <div class="playbill-book__hero-shading absolute inset-0 pointer-events-none" />
                 </div>
                 <div class="text-[10px] font-sans font-bold tracking-widest text-[#1c1c15] uppercase">
@@ -474,38 +496,41 @@ function closeBioModal() {
                 </div>
 
                 <!-- CREATIVE TEAM / DEPARTMENTS SECTION -->
-                <div v-if="crewByDepartment.length" class="playbill-book__section space-y-8 pt-4">
-                  <div v-for="dept in crewByDepartment" :key="dept.key" class="space-y-3">
-                    <h3 class="text-sm font-bold text-[#682805] uppercase tracking-widest border-b border-[#c5c1a8] pb-1.5">
-                      {{ dept.name }}
-                    </h3>
-                    
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                      <button
-                        v-for="credit in dept.credits"
-                        :key="credit.id"
-                        @click="openBioModal(credit, false)"
-                        class="playbill-book__credit-card relative w-full text-left p-3 rounded-lg border border-[#c5c1a8] hover:border-[#1c1c15] hover:bg-[#ffffff] hover:shadow-md transition-all duration-300 flex items-center justify-between group"
-                      >
-                        <!-- Preload large headshot in background when card scrolls near viewport -->
-                        <img
-                          v-if="credit.person?.headshot"
-                          v-bind="getImageProps(credit.person.headshot, { sm: 400, md: 800 }, { quality: 85 })"
-                          class="absolute w-px h-px opacity-0 pointer-events-none"
-                          loading="lazy"
-                          alt=""
-                        />
-                        <div class="min-w-0 pr-4">
-                          <p class="text-[8px] font-black text-[#8c8872] uppercase tracking-widest leading-none">{{ credit.title }}</p>
-                          <p class="font-serif font-bold text-sm text-[#1c1c15] group-hover:text-[#682805] transition-colors mt-1.5 truncate">
-                            {{ credit.person?.first_name || '' }} {{ credit.person?.last_name || '' }}
-                          </p>
-                        </div>
-                        <svg class="w-3.5 h-3.5 text-[#8c8872] group-hover:text-[#1c1c15] transition-colors flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                          <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
-                        </svg>
-                      </button>
-                    </div>
+                <div v-if="sortedCrew.length" class="playbill-book__section space-y-4 pt-4">
+                  <div class="playbill-book__section-header flex items-center justify-between border-b-2 border-[#1c1c15] pb-2 mb-4">
+                    <h2 class="text-xl font-serif font-black text-[#1c1c15] tracking-wide">
+                      Creative & Production Team
+                    </h2>
+                    <span class="text-[9px] uppercase tracking-widest font-black text-[#6b664d]">
+                      Crew
+                    </span>
+                  </div>
+                  
+                  <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    <button
+                      v-for="credit in sortedCrew"
+                      :key="credit.id"
+                      @click="openBioModal(credit, false)"
+                      class="playbill-book__credit-card relative w-full text-left p-3 rounded-lg border border-[#c5c1a8] hover:border-[#1c1c15] hover:bg-[#ffffff] hover:shadow-md transition-all duration-300 flex items-center justify-between group"
+                    >
+                      <!-- Preload large headshot in background when card scrolls near viewport -->
+                      <img
+                        v-if="credit.person?.headshot"
+                        v-bind="getImageProps(credit.person.headshot, { sm: 400, md: 800 }, { quality: 85 })"
+                        class="absolute w-px h-px opacity-0 pointer-events-none"
+                        loading="lazy"
+                        alt=""
+                      />
+                      <div class="min-w-0 pr-4">
+                        <p class="text-[8px] font-black text-[#8c8872] uppercase tracking-widest leading-none">{{ credit.title }}</p>
+                        <p class="font-serif font-bold text-sm text-[#1c1c15] group-hover:text-[#682805] transition-colors mt-1.5 truncate">
+                          {{ credit.person?.first_name || '' }} {{ credit.person?.last_name || '' }}
+                        </p>
+                      </div>
+                      <svg class="w-3.5 h-3.5 text-[#8c8872] group-hover:text-[#1c1c15] transition-colors flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+                      </svg>
+                    </button>
                   </div>
                 </div>
 
@@ -577,7 +602,7 @@ function closeBioModal() {
             <!-- Page Number Footer -->
             <footer class="playbill-book__footer flex items-center justify-between text-[10px] uppercase font-bold tracking-widest text-[#8c8872] pt-4 mt-8 border-t border-[#ebe8dd]">
               <span>Official Program</span>
-              <span>Page {{ displayedTab === 'about' ? 'II' : (displayedTab === 'credits' ? 'III' : 'IV') }}</span>
+              <span>Page {{ displayedTab === 'credits' ? 'II' : (displayedTab === 'about' ? 'III' : 'IV') }}</span>
             </footer>
           </div>
         </div>
@@ -621,6 +646,15 @@ function closeBioModal() {
         </div>
       </div>
     </BaseModal>
+
+    <!-- Hero Image Lightbox -->
+    <BaseLightbox
+      :is-open="isHeroLightboxOpen"
+      :image-id="playbill.hero_image"
+      :alt="playbill.title"
+      :caption="playbill.title + (playbill.subtitle ? ' — ' + playbill.subtitle : '')"
+      @close="closeHeroLightbox"
+    />
 
   </div>
 </template>

@@ -430,7 +430,7 @@ const _routes = [
   {
     name: "index",
     path: "/",
-    component: () => import('./index-CYq44_q7.mjs')
+    component: () => import('./index-XBFfTpc6.mjs')
   },
   {
     name: "donate",
@@ -450,37 +450,37 @@ const _routes = [
   {
     name: "calendar",
     path: "/calendar",
-    component: () => import('./calendar-B-Zo2z3M.mjs')
+    component: () => import('./calendar-CW8ir1RL.mjs')
   },
   {
     name: "slug",
     path: "/:slug(.*)*",
-    component: () => import('./_...slug_-BjNhWAzM.mjs')
+    component: () => import('./_...slug_-B6ZUVXyW.mjs')
   },
   {
     name: "news",
     path: "/news",
-    component: () => import('./index-U0PsGeMI.mjs')
+    component: () => import('./index-CX75kKvy.mjs')
   },
   {
     name: "events-past",
     path: "/events/past",
-    component: () => import('./past-34xyvnNr.mjs')
+    component: () => import('./past-GItmKhf7.mjs')
   },
   {
     name: "news-slug",
     path: "/news/:slug()",
-    component: () => import('./_slug_-Cfs1iaP8.mjs')
+    component: () => import('./_slug_-DrJanaeH.mjs')
   },
   {
     name: "events",
     path: "/events",
-    component: () => import('./index-C0hrJJ5B.mjs')
+    component: () => import('./index-o4ASL_Lx.mjs')
   },
   {
     name: "groups",
     path: "/groups",
-    component: () => import('./index-DX1c72J9.mjs')
+    component: () => import('./index-DP4Sv5yt.mjs')
   },
   {
     name: "accessibility",
@@ -490,37 +490,37 @@ const _routes = [
   {
     name: "events-slug",
     path: "/events/:slug()",
-    component: () => import('./_slug_-CIp87XwZ.mjs')
+    component: () => import('./_slug_-CmBo9z_X.mjs')
   },
   {
     name: "groups-slug",
     path: "/groups/:slug()",
-    component: () => import('./_slug_-Y2mjfrSe.mjs')
+    component: () => import('./_slug_-9FbdCYMO.mjs')
   },
   {
     name: "people-slug",
     path: "/people/:slug()",
-    component: () => import('./_slug_-5NDU8l2j.mjs')
+    component: () => import('./_slug_-BDBy4YiL.mjs')
   },
   {
     name: "funders-slug",
     path: "/funders/:slug()",
-    component: () => import('./_slug_-CZNwHS_U.mjs')
+    component: () => import('./_slug_-9fP9qSD1.mjs')
   },
   {
     name: "playbills-slug",
     path: "/playbills/:slug()",
-    component: () => import('./_slug_-CyrT0QjG.mjs')
+    component: () => import('./_slug_-DrjbqMbj.mjs')
   },
   {
     name: "productions",
     path: "/productions",
-    component: () => import('./index-BDKs6mco.mjs')
+    component: () => import('./index-B1fmNLKf.mjs')
   },
   {
     name: "productions-slug",
     path: "/productions/:slug()",
-    component: () => import('./_slug_-Dd--RqUM.mjs')
+    component: () => import('./_slug_-CxztIUuD.mjs')
   },
   {
     name: __nuxt_page_meta?.name,
@@ -874,7 +874,7 @@ const plugins = [
   components_plugin_4kY4pyzJIYX99vmMAAIorFf3CnAaptHitJgf7JxiED8
 ];
 const layouts = {
-  default: defineAsyncComponent(() => import('./default-CQyMUO6M.mjs').then((m) => m.default || m))
+  default: defineAsyncComponent(() => import('./default-Cga0uHTS.mjs').then((m) => m.default || m))
 };
 const routeRulesMatcher = _routeRulesMatcher;
 const LayoutLoader = defineComponent({

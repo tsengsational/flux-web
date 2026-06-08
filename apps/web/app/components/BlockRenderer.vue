@@ -105,6 +105,24 @@ const processEmbeds = () => {
 
 onMounted(() => processEmbeds());
 onUpdated(() => processEmbeds());
+
+// ── Lightbox for inline images ──
+const isLightboxOpen = ref(false);
+const lightboxImageId = ref<string | null>(null);
+const lightboxCaption = ref<string | null>(null);
+
+const openLightbox = (fileId: string | null, caption: string | null) => {
+  if (!fileId) return;
+  lightboxImageId.value = fileId;
+  lightboxCaption.value = caption ? caption.replace('[left]', '').replace('[right]', '').trim() : null;
+  isLightboxOpen.value = true;
+};
+
+const closeLightbox = () => {
+  isLightboxOpen.value = false;
+  lightboxImageId.value = null;
+  lightboxCaption.value = null;
+};
 </script>
 
 <template>
@@ -213,29 +231,38 @@ onUpdated(() => processEmbeds());
         <figure 
           v-else-if="block.type === 'image'" 
           v-reveal
-          class="my-10 overflow-visible reveal-init"
+          class="my-10 overflow-visible reveal-init cursor-pointer group"
           :class="{
             'md:float-left md:mr-10 md:mb-6 w-full md:max-w-[55%] lg:max-w-[70%] lg:-ml-24 xl:-ml-32': (block.data.alignment === 'left' || (block.data.caption && block.data.caption.startsWith('[left]'))),
             'md:float-right md:ml-10 md:mb-6 w-full md:max-w-[55%] lg:max-w-[70%] lg:-mr-24 xl:-mr-32': (block.data.alignment === 'right' || (block.data.caption && block.data.caption.startsWith('[right]'))),
             'w-full': !block.data.alignment && !(block.data.caption && (block.data.caption.startsWith('[left]') || block.data.caption.startsWith('[right]')))
           }"
+          @click="openLightbox(block.data.file?.id || (typeof block.data.file === 'string' ? block.data.file : null) || (block.data.file?.url?.split('/assets/')?.[1]), block.data.caption)"
         >
-          <div class="rounded-2xl overflow-hidden border border-stage-800/50">
+          <div class="rounded-2xl overflow-hidden border border-stage-800/50 transition-all duration-300 group-hover:border-brand-500/50 group-hover:shadow-[0_0_30px_rgba(234,179,8,0.15)] relative">
             <img 
               v-bind="getImageProps(block.data.file?.id || (typeof block.data.file === 'string' ? block.data.file : null) || (block.data.file?.url?.split('/assets/')?.[1]), { sm: 800, lg: 1200 })" 
               :alt="block.data.caption || ''"
-              class="w-full h-auto object-cover"
+              class="w-full h-auto object-cover transition-transform duration-750 group-hover:scale-[1.02]"
             />
+            <!-- Hover Expand Overlay -->
+            <div class="absolute inset-0 bg-stage-950/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+              <div class="w-10 h-10 rounded-full bg-stage-950/80 backdrop-blur-md flex items-center justify-center text-brand-400 scale-75 group-hover:scale-100 transition-transform">
+                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
+                </svg>
+              </div>
+            </div>
           </div>
           <figcaption 
             v-if="block.data.caption && !block.data.caption.startsWith('[left]') && !block.data.caption.startsWith('[right]')" 
-            class="p-4 text-center text-sm opacity-60"
+            class="p-4 text-center text-sm opacity-60 group-hover:opacity-100 transition-opacity"
           >
             {{ block.data.caption }}
           </figcaption>
           <figcaption 
             v-else-if="block.data.caption" 
-            class="p-4 text-center text-sm opacity-60"
+            class="p-4 text-center text-sm opacity-60 group-hover:opacity-100 transition-opacity"
           >
             {{ block.data.caption.replace('[left]', '').replace('[right]', '').trim() }}
           </figcaption>
@@ -270,6 +297,14 @@ onUpdated(() => processEmbeds());
 
       </template>
     </div>
+
+    <!-- Lightbox for image expansion -->
+    <BaseLightbox 
+      :is-open="isLightboxOpen" 
+      :image-id="lightboxImageId" 
+      :caption="lightboxCaption"
+      @close="closeLightbox"
+    />
   </div>
 </template>
 

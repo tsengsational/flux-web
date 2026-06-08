@@ -63,8 +63,8 @@ export const useDirectus = () => {
    */
   const getAssetUrl = (id: string | null | undefined, options?: AssetOptions) => {
     if (!id) return null;
-    // Use relative path for assets to ensure consistency between SSR and CSR and use the local proxy
-    let url = `/assets/${id}`;
+    // Use the direct Directus URL for assets instead of the local proxy to avoid invoking Netlify Functions
+    let url = `${directusUrl}/assets/${id}`;
     
     const params = new URLSearchParams();
     const format = options?.format || 'webp';
