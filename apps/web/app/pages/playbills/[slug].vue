@@ -370,7 +370,7 @@ const closeHeroLightbox = () => {
                   : 'playbill-book__tab-card--inactive text-[#6b664d] hover:text-[#1c1c15]'
               ]"
             >
-              Sponsors
+              Partners & Funders
             </button>
           </nav>
 
@@ -433,7 +433,7 @@ const closeHeroLightbox = () => {
                   <BlockRenderer :content="playbill.content" />
                 </div>
                 <div v-else class="text-center py-12 border border-dashed border-[#c5c1a8] rounded-xl bg-[#ffffff]/30">
-                  <p class="text-xs text-[#8c8872] italic font-serif">Welcome to our Digital Playbill. Tap on the Credits or Sponsors tabs above to explore.</p>
+                  <p class="text-xs text-[#8c8872] italic font-serif">Welcome to our Digital Playbill. Tap on the tabs above to explore.</p>
                 </div>
               </div>
 
@@ -540,36 +540,46 @@ const closeHeroLightbox = () => {
               <div v-else-if="displayedTab === 'support'" id="support" class="playbill-book__pane space-y-6 text-center">
                 
                 <div class="py-4 border-b border-[#ebe8dd] max-w-md mx-auto">
-                  <h2 class="text-xl font-serif font-black text-[#1c1c15]">Ensemble Funders</h2>
+                  <h2 class="text-xl font-serif font-black text-[#1c1c15]">Partners & Funders</h2>
                   <p class="text-xs text-[#6b664d] mt-1.5 font-serif italic">
-                    Made possible through the generous support of our sponsors.
+                    Made possible through the generous support of our partners and funders.
                   </p>
                 </div>
 
+                <!-- Funders Content -->
+                <div v-if="playbill.funders_content" class="playbill-book__rich-content prose prose-stone prose-sm max-w-none text-[#1c1c15] text-left mx-auto max-w-md">
+                  <BlockRenderer :content="playbill.funders_content" />
+                </div>
+
                 <!-- Funders grid -->
-                <div v-if="funders.length" class="grid grid-cols-2 gap-4 max-w-md mx-auto pt-2">
-                  <a
-                    v-for="funder in funders"
-                    :key="funder.slug"
-                    :href="funder.url || '#'"
-                    target="_blank"
-                    class="group flex flex-col items-center justify-center p-4 rounded-xl border border-[#c5c1a8] hover:border-[#1c1c15] hover:bg-[#ffffff] hover:shadow-md transition-all duration-300"
-                  >
-                    <div class="w-full aspect-square max-h-[80px] bg-[#ffffff] rounded-lg shadow-inner p-3 flex items-center justify-center overflow-hidden border border-[#ebe8dd]">
-                      <img
-                        v-if="funder.image"
-                        v-bind="getImageProps(funder.image, { sm: 200 }, { quality: 80 })"
-                        :alt="funder.name"
-                        class="w-full h-full object-contain opacity-90 group-hover:opacity-100 transition-all duration-500"
-                        loading="lazy"
-                      />
-                      <span v-else class="text-[#1c1c15] font-serif font-bold text-center text-xs leading-tight">{{ funder.name }}</span>
-                    </div>
-                    
-                    <span class="text-[10px] font-bold text-[#6b664d] mt-2.5 group-hover:text-[#682805] transition-colors uppercase tracking-wider truncate max-w-full">
-                      {{ funder.name }}
-                    </span>
-                  </a>
+                <div v-if="funders.length" class="max-w-md mx-auto space-y-4">
+                  <h3 class="text-left font-serif font-black text-sm text-[#1c1c15] border-b border-[#ebe8dd] pb-1 uppercase tracking-wider">
+                    Funders
+                  </h3>
+                  <div class="grid grid-cols-2 gap-4 pt-2">
+                    <a
+                      v-for="funder in funders"
+                      :key="funder.slug"
+                      :href="funder.url || '#'"
+                      target="_blank"
+                      class="group flex flex-col items-center justify-center p-4 rounded-xl border border-[#c5c1a8] hover:border-[#1c1c15] hover:bg-[#ffffff] hover:shadow-md transition-all duration-300"
+                    >
+                      <div class="w-full aspect-square max-h-[80px] bg-[#ffffff] rounded-lg shadow-inner p-3 flex items-center justify-center overflow-hidden border border-[#ebe8dd]">
+                        <img
+                          v-if="funder.image"
+                          v-bind="getImageProps(funder.image, { sm: 200 }, { quality: 80 })"
+                          :alt="funder.name"
+                          class="w-full h-full object-contain opacity-90 group-hover:opacity-100 transition-all duration-500"
+                          loading="lazy"
+                        />
+                        <span v-else class="text-[#1c1c15] font-serif font-bold text-center text-xs leading-tight">{{ funder.name }}</span>
+                      </div>
+                      
+                      <span class="text-[10px] font-bold text-[#6b664d] mt-2.5 group-hover:text-[#682805] transition-colors uppercase tracking-wider truncate max-w-full">
+                        {{ funder.name }}
+                      </span>
+                    </a>
+                  </div>
                 </div>
 
                 <div v-else class="py-12 text-[#8c8872] italic font-serif text-sm">

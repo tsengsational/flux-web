@@ -123,6 +123,7 @@ export interface Playbill extends DirectusBaseFields {
     director: string | null;
     hero_image: string | null;     // Directus file UUID
     content: any | null;           // Structured JSON for Block Editor
+    funders_content?: any | null;  // Block editor input before funder cards
     
     // Relationships
     production: string | Production | null;
