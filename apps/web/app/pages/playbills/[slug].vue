@@ -612,7 +612,10 @@ const closeHeroLightbox = () => {
             <!-- Page Number Footer -->
             <footer class="playbill-book__footer flex items-center justify-between text-[10px] uppercase font-bold tracking-widest text-[#8c8872] pt-4 mt-8 border-t border-[#ebe8dd]">
               <span>Official Program</span>
-              <span>Page {{ displayedTab === 'credits' ? 'II' : (displayedTab === 'about' ? 'III' : 'IV') }}</span>
+              <!-- Desktop page numbering (starts at II since cover Page I is visible on the left) -->
+              <span class="hidden md:inline">Page {{ displayedTab === 'credits' ? 'II' : (displayedTab === 'about' ? 'III' : 'IV') }}</span>
+              <!-- Mobile page numbering (starts at I since cover Page I is hidden) -->
+              <span class="inline md:hidden">Page {{ displayedTab === 'credits' ? 'I' : (displayedTab === 'about' ? 'II' : 'III') }}</span>
             </footer>
           </div>
         </div>
