@@ -58,6 +58,7 @@ export default defineNuxtConfig({
           name: 'description',
           content: 'Flux Theatre Ensemble — Collective care, long-term artistic collaboration, and shared power.',
         },
+        { name: 'robots', content: 'noai, noimageai' },
       ],
       link: [
         { rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg' },

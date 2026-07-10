@@ -84,7 +84,7 @@ function createHead(options = {}) {
   return head;
 }
 
-const appHead = {"meta":[{"charset":"utf-8"},{"name":"viewport","content":"width=device-width, initial-scale=1"},{"name":"description","content":"Flux Theatre Ensemble — Collective care, long-term artistic collaboration, and shared power."}],"link":[{"rel":"icon","type":"image/svg+xml","href":"/favicon.svg"}],"style":[],"script":[],"noscript":[],"htmlAttrs":{"lang":"en"},"title":"Flux Theatre Ensemble"};
+const appHead = {"meta":[{"charset":"utf-8"},{"name":"viewport","content":"width=device-width, initial-scale=1"},{"name":"description","content":"Flux Theatre Ensemble — Collective care, long-term artistic collaboration, and shared power."},{"name":"robots","content":"noai, noimageai"}],"link":[{"rel":"icon","type":"image/svg+xml","href":"/favicon.svg"}],"style":[],"script":[],"noscript":[],"htmlAttrs":{"lang":"en"},"title":"Flux Theatre Ensemble"};
 
 const appRootTag = "div";
 
