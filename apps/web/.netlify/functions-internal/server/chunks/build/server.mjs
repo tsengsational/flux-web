@@ -510,7 +510,7 @@ const _routes = [
   {
     name: "playbills-slug",
     path: "/playbills/:slug()",
-    component: () => import('./_slug_-CcGpMzA6.mjs')
+    component: () => import('./_slug_-Du-RSCV3.mjs')
   },
   {
     name: "productions",

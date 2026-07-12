@@ -46,7 +46,7 @@ const { data: playbills, error } = await useAsyncData(`playbill-${slug}`, async 
           funders: [
             'sort',
             {
-              funder_id: ['name', 'slug', 'image', 'url']
+              funder_id: ['name', 'slug', 'image', 'url', 'description']
             }
           ]
         }
@@ -244,6 +244,13 @@ const openHeroLightbox = () => {
 const closeHeroLightbox = () => {
   isHeroLightboxOpen.value = false;
 };
+
+// ── Print Trigger ──
+const triggerPrint = () => {
+  if (import.meta.client) {
+    window.print();
+  }
+};
 </script>
 
 <template>
@@ -259,9 +266,21 @@ const closeHeroLightbox = () => {
           {{ parentLink.label }}
         </NuxtLink>
         
-        <span class="playbill-view__official-badge text-[10px] uppercase font-black tracking-[0.2em] text-brand-500 border border-brand-500/40 px-3 py-1 rounded">
-          Official Digital Playbill
-        </span>
+        <div class="flex items-center gap-3">
+          <button 
+            @click="triggerPrint"
+            class="playbill-view__print-btn flex items-center gap-1.5 px-3 py-1.5 text-[10px] uppercase font-black tracking-widest text-stage-400 hover:text-brand-400 bg-stage-900 border border-stage-800 hover:border-brand-500/40 rounded transition-all duration-300"
+          >
+            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M6.72 13.821V21h10.56v-7.179m-10.56 0a2.386 2.386 0 0 1-2.278-2.38V10.22c0-1.315 1.064-2.38 2.278-2.38h10.56c1.214 0 2.278 1.065 2.278 2.38v1.22c0 1.315-1.064 2.38-2.278 2.38m-10.56 0h10.56M9 3.75h6" />
+            </svg>
+            Print
+          </button>
+          
+          <span class="playbill-view__official-badge text-[10px] uppercase font-black tracking-[0.2em] text-brand-500 border border-brand-500/40 px-3 py-1 rounded">
+            Official Digital Playbill
+          </span>
+        </div>
       </div>
     </div>
 
@@ -669,6 +688,162 @@ const closeHeroLightbox = () => {
       @close="closeHeroLightbox"
     />
 
+    <!-- 🖨️ PRINT-ONLY VIEW SECTION -->
+    <div class="playbill-print-view hidden print:block w-full max-w-4xl mx-auto p-8 text-black bg-white">
+      <!-- Header / Title Info -->
+      <header class="text-center pb-8 border-b-2 border-black mb-8">
+        <p v-if="playbill.supertitle" class="text-xs uppercase tracking-widest font-bold text-gray-600 mb-1">
+          {{ playbill.supertitle }}
+        </p>
+        <h1 class="text-4xl font-serif font-black tracking-tight leading-tight text-black mb-2">
+          {{ playbill.title }}
+        </h1>
+        <p v-if="playbill.subtitle" class="text-md font-serif italic text-gray-700 max-w-2xl mx-auto mb-4">
+          {{ playbill.subtitle }}
+        </p>
+        
+        <div class="flex flex-col gap-1 items-center justify-center text-xs font-serif text-gray-600 py-3 border-t border-b border-dashed border-gray-400 my-4 max-w-md mx-auto">
+          <span v-if="playbill.byline" class="font-bold uppercase tracking-wider text-[10px] text-black">{{ playbill.byline }}</span>
+          <span v-if="playbill.director" class="italic">{{ playbill.director }}</span>
+        </div>
+
+        <!-- Venue / Showtimes if populated -->
+        <div v-if="playbill.event?.venue" class="text-xs font-sans text-gray-600 mt-2">
+          Venue: {{ playbill.event.venue.name }} - {{ playbill.event.venue.city }}, {{ playbill.event.venue.state }}
+        </div>
+      </header>
+
+      <!-- Program / Notes Section -->
+      <section v-if="playbill.content" class="mb-12">
+        <h2 class="text-2xl font-serif font-black border-b border-black pb-2 mb-4">Program Notes</h2>
+        <div class="prose prose-stone max-w-none text-black">
+          <BlockRenderer :content="playbill.content" />
+        </div>
+      </section>
+
+      <!-- Cast Section (Inline Bios) -->
+      <section v-if="cast.length" class="mb-12 page-break-before">
+        <h2 class="text-2xl font-serif font-black border-b-2 border-black pb-2 mb-6">Cast</h2>
+        <div class="space-y-6">
+          <div 
+            v-for="credit in cast" 
+            :key="credit.id" 
+            class="playbill-print-card flex gap-6 items-start pb-6 border-b border-gray-200 last:border-0"
+          >
+            <!-- Headshot -->
+            <div v-if="credit.person?.headshot" class="w-24 h-24 bg-gray-100 border border-gray-300 rounded overflow-hidden flex-shrink-0">
+              <img
+                v-bind="getImageProps(credit.person.headshot, { sm: 200 }, { quality: 80 })"
+                :alt="credit.person.first_name"
+                class="w-full h-full object-contain"
+              />
+            </div>
+            
+            <div class="flex-1">
+              <div class="flex items-baseline justify-between border-b border-gray-100 pb-1 mb-2">
+                <h3 class="text-base font-serif font-bold text-black">
+                  {{ credit.person?.first_name || '' }} {{ credit.person?.last_name || '' }}
+                  <span v-if="credit.person?.pronouns" class="text-xs font-sans font-normal text-gray-500 ml-2">({{ credit.person.pronouns }})</span>
+                </h3>
+                <span class="text-sm font-serif italic font-semibold text-black">
+                  {{ credit.role_name }}
+                  <span v-if="credit.is_understudy" class="text-[10px] font-sans font-bold text-red-800 uppercase ml-2">Understudy</span>
+                </span>
+              </div>
+              
+              <!-- Cast Bio -->
+              <div class="prose prose-stone prose-sm text-gray-800 max-w-none leading-relaxed">
+                <BlockRenderer v-if="credit.person?.bio" :content="credit.person.bio" />
+                <p v-else class="italic text-gray-400 text-xs">No biography details added.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Crew Section (Inline Bios) -->
+      <section v-if="sortedCrew.length" class="mb-12">
+        <h2 class="text-2xl font-serif font-black border-b-2 border-black pb-2 mb-6">Creative & Production Team</h2>
+        <div class="space-y-6">
+          <div 
+            v-for="credit in sortedCrew" 
+            :key="credit.id" 
+            class="playbill-print-card flex gap-6 items-start pb-6 border-b border-gray-200 last:border-0"
+          >
+            <!-- Headshot if they have one -->
+            <div v-if="credit.person?.headshot" class="w-24 h-24 bg-gray-100 border border-gray-300 rounded overflow-hidden flex-shrink-0">
+              <img
+                v-bind="getImageProps(credit.person.headshot, { sm: 200 }, { quality: 80 })"
+                :alt="credit.person.first_name"
+                class="w-full h-full object-contain"
+              />
+            </div>
+
+            <div class="flex-1">
+              <div class="flex items-baseline justify-between border-b border-gray-100 pb-1 mb-2">
+                <h3 class="text-base font-serif font-bold text-black">
+                  {{ credit.person?.first_name || '' }} {{ credit.person?.last_name || '' }}
+                  <span v-if="credit.person?.pronouns" class="text-xs font-sans font-normal text-gray-500 ml-2">({{ credit.person.pronouns }})</span>
+                </h3>
+                <span class="text-sm font-sans uppercase tracking-wider font-bold text-gray-600">
+                  {{ credit.title }}
+                </span>
+              </div>
+
+              <!-- Crew Bio -->
+              <div class="prose prose-stone prose-sm text-gray-800 max-w-none leading-relaxed">
+                <BlockRenderer v-if="credit.person?.bio" :content="credit.person.bio" />
+                <p v-else class="italic text-gray-400 text-xs">No biography details added.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Partners & Funders Section -->
+      <section v-if="funders.length || playbill.funders_content" class="mb-12">
+        <h2 class="text-2xl font-serif font-black border-b-2 border-black pb-2 mb-6">Partners & Funders</h2>
+        
+        <!-- Funder content intro -->
+        <div v-if="playbill.funders_content" class="prose prose-stone max-w-none text-black mb-8">
+          <BlockRenderer :content="playbill.funders_content" />
+        </div>
+
+        <div v-if="funders.length" class="space-y-6">
+          <div 
+            v-for="funder in funders" 
+            :key="funder.slug" 
+            class="playbill-print-card flex gap-6 items-start pb-6 border-b border-gray-200 last:border-0"
+          >
+            <!-- Funder Image -->
+            <div v-if="funder.image" class="w-24 h-24 bg-white border border-gray-300 rounded overflow-hidden p-2 flex items-center justify-center flex-shrink-0">
+              <img
+                v-bind="getImageProps(funder.image, { sm: 200 }, { quality: 80 })"
+                :alt="funder.name"
+                class="max-w-full max-h-full object-contain"
+              />
+            </div>
+            
+            <div class="flex-1">
+              <h3 class="text-base font-serif font-bold text-black border-b border-gray-100 pb-1 mb-2">
+                {{ funder.name }}
+              </h3>
+              <!-- Funder Bio / Description -->
+              <div class="prose prose-stone prose-sm text-gray-800 max-w-none leading-relaxed">
+                <BlockRenderer v-if="funder.description" :content="funder.description" />
+                <p v-else class="italic text-gray-400 text-xs">Generous Supporter of Flux Theatre Ensemble.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Print Footer -->
+      <footer class="text-center text-[10px] uppercase font-bold tracking-widest text-gray-500 pt-4 border-t border-gray-300 mt-16">
+        Official Digital Playbill — Printed from Flux Theatre Ensemble
+      </footer>
+    </div>
+
   </div>
 </template>
 
@@ -821,6 +996,60 @@ const closeHeroLightbox = () => {
   to {
     opacity: 1;
     transform: scale(1) translateY(0);
+  }
+}
+
+/* Print View CSS Overrides (Scoped) */
+@media print {
+  .playbill-print-view {
+    display: block !important;
+  }
+
+  .playbill-print-card {
+    break-inside: avoid;
+  }
+
+  /* Force highly readable black text and transparent background on paper */
+  .playbill-print-view,
+  .playbill-print-view * {
+    color: #000000 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    text-shadow: none !important;
+  }
+
+  /* Page break rules */
+  .page-break-before {
+    page-break-before: always;
+  }
+}
+</style>
+
+<!-- Global print overrides to hide layout wrapper components (header, footer, etc.) -->
+<style>
+@media print {
+  body, html {
+    background: #ffffff !important;
+    color: #000000 !important;
+  }
+  
+  header.site-header,
+  div.site-header__spacer,
+  footer.site-footer,
+  .playbill-view__top-bar,
+  .playbill-table,
+  .playbill-modal,
+  #site-header,
+  #site-footer,
+  #__nuxt > header,
+  #__nuxt > footer {
+    display: none !important;
+  }
+
+  main, #__nuxt, #__layout {
+    padding: 0 !important;
+    margin: 0 !important;
+    background: transparent !important;
   }
 }
 </style>
