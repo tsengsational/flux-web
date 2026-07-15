@@ -1,8 +1,8 @@
 import { _ as __nuxt_component_0 } from './nuxt-link-cZpXnfBZ.mjs';
-import { _ as __nuxt_component_1 } from './BlockRenderer-D_tsRLZz.mjs';
+import { _ as __nuxt_component_1 } from './BlockRenderer-CUz7VsbB.mjs';
 import { _ as __nuxt_component_2 } from './EventCard-XmG8E8E7.mjs';
 import { _ as __nuxt_component_3 } from './BlogPostCard-DhE25oN6.mjs';
-import { _ as __nuxt_component_2$1 } from './PersonCard-Bd3SjMa7.mjs';
+import { _ as __nuxt_component_2$1 } from './PersonCard-C1gqmHXI.mjs';
 import { defineComponent, withAsyncContext, computed, ref, watch, unref, mergeProps, withCtx, createVNode, createTextVNode, useSSRContext } from 'vue';
 import { ssrRenderAttrs, ssrRenderComponent, ssrInterpolate, ssrRenderStyle, ssrRenderList, ssrIncludeBooleanAttr } from 'vue/server-renderer';
 import { _ as _export_sfc, u as useRoute } from './server.mjs';
@@ -233,4 +233,4 @@ _sfc_main.setup = (props, ctx) => {
 const _slug_ = /* @__PURE__ */ _export_sfc(_sfc_main, [["__scopeId", "data-v-1088b614"]]);
 
 export { _slug_ as default };
-//# sourceMappingURL=_slug_-9FbdCYMO.mjs.map
+//# sourceMappingURL=_slug_-C6w0Yctw.mjs.map

@@ -183,11 +183,11 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
     return (_ctx, _push, _parent, _attrs) => {
       const _component_NestedList = __nuxt_component_0;
       const _component_BaseLightbox = __nuxt_component_3;
-      _push(`<div${ssrRenderAttrs(mergeProps({ class: "block-renderer flow-root" }, _attrs))} data-v-5981d0bc>`);
+      _push(`<div${ssrRenderAttrs(mergeProps({ class: "block-renderer flow-root" }, _attrs))} data-v-fe5534d4>`);
       if (!unref(isEditorJS)) {
-        _push(`<div class="block-renderer__html prose prose-invert prose-lg max-w-none" data-v-5981d0bc>${__props.content ?? ""}</div>`);
+        _push(`<div class="block-renderer__html prose prose-invert prose-lg max-w-none" data-v-fe5534d4>${__props.content ?? ""}</div>`);
       } else if (unref(parsedData)) {
-        _push(`<div class="block-renderer__blocks space-y-6" data-v-5981d0bc><!--[-->`);
+        _push(`<div class="block-renderer__blocks space-y-6" data-v-fe5534d4><!--[-->`);
         ssrRenderList(unref(parsedData).blocks, (block, index) => {
           _push(`<!--[-->`);
           if (block.type === "header") {
@@ -201,7 +201,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
             }, {
               default: withCtx((_, _push2, _parent2, _scopeId) => {
                 if (_push2) {
-                  _push2(`<span data-v-5981d0bc${_scopeId}>${(block.data.text || block.data.content) ?? ""}</span>`);
+                  _push2(`<span data-v-fe5534d4${_scopeId}>${(block.data.text || block.data.content) ?? ""}</span>`);
                 } else {
                   return [
                     createVNode("span", {
@@ -213,17 +213,17 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
               _: 2
             }), _parent);
           } else if (block.type === "paragraph") {
-            _push(`<p class="leading-relaxed text-lg" data-v-5981d0bc>${(block.data.text || block.data.content) ?? ""}</p>`);
+            _push(`<p class="leading-relaxed text-lg" data-v-fe5534d4>${(block.data.text || block.data.content) ?? ""}</p>`);
           } else if (block.type === "list" && block.data.style === "unordered") {
-            _push(`<ul class="list-disc list-inside space-y-2 ml-4" data-v-5981d0bc><!--[-->`);
+            _push(`<ul class="list-disc list-inside space-y-2 ml-4" data-v-fe5534d4><!--[-->`);
             ssrRenderList(block.data.items, (item, i) => {
-              _push(`<li data-v-5981d0bc>${item ?? ""}</li>`);
+              _push(`<li data-v-fe5534d4>${item ?? ""}</li>`);
             });
             _push(`<!--]--></ul>`);
           } else if (block.type === "list" && block.data.style === "ordered") {
-            _push(`<ol class="list-decimal list-inside space-y-2 ml-4" data-v-5981d0bc><!--[-->`);
+            _push(`<ol class="list-decimal list-inside space-y-2 ml-4" data-v-fe5534d4><!--[-->`);
             ssrRenderList(block.data.items, (item, i) => {
-              _push(`<li data-v-5981d0bc>${item ?? ""}</li>`);
+              _push(`<li data-v-fe5534d4>${item ?? ""}</li>`);
             });
             _push(`<!--]--></ol>`);
           } else if (block.type === "nestedlist") {
@@ -232,9 +232,9 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
               "list-style": block.data.style
             }, null, _parent));
           } else if (block.type === "quote") {
-            _push(`<blockquote class="border-l-4 border-brand-500 pl-6 py-2 my-8 italic bg-stage-900/40 rounded-r-lg" data-v-5981d0bc><p class="text-xl font-serif mb-2" data-v-5981d0bc>${block.data.text ?? ""}</p>`);
+            _push(`<blockquote class="border-l-4 border-brand-500 pl-6 py-2 my-8 italic bg-stage-900/40 rounded-r-lg" data-v-fe5534d4><p class="text-xl font-serif mb-2" data-v-fe5534d4>${block.data.text ?? ""}</p>`);
             if (block.data.caption) {
-              _push(`<cite class="text-sm not-italic opacity-60" data-v-5981d0bc>— ${ssrInterpolate(block.data.caption)}</cite>`);
+              _push(`<cite class="text-sm not-italic opacity-60" data-v-fe5534d4>— ${ssrInterpolate(block.data.caption)}</cite>`);
             } else {
               _push(`<!---->`);
             }
@@ -246,15 +246,15 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                 "md:float-right md:ml-10 md:mb-6 w-full md:max-w-[55%] lg:max-w-[70%] lg:-mr-24 xl:-mr-32": block.data.alignment === "right" || block.data.caption && block.data.caption.startsWith("[right]"),
                 "w-full": !block.data.alignment && !(block.data.caption && (block.data.caption.startsWith("[left]") || block.data.caption.startsWith("[right]")))
               }]
-            }, ssrGetDirectiveProps(_ctx, vReveal)))} data-v-5981d0bc><div class="rounded-2xl overflow-hidden border border-stage-800/50 bg-black aspect-video flex items-center justify-center" data-v-5981d0bc>`);
+            }, ssrGetDirectiveProps(_ctx, vReveal)))} data-v-fe5534d4><div class="rounded-2xl overflow-hidden border border-stage-800/50 bg-black aspect-video flex items-center justify-center" data-v-fe5534d4>`);
             if (block.type === "video") {
-              _push(`<video controls class="w-full h-full object-cover"${ssrRenderAttr("src", unref(getAssetUrl)(block.data.file?.id || block.data.file))} data-v-5981d0bc></video>`);
+              _push(`<video controls class="w-full h-full object-cover"${ssrRenderAttr("src", unref(getAssetUrl)(block.data.file?.id || block.data.file))} data-v-fe5534d4></video>`);
             } else {
-              _push(`<iframe${ssrRenderAttr("src", block.data.embed)} class="w-full h-full" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen data-v-5981d0bc></iframe>`);
+              _push(`<iframe${ssrRenderAttr("src", block.data.embed)} class="w-full h-full" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen data-v-fe5534d4></iframe>`);
             }
             _push(`</div>`);
             if (block.data.caption) {
-              _push(`<figcaption class="p-4 text-center text-sm opacity-60" data-v-5981d0bc>${ssrInterpolate(block.data.caption.replace("[left]", "").replace("[right]", "").trim())}</figcaption>`);
+              _push(`<figcaption class="p-4 text-center text-sm opacity-60" data-v-fe5534d4>${ssrInterpolate(block.data.caption.replace("[left]", "").replace("[right]", "").trim())}</figcaption>`);
             } else {
               _push(`<!---->`);
             }
@@ -266,28 +266,28 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                 "md:float-right md:ml-10 md:mb-6 w-full md:max-w-[55%] lg:max-w-[70%] lg:-mr-24 xl:-mr-32": block.data.alignment === "right" || block.data.caption && block.data.caption.startsWith("[right]"),
                 "w-full": !block.data.alignment && !(block.data.caption && (block.data.caption.startsWith("[left]") || block.data.caption.startsWith("[right]")))
               }]
-            }, ssrGetDirectiveProps(_ctx, vReveal)))} data-v-5981d0bc><div class="rounded-2xl overflow-hidden border border-stage-800/50 transition-all duration-300 group-hover:border-brand-500/50 group-hover:shadow-[0_0_30px_rgba(234,179,8,0.15)] relative" data-v-5981d0bc><img${ssrRenderAttrs(mergeProps({ ref_for: true }, unref(getImageProps)(block.data.file?.id || (typeof block.data.file === "string" ? block.data.file : null) || block.data.file?.url?.split("/assets/")?.[1], { sm: 800, lg: 1200 }), {
+            }, ssrGetDirectiveProps(_ctx, vReveal)))} data-v-fe5534d4><div class="rounded-2xl overflow-hidden border border-stage-800/50 transition-all duration-300 group-hover:border-brand-500/50 group-hover:shadow-[0_0_30px_rgba(234,179,8,0.15)] relative" data-v-fe5534d4><img${ssrRenderAttrs(mergeProps({ ref_for: true }, unref(getImageProps)(block.data.file?.id || (typeof block.data.file === "string" ? block.data.file : null) || block.data.file?.url?.split("/assets/")?.[1], { sm: 800, lg: 1200 }), {
               alt: block.data.caption || "",
               class: "w-full h-auto object-cover transition-transform duration-750 group-hover:scale-[1.02]"
-            }))} data-v-5981d0bc><div class="absolute inset-0 bg-stage-950/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center" data-v-5981d0bc><div class="w-10 h-10 rounded-full bg-stage-950/80 backdrop-blur-md flex items-center justify-center text-brand-400 scale-75 group-hover:scale-100 transition-transform" data-v-5981d0bc><svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" data-v-5981d0bc><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" data-v-5981d0bc></path></svg></div></div></div>`);
+            }))} data-v-fe5534d4><div class="absolute inset-0 bg-stage-950/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center" data-v-fe5534d4><div class="w-10 h-10 rounded-full bg-stage-950/80 backdrop-blur-md flex items-center justify-center text-brand-400 scale-75 group-hover:scale-100 transition-transform" data-v-fe5534d4><svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" data-v-fe5534d4><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" data-v-fe5534d4></path></svg></div></div></div>`);
             if (block.data.caption && !block.data.caption.startsWith("[left]") && !block.data.caption.startsWith("[right]")) {
-              _push(`<figcaption class="p-4 text-center text-sm opacity-60 group-hover:opacity-100 transition-opacity" data-v-5981d0bc>${ssrInterpolate(block.data.caption)}</figcaption>`);
+              _push(`<figcaption class="p-4 text-center text-sm opacity-60 group-hover:opacity-100 transition-opacity" data-v-fe5534d4>${ssrInterpolate(block.data.caption)}</figcaption>`);
             } else if (block.data.caption) {
-              _push(`<figcaption class="p-4 text-center text-sm opacity-60 group-hover:opacity-100 transition-opacity" data-v-5981d0bc>${ssrInterpolate(block.data.caption.replace("[left]", "").replace("[right]", "").trim())}</figcaption>`);
+              _push(`<figcaption class="p-4 text-center text-sm opacity-60 group-hover:opacity-100 transition-opacity" data-v-fe5534d4>${ssrInterpolate(block.data.caption.replace("[left]", "").replace("[right]", "").trim())}</figcaption>`);
             } else {
               _push(`<!---->`);
             }
             _push(`</figure>`);
           } else if (block.type === "delimiter") {
-            _push(`<hr class="my-12 border-stage-800 border-dashed" data-v-5981d0bc>`);
+            _push(`<hr class="my-12 border-stage-800 border-dashed" data-v-fe5534d4>`);
           } else if (block.type === "columns") {
-            _push(`<div class="grid grid-cols-1 md:grid-cols-2 gap-8 my-10" data-v-5981d0bc><!--[-->`);
+            _push(`<div class="grid grid-cols-1 md:grid-cols-2 gap-8 my-10" data-v-fe5534d4><!--[-->`);
             ssrRenderList(block.data.cols, (col, i) => {
-              _push(`<div class="space-y-4" data-v-5981d0bc><!--[-->`);
+              _push(`<div class="space-y-4" data-v-fe5534d4><!--[-->`);
               ssrRenderList(col.blocks, (colBlock, j) => {
                 _push(`<!--[-->`);
                 if (colBlock.type === "paragraph") {
-                  _push(`<p class="leading-relaxed" data-v-5981d0bc>${colBlock.data.text ?? ""}</p>`);
+                  _push(`<p class="leading-relaxed" data-v-fe5534d4>${colBlock.data.text ?? ""}</p>`);
                 } else if (colBlock.type === "header") {
                   ssrRenderVNode(_push, createVNode(resolveDynamicComponent(`h${colBlock.data.level || 3}`), { class: "font-serif font-bold" }, null), _parent);
                 } else {
@@ -299,9 +299,9 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
             });
             _push(`<!--]--></div>`);
           } else if (block.type === "raw") {
-            _push(`<div data-v-5981d0bc>${block.data.html ?? ""}</div>`);
+            _push(`<div data-v-fe5534d4>${block.data.html ?? ""}</div>`);
           } else {
-            _push(`<div class="text-xs text-stage-600 border border-dashed border-stage-800 p-4 rounded my-4" data-v-5981d0bc> Unsupported block type: ${ssrInterpolate(block.type)}</div>`);
+            _push(`<div class="text-xs text-stage-600 border border-dashed border-stage-800 p-4 rounded my-4" data-v-fe5534d4> Unsupported block type: ${ssrInterpolate(block.type)}</div>`);
           }
           _push(`<!--]-->`);
         });
@@ -325,7 +325,7 @@ _sfc_main.setup = (props, ctx) => {
   (ssrContext.modules || (ssrContext.modules = /* @__PURE__ */ new Set())).add("components/BlockRenderer.vue");
   return _sfc_setup ? _sfc_setup(props, ctx) : void 0;
 };
-const __nuxt_component_1 = /* @__PURE__ */ Object.assign(_export_sfc(_sfc_main, [["__scopeId", "data-v-5981d0bc"]]), { __name: "BlockRenderer" });
+const __nuxt_component_1 = /* @__PURE__ */ Object.assign(_export_sfc(_sfc_main, [["__scopeId", "data-v-fe5534d4"]]), { __name: "BlockRenderer" });
 
 export { __nuxt_component_1 as _, __nuxt_component_3 as a };
-//# sourceMappingURL=BlockRenderer-D_tsRLZz.mjs.map
+//# sourceMappingURL=BlockRenderer-CUz7VsbB.mjs.map

@@ -455,7 +455,7 @@ const _routes = [
   {
     name: "slug",
     path: "/:slug(.*)*",
-    component: () => import('./_...slug_-B6ZUVXyW.mjs')
+    component: () => import('./_...slug_-BPz4m-oW.mjs')
   },
   {
     name: "news",
@@ -470,7 +470,7 @@ const _routes = [
   {
     name: "news-slug",
     path: "/news/:slug()",
-    component: () => import('./_slug_-DrJanaeH.mjs')
+    component: () => import('./_slug_-DL6OaZTS.mjs')
   },
   {
     name: "events",
@@ -490,12 +490,12 @@ const _routes = [
   {
     name: "events-slug",
     path: "/events/:slug()",
-    component: () => import('./_slug_-CmBo9z_X.mjs')
+    component: () => import('./_slug_-Lqq3W71s.mjs')
   },
   {
     name: "groups-slug",
     path: "/groups/:slug()",
-    component: () => import('./_slug_-9FbdCYMO.mjs')
+    component: () => import('./_slug_-C6w0Yctw.mjs')
   },
   {
     name: "people-slug",
@@ -505,12 +505,12 @@ const _routes = [
   {
     name: "funders-slug",
     path: "/funders/:slug()",
-    component: () => import('./_slug_-9fP9qSD1.mjs')
+    component: () => import('./_slug_-CI5vHafg.mjs')
   },
   {
     name: "playbills-slug",
     path: "/playbills/:slug()",
-    component: () => import('./_slug_-Du-RSCV3.mjs')
+    component: () => import('./_slug_-DI2YPs-Y.mjs')
   },
   {
     name: "productions",
@@ -520,7 +520,7 @@ const _routes = [
   {
     name: "productions-slug",
     path: "/productions/:slug()",
-    component: () => import('./_slug_-CxztIUuD.mjs')
+    component: () => import('./_slug_-0Hqq-UnX.mjs')
   },
   {
     name: __nuxt_page_meta?.name,

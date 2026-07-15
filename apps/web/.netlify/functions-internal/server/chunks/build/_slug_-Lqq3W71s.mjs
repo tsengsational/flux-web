@@ -1,6 +1,6 @@
 import { _ as __nuxt_component_0 } from './nuxt-link-cZpXnfBZ.mjs';
 import { u as useDirectus, a as useAsyncData, _ as __nuxt_component_1 } from './asyncData-BxKqmOFY.mjs';
-import { _ as __nuxt_component_1$1 } from './BlockRenderer-D_tsRLZz.mjs';
+import { _ as __nuxt_component_1$1 } from './BlockRenderer-CUz7VsbB.mjs';
 import { defineComponent, withAsyncContext, computed, unref, mergeProps, withCtx, createTextVNode, createVNode, openBlock, createBlock, toDisplayString, useSSRContext } from 'vue';
 import { ssrRenderAttrs, ssrRenderComponent, ssrInterpolate, ssrRenderAttr, ssrRenderList } from 'vue/server-renderer';
 import { formatInTimeZone, toZonedTime, fromZonedTime } from 'date-fns-tz';
@@ -348,4 +348,4 @@ _sfc_main.setup = (props, ctx) => {
 };
 
 export { _sfc_main as default };
-//# sourceMappingURL=_slug_-CmBo9z_X.mjs.map
+//# sourceMappingURL=_slug_-Lqq3W71s.mjs.map

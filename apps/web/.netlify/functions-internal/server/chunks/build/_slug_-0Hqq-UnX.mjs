@@ -1,6 +1,6 @@
 import { _ as __nuxt_component_0 } from './nuxt-link-cZpXnfBZ.mjs';
-import { _ as __nuxt_component_1 } from './BlockRenderer-D_tsRLZz.mjs';
-import { _ as __nuxt_component_2 } from './PersonCard-Bd3SjMa7.mjs';
+import { _ as __nuxt_component_1 } from './BlockRenderer-CUz7VsbB.mjs';
+import { _ as __nuxt_component_2 } from './PersonCard-C1gqmHXI.mjs';
 import { _ as __nuxt_component_3 } from './MediaGallery-DVHH1GxR.mjs';
 import { _ as __nuxt_component_0$1 } from './BaseModal-Bc4BSEMB.mjs';
 import { defineComponent, ref, withAsyncContext, computed, watch, mergeProps, unref, withCtx, createTextVNode, createVNode, toDisplayString, openBlock, createBlock, Fragment, renderList, createCommentVNode, useSSRContext } from 'vue';
@@ -672,4 +672,4 @@ _sfc_main.setup = (props, ctx) => {
 const _slug_ = /* @__PURE__ */ _export_sfc(_sfc_main, [["__scopeId", "data-v-7797e490"]]);
 
 export { _slug_ as default };
-//# sourceMappingURL=_slug_-CxztIUuD.mjs.map
+//# sourceMappingURL=_slug_-0Hqq-UnX.mjs.map

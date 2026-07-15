@@ -1,4 +1,4 @@
-import { _ as __nuxt_component_1 } from './BlockRenderer-D_tsRLZz.mjs';
+import { _ as __nuxt_component_1 } from './BlockRenderer-CUz7VsbB.mjs';
 import { _ as __nuxt_component_0 } from './nuxt-link-cZpXnfBZ.mjs';
 import { defineComponent, withAsyncContext, computed, unref, mergeProps, withCtx, createVNode, openBlock, createBlock, createCommentVNode, toDisplayString, createTextVNode, useSSRContext } from 'vue';
 import { ssrRenderAttrs, ssrInterpolate, ssrRenderAttr, ssrRenderComponent, ssrRenderList } from 'vue/server-renderer';
@@ -241,4 +241,4 @@ _sfc_main.setup = (props, ctx) => {
 const _slug_ = /* @__PURE__ */ _export_sfc(_sfc_main, [["__scopeId", "data-v-56791d68"]]);
 
 export { _slug_ as default };
-//# sourceMappingURL=_slug_-9fP9qSD1.mjs.map
+//# sourceMappingURL=_slug_-CI5vHafg.mjs.map

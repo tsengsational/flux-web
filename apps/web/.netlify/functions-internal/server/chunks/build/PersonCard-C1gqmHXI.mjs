@@ -1,5 +1,5 @@
 import { _ as __nuxt_component_0 } from './BaseModal-Bc4BSEMB.mjs';
-import { _ as __nuxt_component_1 } from './BlockRenderer-D_tsRLZz.mjs';
+import { _ as __nuxt_component_1 } from './BlockRenderer-CUz7VsbB.mjs';
 import { _ as __nuxt_component_0$1 } from './nuxt-link-cZpXnfBZ.mjs';
 import { defineComponent, computed, ref, mergeProps, unref, withCtx, createTextVNode, openBlock, createBlock, createVNode, toDisplayString, createCommentVNode, useSSRContext } from 'vue';
 import { ssrRenderAttrs, ssrRenderAttr, ssrRenderClass, ssrInterpolate, ssrRenderComponent } from 'vue/server-renderer';
@@ -191,4 +191,4 @@ _sfc_main.setup = (props, ctx) => {
 const __nuxt_component_2 = Object.assign(_sfc_main, { __name: "PersonCard" });
 
 export { __nuxt_component_2 as _ };
-//# sourceMappingURL=PersonCard-Bd3SjMa7.mjs.map
+//# sourceMappingURL=PersonCard-C1gqmHXI.mjs.map
